@@ -1,198 +1,386 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import "react-calendar/dist/Calendar.css";
+import "../../styles/Appointment.css";
 import { appointmentService } from "../../services/appointmentService";
-import { googleMeetService } from "../../services/googleMeetService";
 import { notificationService } from "../../services/notificationService";
+import { googleMeetService } from "../../services/googleMeetService";
+import { databaseService } from "../../services/databaseService";
 import { Timestamp } from "firebase/firestore";
-import { authService, CustomUser } from "../../services/authService";
-import { Appointment } from "../../components/types";
+import AppointmentCalendar from "../../components/AppointmentCalendar";
+interface User {
+  id: string;
+  name: string;
+  role: "student" | "faculty";
+}
 
-const AppointmentPage: React.FC = () => {
+interface Facility {
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  availableSlots: string[];
+}
+
+interface Appointment {
+  appointmentId: string;
+  userId: string;
+  date: Date;
+  faculty: string;
+  room: string;
+  reason?: string;
+  status: "pending" | "confirmed" | "cancelled" | "rejected";
+  meetingLink?: string;
+}
+interface AppointmentCalendarProps {
+  selectedDate: Date | null;
+  onDateChange: (date: Date | null) => void;
+  userId: string; // Dynamic userId to fetch appointments
+}
+
+const Appointment: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [currentUser, setCurrentUser] = useState<CustomUser | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [selectedRoom, setSelectedRoom] = useState<string>("");
+  const [appointmentReason, setAppointmentReason] = useState<string>("");
+  const [selectedSlot, setSelectedSlot] = useState<string>("");
+  const [useOnlineMeeting, setUseOnlineMeeting] = useState<boolean>(false);
+  const [notification, setNotification] = useState<string | null>(null);
+  const [googleEvents, setGoogleEvents] = useState<any[]>([]);
 
-  const [newAppointment, setNewAppointment] = useState({
-    summary: "",
-    description: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-    attendees: [] as { email: string }[],
-  });
+  const [highlightedDates, setHighlightedDates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchInitialData = async () => {
       try {
-        setLoading(true);
-        const user = await authService.getCurrentUser();
-        setCurrentUser(user);
-        if (user) {
-          const userAppointments =
-            await appointmentService.getAppointmentsForUser(user.uid);
-          // Convert Firestore Timestamps to Dates
-          const convertedAppointments = userAppointments.map((appointment) => ({
+        const usersData = (await appointmentService.getAllUsers()).map(
+          (user) => ({
+            ...user,
+            role:
+              user.role === "student" || user.role === "faculty"
+                ? user.role
+                : "student", // Ensure role validity
+          })
+        ) as User[];
+
+        const facilitiesData = await databaseService.getFacilities();
+
+        const allAppointments = await appointmentService.getAppointmentsForUser(
+          "logged-in-user-id"
+        );
+
+        const datesWithAppointments: { [key: string]: boolean } = {};
+
+        allAppointments.forEach((appointment) => {
+          const dateKey =
+            appointment.date instanceof Timestamp
+              ? appointment.date.toDate().toLocaleDateString("en-US")
+              : appointment.date instanceof Date
+              ? appointment.date.toLocaleDateString("en-US")
+              : ""; // Fallback for unexpected types
+
+          if (dateKey) {
+            datesWithAppointments[dateKey] = true;
+          }
+        });
+
+        setUsers(usersData);
+        setFacilities(facilitiesData);
+        setAppointments(
+          allAppointments.map((appointment) => ({
             ...appointment,
-            date: new Date(appointment.date), // Ensure date is a Date object
-          }));
-          setAppointments(convertedAppointments);
-        }
-      } catch (err) {
-        console.error("Error fetching appointments:", err);
-        setError("Failed to fetch appointments.");
-      } finally {
-        setLoading(false);
+            date:
+              appointment.date instanceof Timestamp
+                ? appointment.date.toDate()
+                : appointment.date, // Ensure date is of type Date
+          }))
+        );
+
+        setHighlightedDates(datesWithAppointments);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
       }
     };
 
-    fetchAppointments();
+    fetchInitialData();
   }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewAppointment({ ...newAppointment, [name]: value });
+  const handleDateChange = (value: Date | Date[] | null) => {
+    if (value instanceof Date) {
+      setSelectedDate(value);
+    } else if (Array.isArray(value) && value.length > 0) {
+      setSelectedDate(value[0]); // Use the first date in the range
+    } else {
+      setSelectedDate(null); // Clear the selection
+    }
   };
 
-  const handleAddAppointment = async () => {
-    const { summary, description, date, startTime, endTime, attendees } =
-      newAppointment;
-
-    if (!summary || !date || !startTime || !endTime) {
-      setError("Please fill in all required fields.");
+  const handleCreateAppointment = async () => {
+    if (
+      !selectedUser ||
+      !selectedDate ||
+      !appointmentReason ||
+      (!selectedRoom && !useOnlineMeeting)
+    ) {
+      setNotification("Please fill all the required fields.");
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const appointmentData: Omit<Appointment, "appointmentId"> = {
+      userId: selectedUser,
+      faculty: "logged-in-faculty-id",
+      date: selectedDate!,
+      room: selectedRoom,
+      reason: appointmentReason,
+      status: "pending",
+    };
 
     try {
-      const startDateTime = new Date(`${date}T${startTime}`);
-      const endDateTime = new Date(`${date}T${endTime}`);
-      const meetLink = await googleMeetService.createGoogleMeetEvent({
-        summary,
-        description,
-        start: startDateTime.toISOString(),
-        end: endDateTime.toISOString(),
-        attendees,
-      });
+      let meetingLink = "";
+      if (useOnlineMeeting) {
+        const link = await googleMeetService.createGoogleMeetEvent({
+          summary: "Appointment Meeting",
+          description: appointmentReason,
+          start: selectedDate.toISOString(),
+          end: new Date(selectedDate.getTime() + 30 * 60000).toISOString(), // 30 minutes duration
+          attendees: [{ email: "user@example.com" }], // Replace with real user email
+        });
+        meetingLink = link ?? ""; // Default to an empty string if null
+        appointmentData.meetingLink = meetingLink;
+      }
 
-      const appointmentData: Omit<Appointment, "appointmentId"> = {
-        userId: currentUser?.uid || "",
-        faculty: currentUser?.faculty || "",
-        room: "Online (Google Meet)",
-        date: startDateTime, // This is a Date object
-        reason: description,
-        status: "pending",
-        meetingLink: meetLink || "",
-      };
-
-      await appointmentService.addAppointment({
+      const newAppointment = await appointmentService.addAppointment({
         ...appointmentData,
-        date: startDateTime, // Convert to Firestore Timestamp when saving
+        reason: appointmentReason, // Ensure 'reason' is included
       });
 
       await notificationService.notify({
-        userId: currentUser?.uid || "",
-        message: `New appointment created for ${summary} on ${date}`,
-        type: "success",
+        message: `You have a new appointment request for ${selectedDate.toLocaleDateString()}`,
+        type: "info",
+        userId: selectedUser ?? "",
         timestamp: Timestamp.now(),
       });
 
-      setNewAppointment({
-        summary: "",
-        description: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        attendees: [],
-      });
-
-      const updatedAppointments =
-        await appointmentService.getAppointmentsForUser(currentUser?.uid || "");
-      const convertedAppointments = updatedAppointments.map((appointment) => ({
-        ...appointment,
-        date: new Date(appointment.date), // Convert Timestamp back to Date when fetching
-      }));
-      setAppointments(convertedAppointments);
-
-      console.log("Appointment successfully created!");
-    } catch (err) {
-      console.error("Error adding appointment:", err);
-      setError("Failed to create appointment. Please try again.");
-    } finally {
-      setLoading(false);
+      setNotification("Appointment created successfully!");
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+      setNotification("Failed to create appointment.");
     }
   };
 
+  const handleAppointmentStatusChange = async (
+    appointmentId: string,
+    newStatus: "confirmed" | "rejected" | "cancelled"
+  ) => {
+    try {
+      await appointmentService.updateAppointment(appointmentId, {
+        status: newStatus,
+      });
+
+      if (newStatus === "confirmed" || newStatus === "rejected") {
+        const appointment = appointments.find(
+          (a) => a.appointmentId === appointmentId
+        );
+        if (appointment) {
+          await notificationService.notify({
+            message: `Your appointment has been ${newStatus}.`,
+            type: "info",
+            userId: appointment.userId,
+            timestamp: Timestamp.now(),
+          });
+        }
+      }
+
+      const updatedAppointments = appointments.map((appointment) =>
+        appointment.appointmentId === appointmentId
+          ? { ...appointment, status: newStatus }
+          : appointment
+      );
+
+      setAppointments(updatedAppointments);
+      setNotification(`Appointment ${newStatus} successfully!`);
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      setNotification("Failed to update appointment status.");
+    }
+  };
+  //function to highlight dates with Google Calendar events
+  const tileContent = ({ date }: { date: Date }) => {
+    const dateKey = date.toISOString().split("T")[0];
+    if (highlightedDates[dateKey]) {
+      return <div className="appointment-marker"></div>;
+    }
+
+    const googleEvent = googleEvents.find((event: any) =>
+      event.start?.dateTime
+        ? new Date(event.start.dateTime).toISOString().split("T")[0] === dateKey
+        : false
+    );
+
+    if (googleEvent) {
+      return <div className="google-event-marker"></div>; // Custom marker for Google events
+    }
+
+    return null;
+  };
+
   return (
-    <div className="appointment-page">
-      <h1>Appointments</h1>
+    <div className="appointment-container">
+      <h2>Appointment Booking</h2>
+      {notification && <div className="notification">{notification}</div>}
+      {/* Use AppointmentCalendar component */}
 
-      {error && <p className="error-message">{error}</p>}
-
-      <div className="new-appointment-form">
-        <h2>Create New Appointment</h2>
-        <input
-          type="text"
-          name="summary"
-          placeholder="Summary"
-          value={newAppointment.summary}
-          onChange={handleInputChange}
+      <div className="calendar-section">
+        <AppointmentCalendar
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          userId={" "}
         />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={newAppointment.description}
-          onChange={handleInputChange}
-        />
-        <input
-          type="date"
-          name="date"
-          value={newAppointment.date}
-          onChange={handleInputChange}
-        />
-        <input
-          type="time"
-          name="startTime"
-          value={newAppointment.startTime}
-          onChange={handleInputChange}
-        />
-        <input
-          type="time"
-          name="endTime"
-          value={newAppointment.endTime}
-          onChange={handleInputChange}
-        />
-        <button onClick={handleAddAppointment} disabled={loading}>
-          {loading ? "Creating..." : "Create Appointment"}
-        </button>
       </div>
 
-      <div className="appointment-list">
-        <h2>My Appointments</h2>
+      <div className="form-section">
+        <label>User:</label>
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+        >
+          <option value="">Select User</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.role === "faculty"
+                ? `Faculty: ${user.name}`
+                : `Student: ${user.name}`}
+            </option>
+          ))}
+        </select>
+
+        <label>Room:</label>
+        <select
+          value={selectedRoom}
+          onChange={(e) => setSelectedRoom(e.target.value)}
+        >
+          <option value="">Select Room</option>
+          {facilities.map((facility) => (
+            <option key={facility.id} value={facility.name}>
+              {facility.name} - {facility.location}
+            </option>
+          ))}
+        </select>
+
+        <label>Reason:</label>
+        <textarea
+          value={appointmentReason}
+          onChange={(e) => setAppointmentReason(e.target.value)}
+        />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={useOnlineMeeting}
+            onChange={(e) => setUseOnlineMeeting(e.target.checked)}
+          />
+          Online Meeting
+        </label>
+
+        <button onClick={handleCreateAppointment}>Create Appointment</button>
+      </div>
+
+      <div className="appointments-list">
+        <h3>Appointments</h3>
         {appointments.map((appointment) => (
           <div key={appointment.appointmentId} className="appointment-item">
             <p>
-              <strong>Summary:</strong> {appointment.reason}
+              <strong>Date:</strong> {appointment.date.toLocaleDateString()}
             </p>
             <p>
-              <strong>Date:</strong> {appointment.date.toLocaleString()}{" "}
-              {/* Convert Date to readable format */}
+              <strong>Time:</strong> {appointment.date.toLocaleTimeString()}
+            </p>
+            <p>
+              <strong>User:</strong>{" "}
+              {users.find((u) => u.id === appointment.userId)?.name ||
+                "Unknown"}
+            </p>
+            <p>
+              <strong>Room:</strong> {appointment.room}
+            </p>
+            <p>
+              <strong>Reason:</strong> {appointment.reason}
             </p>
             <p>
               <strong>Status:</strong> {appointment.status}
             </p>
             {appointment.meetingLink && (
               <p>
-                <strong>Google Meet:</strong>{" "}
+                <strong>Meeting Link:</strong>{" "}
                 <a
                   href={appointment.meetingLink}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {appointment.meetingLink}
+                  Join
+                </a>
+              </p>
+            )}
+            {appointment.status === "pending" && (
+              <div className="appointment-actions">
+                <button
+                  onClick={() =>
+                    handleAppointmentStatusChange(
+                      appointment.appointmentId,
+                      "confirmed"
+                    )
+                  }
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={() =>
+                    handleAppointmentStatusChange(
+                      appointment.appointmentId,
+                      "rejected"
+                    )
+                  }
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="google-events-list">
+        <h3>Google Calendar Events</h3>
+        {googleEvents.map((event: any) => (
+          <div key={event.id} className="google-event-item">
+            <p>
+              <strong>Title:</strong> {event.summary || "No Title"}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {event.start?.dateTime
+                ? new Date(event.start.dateTime).toLocaleDateString()
+                : "Unknown"}
+            </p>
+            <p>
+              <strong>Time:</strong>{" "}
+              {event.start?.dateTime
+                ? new Date(event.start.dateTime).toLocaleTimeString()
+                : "Unknown"}
+            </p>
+            {event.hangoutLink && (
+              <p>
+                <strong>Google Meet Link:</strong>{" "}
+                <a
+                  href={event.hangoutLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Join
                 </a>
               </p>
             )}
@@ -203,4 +391,4 @@ const AppointmentPage: React.FC = () => {
   );
 };
 
-export default AppointmentPage;
+export default Appointment;

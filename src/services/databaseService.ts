@@ -535,7 +535,19 @@ export const databaseService = {
   }
 };
 // Fetch documents from the 'documents' collection in Firestore
-
+export const getDocuments = async (): Promise<Document[]> => {
+  try {
+    const documentsCollection = collection(db, 'documents');
+    const documentsSnapshot = await getDocs(documentsCollection);
+    return documentsSnapshot.docs.map(doc => ({
+      documentId: doc.id,
+      ...doc.data(),
+    })) as Document[];  // Ensure the data structure matches the Document type
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    throw new Error('Error fetching documents');
+  }
+};
 
 export const getFacilityBookings = async (userId: string) => {
   try {

@@ -90,22 +90,30 @@ class AppointmentService {
   async getAllAppointments(): Promise<Appointment[]> {
     try {
       const snapshot = await getDocs(collection(db, "appointments"));
-      return snapshot.docs.map((doc) => ({
-        appointmentId: doc.id,
-        ...doc.data(),
-        date: (doc.data().date as Timestamp).toDate(),
-      })) as Appointment[];
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        // Convert `date` from Timestamp to Date
+        const date = (data.date as Timestamp).toDate();
+        // Ensure all required properties exist
+        return {
+          appointmentId: doc.id,
+          userId: data.userId || "", // Fallback for missing userId
+          faculty: data.faculty || "", // Fallback for missing faculty
+          date,
+          room: data.room || "Not specified", // Default for missing room
+          reason: data.reason || "No reason provided", // Default for missing reason
+          status: data.status || "pending", // Default to "pending" if missing
+          meetingLink: data.meetingLink || "", // Optional field
+        } as Appointment;
+      });
     } catch (error) {
       console.error("Failed to fetch all appointments:", error);
       throw new Error("Failed to fetch all appointments");
     }
   }
 
-  // Update an appointment
-  async updateAppointment(
-    appointmentId: string,
-    updateData: Partial<Appointment>
-  ): Promise<void> {
+  // Update an existing appointment
+  async updateAppointment(appointmentId: string, updateData: Partial<Appointment>): Promise<void> {
     try {
       const appointmentRef = doc(db, "appointments", appointmentId);
       const dataToUpdate = {
@@ -119,7 +127,6 @@ class AppointmentService {
       throw new Error("Failed to update appointment");
     }
   }
-
 
   // Cancel an appointment
   async cancelAppointment(appointmentId: string): Promise<void> {
