@@ -1,0 +1,53 @@
+.document-access {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.upload-section, .documents-list {
+  margin-top: 20px;
+  padding: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+h2, h3 {
+  color: #333;
+}
+
+input[type="text"], textarea, input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.document-item {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  background: #f9f9f9;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}

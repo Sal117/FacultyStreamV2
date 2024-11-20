@@ -1,0 +1,193 @@
+/* LoginPage.css */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: url('../assets/images/background.webp') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  overflow: hidden;
+  perspective: 1500px;
+}
+
+/* Adding a dark overlay for better contrast */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+/* Circle Decoration */
+.circle-decoration {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+  animation: floating 6s ease-in-out infinite;
+}
+
+.circle-decoration {
+  width: 150px;
+  height: 150px;
+  bottom: 10%;
+  right: 20%;
+}
+
+.circle-decoration--small {
+  width: 80px;
+  height: 80px;
+  top: 20%;
+  left: 15%;
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* 3D Card Movement */
+.login-form-container {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  margin: 0 auto;
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+  transform: rotateY(0deg);
+}
+
+.login-form-container:hover {
+  transform: rotateY(5deg) rotateX(5deg);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+/* Hide the navbar on the login page */
+.login-page .navbar {
+  display: none;
+}
+
+
+/* Logo styling with eanimation */
+.primary-logo {
+  width: 120px;
+  margin: 0 auto 1rem;
+  animation: logoFadeIn 4s ease-in-out, logoHover 6s infinite alternate;
+}
+
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes logoHover {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 3D Role Selection */
+.role-selection {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.role-card {
+  background: rgba(107, 140, 226, 0.6);
+  padding: 1rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 140, 226, 0.5);
+  font-weight: bold;
+  color: #fff;
+  width: 100px;
+  text-align: center;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.role-card.selected {
+  background: rgba(107, 140, 226, 0.9);
+  transform: rotateY(10deg) rotateX(10deg) scale(1.1);
+  box-shadow: 0 8px 20px rgba(107, 140, 226, 0.8);
+}
+
+.role-card:hover {
+  transform: rotateY(10deg) rotateX(10deg) translateY(-5px);
+}
+
+/* Input and Button Styles */
+.login-input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  margin-top: 1rem;
+}
+
+.login-input:focus {
+  border-color: #6b8ce2;
+  box-shadow: 0 0 10px rgba(107, 140, 226, 0.7);
+}
+
+/* Button Movement */
+.login-button {
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #6b8ce2, #556bb5);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-button:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 4px 20px rgba(107, 140, 226, 0.8);
+}
+
+.login-button:active {
+  transform: translateY(-2px) scale(1);
+  box-shadow: 0 2px 10px rgba(107, 140, 226, 0.6);
+}
+
+/* Error Message */
+.error-message {
+  color: #ff6b6b;
+  margin-top: 1rem;
+  font-weight: bold;
+}

@@ -1,0 +1,65 @@
+/* App.css */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+.app-content {
+  flex: 1;
+  padding: 20px;
+  margin-top: 60px; /* Adjust if NavigationBar height changes */
+  margin-bottom: 20px; /* For space between content and Footer */
+  transition: margin-left 0.3s ease; /* Smooth transition for sidebar */
+}
+
+.with-sidebar {
+  margin-left: 250px; /* Match sidebar width */
+}
+
+.dashboard-main {
+  padding-left: 250px; /* Adjust based on sidebar width */
+  transition: padding 0.3s ease;
+}
+
+a {
+  text-decoration: none;
+  color: #004080;
+}
+
+a:hover {
+  color: #0066cc;
+}
+
+button {
+  background-color: #004080;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0066cc;
+}
+
+input, select {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}

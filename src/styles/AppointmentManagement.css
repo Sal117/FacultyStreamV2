@@ -1,0 +1,148 @@
+/* General container styling */
+.appointment-management {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    color: #333;
+    transition: transform 0.2s ease; /* Smooth hover effect */
+  }
+  
+  .appointment-management:hover {
+    transform: translateY(-5px); /* Lift effect */
+  }
+  
+  /* Header styling */
+  .appointment-management h2 {
+    font-size: 2rem;
+    font-family: 'Roboto', sans-serif;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Calendar container */
+  .appointment-management .calendar-container {
+    margin-bottom: 2rem;
+  }
+  
+  /* Filter styling */
+  .filters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .filters label {
+    font-weight: 500;
+    color: #555;
+    font-size: 1rem;
+  }
+  
+  .filters select {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    transition: border 0.3s ease;
+  }
+  
+  .filters select:hover,
+  .filters select:focus {
+    border-color: #3498db;
+    outline: none;
+  }
+  
+  /* Appointment card styling */
+  .appointments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .appointment-card {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border-left: 6px solid #3498db;
+    transition: box-shadow 0.3s ease, transform 0.2s ease; /* Added transform for interactive effect */
+  }
+  
+  .appointment-card:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px); /* Hover effect for card lift */
+  }
+  
+  .appointment-card p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .appointment-card strong {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  /* Actions container styling */
+  .actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Button styling */
+  .confirm-btn,
+  .cancel-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+  }
+  
+  .confirm-btn {
+    background-color: #2ecc71;
+    color: #fff;
+  }
+  
+  .confirm-btn:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px); /* Lift effect on hover */
+  }
+  
+  .cancel-btn {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px); /* Lift effect on hover */
+  }
+  
+  /* Responsive layout adjustments */
+  @media (max-width: 768px) {
+    .appointment-management {
+      padding: 1rem;
+      margin: 1rem;
+    }
+  
+    .appointments-list {
+      grid-template-columns: 1fr; /* Single column for smaller screens */
+    }
+  
+    .appointment-card {
+      padding: 1rem;
+    }
+  }
+  

@@ -1,0 +1,126 @@
+/* SystemSettings.css */
+
+/* Container Styling */
+.system-settings-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.5s ease-out;
+    margin-left: 250px; /* Align with sidebar */
+  }
+  
+  /* Header Styling */
+  .system-settings-container h1 {
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Form Styling */
+  .system-settings-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .system-settings-container label {
+    font-weight: 500;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+  }
+  
+  .system-settings-container input[type="number"],
+  .system-settings-container input[type="checkbox"] {
+    padding: 0.6rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+    margin-top: 5px;
+  }
+  
+  .system-settings-container input[type="number"]:focus,
+  .system-settings-container input[type="checkbox"]:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  /* Button Styling */
+  .system-settings-container button[type="submit"] {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, background-color 0.3s ease;
+  }
+  
+  .system-settings-container button[type="submit"]:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+  
+  /* Error Message Styling */
+  .system-settings-container .error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  
+  /* Loading Spinner */
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  
+  /* Animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .system-settings-container {
+      margin-left: 80px; /* Adjust for collapsed sidebar */
+      padding: 1.5rem;
+    }
+  
+    .system-settings-container h1 {
+      font-size: 1.8rem;
+    }
+  
+    .system-settings-container label {
+      font-size: 1rem;
+    }
+  
+    .system-settings-container button[type="submit"] {
+      font-size: 0.9rem;
+      padding: 0.6rem 1rem;
+    }
+  
+    .system-settings-container input[type="number"],
+    .system-settings-container input[type="checkbox"] {
+      padding: 0.5rem;
+    }
+  }
+  

@@ -1,0 +1,110 @@
+/* Base Styles */
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* Form Container */
+.dynamic-form {
+  max-width: 600px;
+  margin: 50px auto;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dynamic-form:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dynamic-form h2 {
+  font-size: 1.8rem;
+  color: #333333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  color: #666666;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  color: #333333;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.input-error {
+  border-color: #e74c3c !important;
+  background-color: #ffe6e6;
+}
+
+.error-text {
+  font-size: 0.9rem;
+  color: #e74c3c;
+  margin-top: 5px;
+}
+
+/* Submit Button */
+button[type="submit"] {
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #0056b3;
+  transform: scale(1.02);
+}
+
+button[type="submit"]:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dynamic-form {
+    padding: 20px;
+  }
+
+  .dynamic-form h2 {
+    font-size: 1.5rem;
+  }
+
+  button[type="submit"] {
+    font-size: 0.9rem;
+  }
+}

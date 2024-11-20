@@ -1,0 +1,245 @@
+/* AdminFacilitiesAndAppointments.css */
+
+/* Global styles for the page */
+.admin-facilities-appointments {
+    font-family: 'Roboto', sans-serif;
+    padding: 20px;
+    background: linear-gradient(to bottom, #f9f9f9, #ffffff);
+    min-height: 100vh;
+  }
+  
+  /* Header styling */
+  .content h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    color: #333333;
+    margin-bottom: 20px;
+    animation: fadeIn 0.6s ease-in-out;
+  }
+  
+  /* Section titles */
+  .content h2 {
+    font-size: 1.8rem;
+    color: #007bff;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+    animation: fadeInUp 0.6s ease-in-out;
+  }
+  
+  /* Notification banner */
+  .notification-banner {
+    padding: 10px 20px;
+    background-color: #eaf5ff;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    color: #007bff;
+    margin-bottom: 20px;
+    animation: slideIn 0.5s ease-in-out;
+  }
+  
+  /* Loading spinner overlay */
+  .loading-spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  /* Add Facility Section */
+  .add-facility-section,
+  .manage-facility-section,
+  .facilities-section,
+  .appointments-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    animation: fadeInUp 0.5s ease-in-out;
+  }
+  
+  .add-facility-controls input,
+  .manage-facility-section input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .add-facility-controls input:focus,
+  .manage-facility-section input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.4);
+  }
+  
+  .add-facility-controls button,
+  .manage-facility-section button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-facility-controls button:hover,
+  .manage-facility-section button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Manage Facilities Section */
+  .manage-facility-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .manage-facility-section li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eeeeee;
+  }
+  
+  .manage-facility-section li strong {
+    font-weight: bold;
+  }
+  
+  .manage-facility-section .facility-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .manage-facility-section button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
+  
+  /* Facility Slots */
+  .available-slots ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .available-slots li {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 12px;
+    background-color: #eaf5ff;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .available-slots li:hover {
+    background-color: #007bff;
+    color: #ffffff;
+  }
+  
+  .available-slots li.selected {
+    background-color: #007bff;
+    color: #ffffff;
+    border: 2px solid #0056b3;
+  }
+  
+  /* Appointment Cards */
+  .appointments-section .appointment-card {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #dddddd;
+    margin-bottom: 10px;
+    transition: transform 0.3s ease;
+  }
+  
+  .appointments-section .appointment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Actions */
+  .actions button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .actions button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .add-facility-controls,
+    .manage-facility-section,
+    .facilities-section,
+    .appointments-section {
+      padding: 15px;
+    }
+  
+    .manage-facility-section li {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .facility-actions {
+      flex-direction: column;
+      gap: 5px;
+    }
+  
+    .content h1 {
+      font-size: 2rem;
+    }
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  

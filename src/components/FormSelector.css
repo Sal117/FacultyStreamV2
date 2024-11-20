@@ -1,0 +1,32 @@
+.form-selector {
+  margin: 1rem 0;
+}
+
+.form-list {
+  list-style: none;
+  padding: 0;
+}
+
+.form-item {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin: 0.5rem 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form-item:hover {
+  background-color: #f0f0f0;
+}
+
+.form-item.selected {
+  background-color: #dff0d8;
+  border-color: #3c763d;
+}
+
+.no-forms {
+  font-style: italic;
+  color: #999;
+  text-align: center;
+}

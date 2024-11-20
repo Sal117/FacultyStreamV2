@@ -1,0 +1,182 @@
+/* Dashboard layout */
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8, #d9e6f6);
+  color: #333;
+}
+
+.dashboard-main {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Header styling */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  color: #007bff;
+  text-shadow: 2px 2px 5px rgba(0, 123, 255, 0.3);
+}
+
+.dashboard-subtitle {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Quick Action Buttons */
+.quick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.action-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Stats Overview Section */
+.stats-overview {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 1.2rem;
+  color: #007bff;
+}
+
+/* Dashboard Section Styling */
+.dashboard-section {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.announcement-card {
+  background: #f0f4f8;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.announcement-date {
+  display: block;
+  text-align: right;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* Facilities Management Section */
+.facilities-container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.facility-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Faculty Management Section */
+.faculty-container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.faculty-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Notification Banner */
+.notification-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease;
+}
+
+.notification-banner.error {
+  background-color: #f44336;
+}
+
+.notification-banner.success {
+  background-color: #4caf50;
+}
+
+.notification-banner.info {
+  background-color: #2196f3;
+}
+
+.notification-banner.alert {
+  background-color: #ff9800;
+}
+
+.notification-banner.update {
+  background-color: #9c27b0;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
