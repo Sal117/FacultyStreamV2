@@ -1,85 +1,92 @@
+/* src/components/FormReview.css */
+
 .form-review {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: 20px auto;
+  background-color: var(--card-bg); /* Replaced #ffffff */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
+  max-width: 600px;
+  margin: 20px auto;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: var(--foreground); /* Replaced #333 */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-details {
+  margin-bottom: 20px;
+}
+
+.form-field {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--input-border); /* Replaced #f0f0f0 */
+}
+
+.form-field strong {
+  color: var(--secondary); /* Replaced #555 */
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.comments {
+  width: 100%;
+  height: 80px;
+  border: 1px solid var(--input-border); /* Replaced #ddd */
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  resize: none;
+  background-color: var(--input-bg); /* Added for dark mode */
+  color: var(--foreground); /* Added for dark mode */
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.input-error {
+  border-color: var(--destructive-bg) !important;
+}
+
+.error-message {
+  color: var(--destructive-bg);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .form-review {
+    padding: 15px;
   }
-  
-  h2 {
-    font-size: 1.8rem;
-    color: #333;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .form-details {
-    margin-bottom: 20px;
-  }
-  
-  .form-field {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .form-field strong {
-    color: #555;
-  }
-  
-  .comments {
-    width: 100%;
-    height: 80px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 20px;
-    font-size: 1rem;
-    resize: none;
-  }
-  
+
   .actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
   }
-  
-  .approve-btn,
-  .reject-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+
+  .actions button {
+    width: 100%;
   }
-  
-  .approve-btn {
-    background-color: #2ecc71;
-    color: white;
-  }
-  
-  .approve-btn:hover {
-    background-color: #27ae60;
-    transform: translateY(-2px);
-  }
-  
-  .reject-btn {
-    background-color: #e74c3c;
-    color: white;
-  }
-  
-  .reject-btn:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-  }
-  
-  .approve-btn:disabled,
-  .reject-btn:disabled {
-    background-color: #bbb;
-    cursor: not-allowed;
-  }
-  
+}

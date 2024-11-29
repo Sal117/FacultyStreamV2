@@ -1,139 +1,152 @@
+// src/pages/student/StudentDashboard.tsx
+
 import React, { useState, useEffect, useContext } from "react";
 import AppointmentCalendar from "../../components/AppointmentCalendar";
 import Sidebar from "../../components/Sidebar";
 import NotificationBanner from "../../components/NotificationBanner";
-import { appointmentService } from "../../services/appointmentService";
+import { appointmentService, Appointment } from "../../services/appointmentService";
 import { notificationService } from "../../services/notificationService";
+import { announcementService } from "../../services/announcementService";
 import { AuthContext } from "../../context/AuthContext";
 import "../../styles/StudentDashboard.css";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
-import { Timestamp } from "firebase/firestore"; // Import Timestamp for conversion
+import AnnouncementCard from '../../components/AnnouncementCard';
+import { Timestamp } from "firebase/firestore";
+import type { Announcement, NotificationPayload } from '../../components/types';
 
-interface Appointment {
-  appointmentId: string;
-  date: Date;
-
-  status: string;
-  room: string;
+interface FirestoreNotification extends Omit<NotificationPayload, 'timestamp'> {
+  timestamp: Timestamp;
 }
 
-interface Notification {
-  id: string;
-  message: string;
-  timestamp: Date;
-  type: "info" | "alert" | "update" | "success" | "error";
+interface CalendarAppointment extends Appointment {
+  faculty: string;
+  room: string;
 }
 
 const StudentDashboard: React.FC = () => {
   const { user } = useContext(AuthContext);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [appointments, setAppointments] = useState<CalendarAppointment[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [notifications, setNotifications] = useState<NotificationPayload[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
+    const loadData = async () => {
       try {
-        if (user) {
-          const [studentAppointments, studentNotifications] = await Promise.all(
-            [
-              appointmentService.getAppointmentsForUser(user.uid),
-              notificationService.getNotifications(user.uid),
-            ]
-          );
-
-          // Convert notification timestamps to Date objects
-          const formattedNotifications = studentNotifications.map((notif) => ({
-            ...notif,
-            timestamp: (notif.timestamp as Timestamp).toDate(), // Convert to Date
-          }));
-
-          setAppointments(studentAppointments);
-          setNotifications(formattedNotifications);
+        if (!user) {
+          throw new Error('User not authenticated');
         }
+
+        const unsubscribeAppointments = appointmentService.subscribeToStudentAppointments(
+          user.uid,
+          (newAppointments: Appointment[]) => {
+            setAppointments(newAppointments.map(appointment => ({
+              ...appointment,
+              faculty: appointment.facultyId,
+              room: appointment.facilityId || ''
+            })));
+          }
+        );
+
+        const unsubscribeAnnouncements = announcementService.subscribeToAnnouncements(
+          (newAnnouncements: Announcement[]) => {
+            setAnnouncements(newAnnouncements.map(announcement => ({
+              ...announcement,
+              id: announcement.announcementId,
+              createdBy: announcement.createdByUid
+            })));
+          }
+        );
+
+        const unsubscribeNotifications = notificationService.subscribeToUserNotifications(
+          user.uid,
+          (newNotifications: FirestoreNotification[]) => {
+            setNotifications(newNotifications.map(notification => ({
+              ...notification,
+              timestamp: notification.timestamp.toDate()
+            })));
+          }
+        );
+
+        setLoading(false);
+
+        return () => {
+          unsubscribeAppointments();
+          unsubscribeAnnouncements();
+          unsubscribeNotifications();
+        };
       } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
+        console.error('Error loading dashboard data:', error);
+        setError('Failed to load dashboard data');
         setLoading(false);
       }
     };
-    fetchDashboardData();
+
+    loadData();
   }, [user]);
 
-  const handleCancelAppointment = async (appointmentId: string) => {
-    try {
-      await appointmentService.cancelAppointment(appointmentId);
-      setAppointments(
-        appointments.filter((app) => app.appointmentId !== appointmentId)
-      );
-    } catch (error) {
-      console.error("Failed to cancel appointment:", error);
-    }
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="student-dashboard">
+      <Sidebar userRole="student" />
+      {error && (
+        <NotificationBanner
+          notification={{
+            id: 'error',
+            type: 'error',
+            message: error,
+            timestamp: new Date()
+          }}
+          onClose={() => setError(null)}
+        />
+      )}
+
       <div className="dashboard-content">
-        <h1>Welcome, {user?.name}</h1>
-
-        {/* Appointments Section */}
-        <div className="dashboard-section">
-          <h2>Upcoming Appointments</h2>
-          {loading ? (
-            <LoadingSpinner />
-          ) : appointments.length > 0 ? (
-            <div className="appointments-list">
-              {appointments.map((appointment) => (
-                <Card
-                  key={appointment.appointmentId}
-                  title={`Appointment with ${appointment}`}
-                  description={`Room: ${
-                    appointment.room
-                  } | Date: ${appointment.date.toLocaleDateString()} | Status: ${
-                    appointment.status
-                  }`}
-                  extra={
-                    <Button
-                      text="Cancel Appointment"
-                      onClick={() =>
-                        handleCancelAppointment(appointment.appointmentId)
-                      }
-                      disabled={appointment.status !== "pending"}
-                    />
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            <p>No upcoming appointments.</p>
-          )}
-        </div>
-
-        {/* Notifications Section */}
-        <div className="dashboard-section">
-          <h2>Notifications</h2>
-          {notifications.map((notification) => (
-            <NotificationBanner
-              key={notification.id}
-              type={notification.type}
-              message={notification.message}
-              timestamp={notification.timestamp}
-            />
-          ))}
-        </div>
-
-        {/* Calendar Section */}
-        <div className="dashboard-section">
-          <h2>Calendar</h2>
+        <section className="appointments-section">
+          <h2>Your Appointments</h2>
           <AppointmentCalendar
+            appointments={appointments}
             selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            userId={""}
+            onDateChange={handleDateChange}
+            userId={user?.uid || ''}
           />
-        </div>
+        </section>
+
+        <section className="announcements-section">
+          <h2>Announcements</h2>
+          {announcements.length > 0 ? (
+            announcements.map((announcement) => (
+              <AnnouncementCard
+                key={announcement.id}
+                announcement={{
+                  id: announcement.id,
+                  title: announcement.title,
+                  content: announcement.content,
+                  createdBy: announcement.createdBy,
+                  createdAt: announcement.createdAt,
+                  type: announcement.type,
+                  date: announcement.date,
+                  imageUrl: announcement.imageUrl,
+                  attachments: announcement.attachments,
+                  links: announcement.links
+                }}
+              />
+            ))
+          ) : (
+            <p>No announcements available.</p>
+          )}
+        </section>
       </div>
     </div>
   );

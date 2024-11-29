@@ -1,52 +1,111 @@
+/* src/components/Card.css */
+
+/* Base Card Styles */
 .card {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin: 15px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Hover Effects for Interactivity */
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Title Styling */
+.card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Description Styling */
+.card .description {
+  flex-grow: 1;
+  margin-bottom: 12px;
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+/* Extra Information Styling */
+.card .extra-info {
+  margin-bottom: 12px;
+  color: var(--secondary);
+  font-size: 0.9rem;
+}
+
+/* Status Badge Styling */
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  margin-bottom: 12px;
+}
+
+/* Dynamic Status Colors */
+.status.student {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status.faculty {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status.admin {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Link Styling */
+.card-link {
+  align-self: flex-start;
+  text-decoration: none;
+  color: var(--button-link-text);
+  background-color: var(--button-link-bg);
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.875rem;
+}
+
+/* Link Hover Effects */
+.card-link:hover {
+  background-color: var(--button-link-hover-bg);
+  color: var(--button-link-hover);
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    padding: 12px;
   }
-  
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-  }
-  
+
   .card h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #333;
+    font-size: 1.1rem;
   }
-  
-  .card p {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 20px;
+
+  .card .description {
+    font-size: 0.95rem;
   }
-  
-  .status {
+
+  .card-link {
+    font-size: 0.8rem;
     padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #ffffff;
-    text-transform: uppercase;
   }
-  
-  /* Status-specific styles */
-  .status.approved {
-    background-color: #4caf50;
-  }
-  
-  .status.pending {
-    background-color: #ff9800;
-  }
-  
-  .status.rejected {
-    background-color: #f44336;
-  }
-  
+}

@@ -10,9 +10,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]},
 
     
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": ["./node_modules/@types","./src/types"],
 
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
@@ -22,6 +25,6 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "src/services/googleMeetService.ts"],
+  "include": ["src", "src/services/googleMeetService.ts", "server.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

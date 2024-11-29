@@ -1,0 +1,126 @@
+/* src/components/FormTemplateList.css */
+
+.form-template-list {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: var(--foreground);
+  }
+  
+  .form-template-list h2 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .form-template-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .form-template-table th,
+  .form-template-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--input-border);
+  }
+  
+  .form-template-table th {
+    background-color: var(--muted);
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  
+  .form-template-table tr:hover {
+    background-color: var(--overlayL);
+  }
+  
+  .form-template-table td {
+    color: var(--foreground);
+  }
+  
+  /* Buttons within the table */
+  .edit-btn,
+  .delete-btn {
+    margin-right: 8px;
+  }
+  
+  .edit-btn {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-text);
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-btn:hover {
+    background-color: var(--button-secondary-hover);
+  }
+  
+  .delete-btn {
+    background-color: var(--destructive-bg);
+    color: var(--button-text);
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .delete-btn:hover {
+    background-color: var(--destructive-hover);
+  }
+  
+  /* Error Message Styling */
+  .error-message {
+    background-color: var(--destructive-bg);
+    color: var(--button-text);
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .form-template-table thead {
+      display: none;
+    }
+  
+    .form-template-table,
+    .form-template-table tbody,
+    .form-template-table tr,
+    .form-template-table td {
+      display: block;
+      width: 100%;
+    }
+  
+    .form-template-table tr {
+      margin-bottom: 15px;
+      background: var(--muted);
+      padding: 10px;
+      border-radius: 8px;
+    }
+  
+    .form-template-table td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+    }
+  
+    .form-template-table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 15px;
+      width: 45%;
+      padding-right: 10px;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--secondary);
+      text-align: left;
+    }
+  }
+  

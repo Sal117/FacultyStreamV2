@@ -1,42 +1,41 @@
 /* NavigationBar.css */
 .navbar {
   width: 100%;
-  height: 100px; 
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  height: 100px;
+  background: var(--navbar-bg); /* Replaced linear gradient */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Optional: Replace with a variable */
   z-index: 1000;
-  position: fixed; /* Fixes the navigation bar at the top */
+  position: fixed;
   top: 0;
   left: 0;
-  border-bottom: 2px solid #004080;
   transition: all 0.3s ease;
 }
+
 .navbar-left {
   display: flex;
   align-items: center;
   margin-left: auto; /* Pushes the logos to the right */
   padding-right: 20px; /* Optional: Adjust padding to fine-tune positioning */
 }
-.logo{
-  max-width: 120px; /* Constrains the width */
-  max-height: 120px; /* Constrains the height */
- 
+
+.logo {
+  max-width: 120px;
+  max-height: 120px;
   margin-right: 20px;
   cursor: pointer;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
-
 }
 
 /* Logo Styles */
 .logosmall {
-  max-width: 50px; /* Constrains the width */
-  max-height: 50px; /* Constrains the height */
-  width: auto; /* Maintains aspect ratio */
-  height: auto; /* Maintains aspect ratio */
+  max-width: 50px;
+  max-height: 50px;
+  width: auto;
+  height: auto;
   margin-right: 20px;
   cursor: pointer;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
@@ -44,9 +43,8 @@
 
 .logosmall:hover {
   transform: scale(1.1) rotateY(10deg);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Optional: Replace with a variable */
 }
-
 
 /* Navbar Items */
 .navbar-items {
@@ -58,7 +56,7 @@
 
 .navbar-item {
   padding: 10px 20px;
-  color: #fff;
+  color: var(--button-text); /* Replaced #fff */
   cursor: pointer;
   font-size: 18px;
   font-weight: bold;
@@ -67,9 +65,9 @@
 }
 
 .navbar-item:hover {
-  color: #87cefa;
+  color: var(--button-primary-bg); /* Replaced #87cefa */
   transform: translateY(-3px) scale(1.05);
-  text-shadow: 0 4px 10px rgba(135, 206, 250, 0.5);
+  text-shadow: 0 4px 10px rgba(135, 206, 250, 0.5); /* Optional: Replace with a variable */
 }
 
 /* Hover Effect for Navbar Items */
@@ -80,7 +78,7 @@
   right: 0;
   bottom: -5px;
   height: 3px;
-  background: linear-gradient(135deg, #87cefa, #1e90ff);
+  background: var(--button-primary-hover); /* Replaced gradient */
   border-radius: 2px;
   transform: scaleX(0);
   transition: transform 0.3s ease;
@@ -88,4 +86,33 @@
 
 .navbar-item:hover::after {
   transform: scaleX(1);
+}
+
+/* Navbar Right Section for Dark Mode Toggle */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Space between items */
+}
+
+/* Dark Mode Toggle Button */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--button-text); /* Replaced #fff */
+  color: var(--button-primary-bg); /* Replaced #007bff */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
+}
+
+.mode-toggle:hover {
+  background: var(--button-primary-bg); /* Replaced #007bff */
+  color: var(--button-text); /* Replaced #fff */
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Optional: Replace with a variable */
 }

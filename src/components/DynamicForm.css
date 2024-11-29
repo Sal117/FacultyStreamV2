@@ -1,7 +1,21 @@
+/* Define CSS Variables for Consistency and Theming */
+:root {
+  --page-background: #f5f7fa;
+  --card-bg: #ffffff;
+  --foreground: #333333;
+  --secondary: #666666;
+  --input-border: #cccccc;
+  --button-primary-bg: #007bff;
+  --button-primary-hover: #0056b3;
+  --button-text: #ffffff;
+  --destructive-bg: #e74c3c;
+  --muted: #cccccc;
+}
+
 /* Base Styles */
 body {
   font-family: 'Roboto', Arial, sans-serif;
-  background-color: #f5f7fa;
+  background-color: var(--page-background);
   margin: 0;
   padding: 0;
 }
@@ -10,7 +24,7 @@ body {
 .dynamic-form {
   max-width: 600px;
   margin: 50px auto;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 8px;
   padding: 20px 30px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -24,7 +38,7 @@ body {
 
 .dynamic-form h2 {
   font-size: 1.8rem;
-  color: #333333;
+  color: var(--foreground);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -37,44 +51,53 @@ body {
 .form-group label {
   display: block;
   font-size: 1rem;
-  color: #666666;
+  color: var(--secondary);
   margin-bottom: 8px;
   font-weight: bold;
 }
 
-.form-group input {
+.form-group input,
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 10px;
   font-size: 1rem;
-  color: #333333;
-  border: 1px solid #cccccc;
+  color: var(--foreground);
+  border: 1px solid var(--input-border);
   border-radius: 5px;
   outline: none;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.form-group input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--button-primary-bg);
+  box-shadow: 0 0 5px var(--button-primary-bg);
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
 }
 
 .input-error {
-  border-color: #e74c3c !important;
-  background-color: #ffe6e6;
+  border-color: var(--destructive-bg) !important;
+  background-color: rgba(231, 76, 60, 0.1);
 }
 
 .error-text {
   font-size: 0.9rem;
-  color: #e74c3c;
+  color: var(--destructive-bg);
   margin-top: 5px;
 }
 
 /* Submit Button */
 button[type="submit"] {
   width: 100%;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--button-primary-bg);
+  color: var(--button-text);
   padding: 12px 20px;
   font-size: 1rem;
   font-weight: bold;
@@ -85,12 +108,12 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background-color: #0056b3;
+  background-color: var(--button-primary-hover);
   transform: scale(1.02);
 }
 
 button[type="submit"]:disabled {
-  background-color: #cccccc;
+  background-color: var(--muted);
   cursor: not-allowed;
 }
 

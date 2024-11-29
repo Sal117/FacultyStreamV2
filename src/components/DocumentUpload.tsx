@@ -1,71 +1,233 @@
-import React, { useState, ChangeEvent } from "react";
-import { storageService } from "../services/storageService";
-import FormInput from "./FormInput";
-import LoadingSpinner from "./LoadingSpinner";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { formService } from "../services/formService"; // Ensure this service is properly implemented
+import "./DynamicForm.css";
 
-interface DocumentUploadProps {}
+interface ValidationRule {
+  (value: any): string | null;
+}
 
-const DocumentUpload: React.FC<DocumentUploadProps> = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [uploadStatus, setUploadStatus] = useState<string>("");
+interface Option {
+  value: string;
+  label: string;
+}
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files ? event.target.files[0] : null;
-    setFile(selectedFile);
-    setUploadStatus("");
+interface Field {
+  name: string;
+  type: string;
+  label: string;
+  required: boolean;
+  validation?: ValidationRule[];
+  options?: Option[]; // Added options for select fields
+}
+
+interface FormStructure {
+  id: string;
+  name: string;
+  fields: Field[];
+}
+
+interface FormProps {
+  form: FormStructure; // Form structure type definition
+  userId: string; // ID of the user filling out the form
+}
+
+const DynamicForm: React.FC<FormProps> = ({ form, userId }) => {
+  const [formData, setFormData] = useState<{ [key: string]: any }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Initialize formData with empty values for each field
+  useEffect(() => {
+    const initialData: { [key: string]: any } = {};
+    form.fields.forEach((field) => {
+      initialData[field.name] = field.type === "checkbox" ? false : "";
+    });
+    setFormData(initialData);
+    setErrors({});
+  }, [form]);
+
+  // Validation function for individual fields
+  const validateField = (name: string, value: any): string | null => {
+    const field = form.fields.find((field) => field.name === name);
+    if (!field) return null;
+
+    if (field.required) {
+      if (field.type === "checkbox" && !value) {
+        return "This field is required";
+      } else if (typeof value === "string" && value.trim() === "") {
+        return "This field is required";
+      }
+    }
+
+    if (field.validation) {
+      for (const rule of field.validation) {
+        const error = rule(value);
+        if (error) return error;
+      }
+    }
+
+    return null;
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      setUploadStatus("Please select a file to upload.");
+  // Handle input changes and validate on the fly
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const target = event.target;
+    const name = target.name;
+    let value: any;
+
+    if (
+      target instanceof HTMLInputElement &&
+      (target.type === "checkbox" || target.type === "radio")
+    ) {
+      value = target.checked;
+    } else {
+      value = target.value;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate the field on change
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    // Validate all fields
+    const fieldErrors: { [key: string]: string | null } = {};
+    form.fields.forEach((field) => {
+      fieldErrors[field.name] = validateField(field.name, formData[field.name]);
+    });
+    setErrors(fieldErrors);
+
+    // Check if there are any errors
+    const hasErrors = Object.values(fieldErrors).some(
+      (error) => error !== null
+    );
+    if (hasErrors) {
+      console.log("Form validation failed:", fieldErrors);
       return;
     }
 
-    setUploadStatus("Uploading...");
+    // Submit the form
+    setIsSubmitting(true);
     try {
-      const downloadUrl = await storageService.uploadFile(
-        `documents/${file.name}`,
-        file,
-        (progress: number) => {
-          setUploadProgress(progress);
-        }
-      );
-      setUploadStatus("Upload successful");
-      console.log("File available at:", downloadUrl);
+      const submissionData = {
+        ...formData,
+        formID: form.id,
+        formType: form.name,
+        submittedBy: userId,
+        submittedAt: new Date(),
+        status: "pending" as const,
+      };
+
+      await formService.submitForm(submissionData);
+
+      // Notify the user or show success message
+      alert("Form submitted successfully!");
+      // Reset form data to initial values
+      const resetData: { [key: string]: any } = {};
+      form.fields.forEach((field) => {
+        resetData[field.name] = field.type === "checkbox" ? false : "";
+      });
+      setFormData(resetData);
+      setErrors({});
     } catch (error) {
-      setUploadStatus("Upload failed. Please try again.");
-      console.error("Upload failed:", error);
+      console.error("Failed to submit form:", error);
+      alert("There was an error submitting the form. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Render input fields based on type
+  const renderField = (field: Field) => {
+    switch (field.type) {
+      case "textarea":
+        return (
+          <textarea
+            id={field.name}
+            name={field.name}
+            value={formData[field.name] || ""}
+            onChange={handleChange}
+            required={field.required}
+            className={errors[field.name] ? "input-error" : ""}
+          />
+        );
+      case "select":
+        return (
+          <select
+            id={field.name}
+            name={field.name}
+            value={formData[field.name] || ""}
+            onChange={handleChange}
+            required={field.required}
+            className={errors[field.name] ? "input-error" : ""}
+          >
+            <option value="">-- Select --</option>
+            {field.options &&
+              field.options.map((option: Option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+          </select>
+        );
+      case "checkbox":
+        return (
+          <div className="checkbox-group">
+            <input
+              type="checkbox"
+              id={field.name}
+              name={field.name}
+              checked={formData[field.name] || false}
+              onChange={handleChange}
+              required={field.required}
+              className={errors[field.name] ? "input-error" : ""}
+            />
+            <label htmlFor={field.name}>{field.label}</label>
+          </div>
+        );
+      default:
+        return (
+          <input
+            type={field.type}
+            id={field.name}
+            name={field.name}
+            value={formData[field.name] || ""}
+            onChange={handleChange}
+            required={field.required}
+            className={errors[field.name] ? "input-error" : ""}
+          />
+        );
     }
   };
 
   return (
-    <div>
-      <h2>Upload Document</h2>
-      <FormInput
-        type="file"
-        onChange={handleFileChange}
-        name="documentUpload"
-        label="Document Upload"
-        required={true}
-        errorMessage={file ? "" : "No file selected"}
-        isValid={!!file}
-        value={""}
-        placeholder={""}
-      />
-      {uploadProgress > 0 && (
-        <div>
-          <LoadingSpinner />
-          <p>Upload progress: {Math.round(uploadProgress)}%</p>
+    <form onSubmit={handleSubmit} className="dynamic-form">
+      <h2>{form.name}</h2>
+      {form.fields.map((field) => (
+        <div key={field.name} className="form-group">
+          {field.type !== "checkbox" && (
+            <label htmlFor={field.name}>{field.label}</label>
+          )}
+          {renderField(field)}
+          {errors[field.name] && (
+            <p className="error-text">{errors[field.name]}</p>
+          )}
         </div>
-      )}
-      <button onClick={handleUpload} disabled={!file}>
-        Upload
+      ))}
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Submit"}
       </button>
-      {uploadStatus && <p>{uploadStatus}</p>}
-    </div>
+    </form>
   );
 };
 
-export default DocumentUpload;
-// Handles document upload functionality with feedback and progress tracking.
+export default DynamicForm;

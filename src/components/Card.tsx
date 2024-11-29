@@ -1,13 +1,17 @@
+// src/components/Card.tsx
+
 import React from "react";
 import "./Card.css";
 
 interface CardProps {
   title: string;
-  description: string;
+  description: React.ReactNode; // Changed from string to React.ReactNode
   status?: string;
   link?: string; // Optional link to more details
   extra?: React.ReactNode; // Optional extra text or component
   onClick?: () => void; // Optional click handler for the whole card
+  content?: React.ReactNode; // Added content property
+  footer?: React.ReactNode; // Added footer property
 }
 
 const Card: React.FC<CardProps> = ({
@@ -17,6 +21,8 @@ const Card: React.FC<CardProps> = ({
   link,
   extra,
   onClick,
+  content,
+  footer,
 }) => {
   return (
     <div
@@ -25,9 +31,12 @@ const Card: React.FC<CardProps> = ({
       style={{ cursor: onClick ? "pointer" : "default" }}
     >
       <h3>{title}</h3>
-      <p>{description}</p>
+      <div className="description">{description}</div>{" "}
+      {/* Changed from <p> to <div> */}
       {extra && <div className="extra-info">{extra}</div>}
-      <span className={`status ${status?.toLowerCase()}`}>{status}</span>
+      {status && (
+        <span className={`status ${status.toLowerCase()}`}>{status}</span>
+      )}
       {link && (
         <a
           href={link}
@@ -38,6 +47,8 @@ const Card: React.FC<CardProps> = ({
           More Info
         </a>
       )}
+      {content && <div className="content">{content}</div>}
+      {footer && <div className="footer">{footer}</div>}
     </div>
   );
 };

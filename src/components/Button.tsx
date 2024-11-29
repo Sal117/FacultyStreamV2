@@ -1,29 +1,37 @@
+// src/components/Button.tsx
+
 import React from "react";
 import "./Button.css";
 
 interface ButtonProps {
-  text: string;
-  onClick: () => void;
-  type?: "button" | "submit" | "reset";
-  disabled?: boolean;
-  className?: string;
-  style?: React.CSSProperties; // Added style prop here
+  text: string; // The button's display text
+  onClick?: () => void; // Click handler
+  type?: "button" | "submit" | "reset"; // Button type
+  disabled?: boolean; // Disabled state
+  className?: string; // Additional CSS classes
+  style?: React.CSSProperties; // Optional inline styles
+  variant?: "primary" | "secondary" | "danger" | "success" | "link"; // Button variants
+  size?: "small" | "medium" | "large"; // Button sizes
 }
 
 const Button: React.FC<ButtonProps> = ({
   text,
   onClick,
-  type = "button",
-  disabled = false,
+  type = "button", // Default to "button"
+  disabled = false, // Default to not disabled
+  className = "", // Default to empty string
   style,
+  variant = "primary", // Default variant
+  size = "medium", // Default size
 }) => {
   return (
     <button
-      className="button"
+      className={`btn btn--${variant} btn--${size} ${className}`}
       onClick={onClick}
       type={type}
       disabled={disabled}
-      style={style} // Apply style prop here
+      style={style}
+      aria-disabled={disabled}
     >
       {text}
     </button>

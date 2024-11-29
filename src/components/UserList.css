@@ -1,0 +1,99 @@
+/* src/components/UserList.css */
+
+.user-list {
+    padding: 15px;
+    background-color: var(--chat-bg);
+    height: 100%;
+    overflow-y: auto;
+    border-right: 1px solid var(--chat-input-border);
+  }
+  
+  .user-list h3 {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    color: var(--primary);
+    text-align: center;
+  }
+  
+  .search-bar {
+    margin-bottom: 15px;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--chat-input-border);
+    background-color: var(--chat-input-bg);
+    color: var(--foreground);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .search-bar input:focus {
+    border-color: var(--primary);
+  }
+  
+  .user-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .user-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .user-list li:hover {
+    background-color: var(--chat-message-bg);
+    transform: scale(1.02);
+  }
+  
+  .user-list .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .user-list .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-list .user-name {
+    font-size: 1em;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+  
+  .user-list .user-role {
+    font-size: 0.85em;
+    color: var(--secondary);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .user-list {
+      width: 100%;
+      padding: 10px;
+      height: auto;
+    }
+  
+    .chat-page {
+      flex-direction: column;
+    }
+  
+    .chat-container {
+      height: calc(100vh - 60px - 300px); /* Adjust based on header/footer and user list height */
+    }
+  }
+  

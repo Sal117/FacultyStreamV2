@@ -2,104 +2,105 @@
 .booking-form-container {
   margin: 30px auto;
   padding: 30px;
-  background: rgba(255, 255, 255, 0.95); /* Slightly opaque white background for freshness */
-  border-radius: 20px; /* Softer rounded corners */
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1); /* Deeper shadow for more depth */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect with shadow transition */
-  max-width: 500px; /* Maximum width for form container */
+  background: rgba(var(--foreground-rgb), 0.95); /* Slightly opaque background for freshness */
+  border-radius: 20px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 500px;
   width: 100%;
 }
 
 /* Hover effect for the form container */
 .booking-form-container:hover {
-  transform: translateY(-10px); /* Slightly larger lift effect */
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Optional: Replace with a variable */
 }
 
 /* Heading styling */
 .booking-form-container h3 {
   margin-bottom: 20px;
-  font-size: 1.8rem; /* Larger heading */
-  color: #333; /* Dark gray for text */
-  text-align: center; /* Center-align the heading */
-  font-weight: 600; /* Slightly bolder text */
-  letter-spacing: 1px; /* Subtle letter spacing for clarity */
+  font-size: 1.8rem;
+  color: var(--foreground); /* Replace hardcoded color with variable */
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
 /* Label styling */
 .booking-form-container label {
-  display: block; /* Block display for labels */
-  margin-bottom: 8px; /* Adequate space between label and input */
-  font-weight: bold; /* Bold text for labels */
-  font-size: 1rem; /* Consistent font size */
-  color: #555; /* Slightly lighter color for labels */
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--secondary); /* Replace with a variable for label color */
 }
 
 /* Styling for select and input elements */
 .booking-form-container select,
 .booking-form-container input {
-  width: calc(100% - 20px); /* Full width minus padding */
-  padding: 12px; /* Padding for inputs */
-  margin-bottom: 20px; /* Space between inputs */
-  border: 2px solid #007bff; /* Light blue border */
-  border-radius: 8px; /* More rounded corners */
-  font-size: 1rem; /* Consistent font size */
-  background-color: #f9f9f9; /* Light background for inputs */
-  transition: border-color 0.3s, background-color 0.3s ease; /* Smooth focus transition */
+  width: calc(100% - 20px);
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 2px solid var(--button-primary-bg); /* Use primary border color */
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--input-bg); /* Use variable for background */
+  transition: border-color 0.3s, background-color 0.3s ease;
+  color: var(--foreground); /* Text color */
 }
 
 /* Input focus effect */
 .booking-form-container select:focus,
 .booking-form-container input:focus {
-  border-color: #0056b3; /* Darker blue on focus */
-  background-color: #fff; /* White background on focus */
-  outline: none; /* Remove default outline */
+  border-color: var(--button-primary-hover); /* Use variable for focus border color */
+  background-color: var(--background); /* Use variable for focus background */
+  outline: none;
 }
 
 /* Button styles */
 .booking-form-container button {
-  padding: 14px 25px; /* More comfortable padding */
-  background-color: #007bff; /* Primary color */
-  color: white; /* White text */
+  padding: 14px 25px;
+  background-color: var(--button-primary-bg);
+  color: var(--button-text);
   border: none;
-  border-radius: 8px; /* Rounded corners */
-  font-size: 1.1rem; /* Slightly larger text for the button */
-  cursor: pointer; /* Pointer cursor for clickable button */
-  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
-  width: 100%; /* Full width for the button */
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  width: 100%;
 }
 
 /* Button hover effect */
 .booking-form-container button:hover {
-  background-color: #0056b3; /* Darker shade on hover */
-  transform: translateY(-3px); /* Lift effect on hover */
+  background-color: var(--button-primary-hover); /* Darker shade on hover */
+  transform: translateY(-3px);
 }
 
 /* Disabled button styling */
 .booking-form-container button:disabled {
-  background-color: #cccccc; /* Gray background for disabled state */
-  cursor: not-allowed; /* Not allowed cursor */
+  background-color: var(--muted); /* Use variable for disabled state */
+  cursor: not-allowed;
 }
 
 /* Responsive Design: Adjustments for smaller screens */
 @media (max-width: 768px) {
   .booking-form-container {
-    padding: 20px; /* Reduced padding for smaller screens */
-    margin: 20px; /* Reduced margin */
+    padding: 20px;
+    margin: 20px;
   }
 
   .booking-form-container h3 {
-    font-size: 1.5rem; /* Smaller font size for headings */
+    font-size: 1.5rem;
   }
 
   .booking-form-container select,
   .booking-form-container input {
-    padding: 10px; /* Smaller padding for inputs */
-    font-size: 0.95rem; /* Slightly smaller font size */
+    padding: 10px;
+    font-size: 0.95rem;
   }
 
   .booking-form-container button {
-    font-size: 1rem; /* Adjust font size for the button */
-    padding: 12px 20px; /* Adjust padding for smaller screens */
+    font-size: 1rem;
+    padding: 12px 20px;
   }
 }

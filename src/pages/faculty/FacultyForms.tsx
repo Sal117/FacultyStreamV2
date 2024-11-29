@@ -1,3 +1,5 @@
+// src/pages/faculty/FacultyForms.tsx
+
 import React, { useState, useEffect } from "react";
 import { formService } from "../../services/formService";
 import { authService } from "../../services/authService";
@@ -5,25 +7,30 @@ import NotificationBanner from "../../components/NotificationBanner";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
-import FormReview from "../../components/FormReview"; // Import FormReview component
+import FormReview from "../../components/FormReview";
+import Modal from "../../components/Modal";
 import "../../styles/FacultyForms.css";
-
-interface Form {
-  formID: string;
-  formType: string;
-  submittedAt: Date;
-  submittedBy: string;
-  responsibleParty: string;
-  status: "pending" | "approved" | "rejected";
-  comments?: string;
-}
+import {
+  FormTemplate,
+  NotificationPayload,
+  SubmittedForm,
+  User,
+} from "../../components/types";
+import { Timestamp } from "firebase/firestore";
 
 const FacultyForms: React.FC = () => {
-  const [forms, setForms] = useState<Form[]>([]);
+  const [forms, setForms] = useState<SubmittedForm[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-  const [notification, setNotification] = useState<string | null>(null);
-  const [selectedForm, setSelectedForm] = useState<Form | null>(null);
+  const [notification, setNotification] = useState<NotificationPayload | null>(
+    null
+  );
+  const [selectedForm, setSelectedForm] = useState<{
+    form: SubmittedForm;
+    template: FormTemplate;
+  } | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [userCache, setUserCache] = useState<{ [key: string]: User }>({});
 
   useEffect(() => {
     const fetchFacultyForms = async () => {
@@ -38,23 +45,40 @@ const FacultyForms: React.FC = () => {
           return;
         }
 
-        // Fetch forms assigned to the faculty member
+        // Fetch forms assigned to the faculty member using their UID
         const fetchedForms = await formService.getFormsByResponsibleParty(
           user.uid
         );
 
         // Map the fetched data to the form structure
-        const mappedForms: Form[] = fetchedForms.map((form) => ({
-          formID: form.formID,
-          formType: form.formType,
-          submittedAt: form.submittedAt.toDate(),
-          submittedBy: form.submittedBy,
-          responsibleParty: form.responsibleParty || "",
-          status: form.status,
-          comments: form.comments || "",
+        const mappedForms: SubmittedForm[] = fetchedForms.map((form) => ({
+          ...form,
+          submittedAt:
+            form.submittedAt instanceof Date
+              ? form.submittedAt
+              : (form.submittedAt as Timestamp).toDate(),
         }));
 
         setForms(mappedForms);
+
+        // Extract unique UIDs from submittedBy and responsibleParties
+        const uniqueUserIds = new Set<string>();
+        mappedForms.forEach((form) => {
+          uniqueUserIds.add(form.submittedBy);
+          form.responsibleParties.forEach((uid) => uniqueUserIds.add(uid));
+        });
+
+        // Fetch user details for unique UIDs not already in userCache
+        const newUsers: { [key: string]: User } = { ...userCache };
+        for (const uid of uniqueUserIds) {
+          if (!newUsers[uid]) {
+            const fetchedUser = await formService.getUserById(uid);
+            if (fetchedUser) {
+              newUsers[uid] = fetchedUser;
+            }
+          }
+        }
+        setUserCache(newUsers);
       } catch (err) {
         setError("Failed to load forms. Please try again later.");
         console.error("Error fetching forms:", err);
@@ -66,67 +90,78 @@ const FacultyForms: React.FC = () => {
     fetchFacultyForms();
   }, []);
 
-  const handleDecision = async (
-    formID: string,
-    decision: "approved" | "rejected",
-    comments?: string
-  ) => {
+  // Handle reviewing a form (open FormReview modal)
+  const handleReview = async (form: SubmittedForm) => {
     try {
       setLoading(true);
       setError("");
 
-      // Update form status through the form service
-      await formService.updateFormStatus(formID, decision, comments || "");
+      // Fetch the form template details
+      const template = await formService.fetchFormTemplateById(
+        form.formTemplateId
+      );
+      if (!template) {
+        setError("Form template not found.");
+        return;
+      }
 
-      // Remove the processed form from the list
-      setForms(forms.filter((form) => form.formID !== formID));
+      // Ensure responsible parties are cached
+      const newUsers: { [key: string]: User } = { ...userCache };
+      template.responsibleParties.forEach(async (uid) => {
+        if (!newUsers[uid]) {
+          const fetchedUser = await formService.getUserById(uid);
+          if (fetchedUser) {
+            newUsers[uid] = fetchedUser;
+            setUserCache({ ...newUsers });
+          }
+        }
+      });
 
-      // Show success notification
-      setNotification(`Form ${decision} successfully!`);
-    } catch (error) {
-      setError(`Failed to ${decision} form. Please try again.`);
-      console.error(`Error ${decision} form:`, error);
+      setSelectedForm({ form, template });
+      setShowReviewModal(true);
+    } catch (err) {
+      setError("Failed to fetch form template.");
+      console.error("Error fetching form template:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderFormsList = () => {
-    if (forms.length === 0) {
-      return (
-        <NotificationBanner
-          type="info"
-          message="No forms assigned to you."
-          onClose={() => setNotification(null)}
-        />
-      );
-    }
+  // Handle closing the review modal
+  const handleCloseReview = () => {
+    setSelectedForm(null);
+    setShowReviewModal(false);
+  };
 
-    return (
-      <div className="forms-list">
-        {forms.map((form) => (
-          <Card
-            key={form.formID}
-            title={form.formType}
-            description={`Submitted by: ${
-              form.submittedBy
-            } on ${form.submittedAt.toLocaleDateString()}`}
-            extra={
-              <div className="form-actions">
-                <Button
-                  text="Approve"
-                  onClick={() => setSelectedForm({ ...form })}
-                />
-                <Button
-                  text="Reject"
-                  onClick={() => setSelectedForm({ ...form })}
-                />
-              </div>
-            }
-          />
-        ))}
-      </div>
+  // Handle the decision made in FormReview (approved or rejected)
+  const handleDecision = (
+    decision: "approved" | "rejected",
+    comments: string
+  ) => {
+    if (!selectedForm) return;
+
+    // Update the form's status in the state
+    setForms((prevForms) =>
+      prevForms.map((form) =>
+        form.formID === selectedForm.form.formID
+          ? { ...form, status: decision, comments, facultyData: {} }
+          : form
+      )
     );
+
+    // Display a success notification
+    setNotification({
+      id: selectedForm.form.formID, // Using formID as a unique identifier
+      type: "success",
+      message: `Form has been ${decision} successfully.`,
+      timestamp: new Date(), // Changed from Timestamp.now() to Date
+      recipientId: selectedForm.form.submittedBy, // Assuming 'submittedBy' is the recipient
+      relatedFormId: selectedForm.form.formID,
+    });
+
+    // Close the modal
+    setShowReviewModal(false);
+    setSelectedForm(null);
   };
 
   return (
@@ -137,40 +172,88 @@ const FacultyForms: React.FC = () => {
 
       {!loading && error && (
         <NotificationBanner
-          type="error"
-          message={error}
+          notification={{
+            id: "error",
+            type: "error",
+            message: error,
+            timestamp: new Date(), // Changed to Date
+            recipientId: "faculty", // Set appropriately
+            relatedFormId: undefined,
+            relatedAppointmentId: undefined,
+          }}
           onClose={() => setError("")}
         />
       )}
 
-      {!loading && !error && renderFormsList()}
-
-      {selectedForm && (
-        <FormReview
-          formId={selectedForm.formID}
-          formData={{
-            formType: selectedForm.formType,
-            submittedBy: selectedForm.submittedBy,
-            submittedAt: selectedForm.submittedAt.toLocaleDateString(),
-            status: selectedForm.status,
-          }}
-          onDecision={(decision) => {
-            handleDecision(
-              selectedForm.formID,
-              decision,
-              selectedForm.comments
-            );
-            setSelectedForm(null);
-          }}
+      {!loading && notification && (
+        <NotificationBanner
+          notification={notification}
+          onClose={() => setNotification(null)}
         />
       )}
 
-      {notification && (
-        <NotificationBanner
-          type="success"
-          message={notification}
-          onClose={() => setNotification(null)}
-        />
+      {!loading && !error && (
+        <>
+          {forms.length > 0 ? (
+            <div className="forms-list">
+              {forms.map((form) => (
+                <Card
+                  key={form.formID}
+                  title={form.formType}
+                  description={`Submitted by: ${
+                    userCache[form.submittedBy]
+                      ? userCache[form.submittedBy].name
+                      : form.submittedBy
+                  } on ${form.submittedAt.toLocaleDateString()}`}
+                  extra={
+                    <div className="form-actions">
+                      <Button
+                        text="Review"
+                        onClick={() => handleReview(form)}
+                        variant="primary"
+                        size="small"
+                      />
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <NotificationBanner
+              notification={{
+                id: "no-forms",
+                type: "info",
+                message: "No forms assigned to you.",
+                timestamp: new Date(), // Changed to Date
+                recipientId: "faculty", // Set appropriately
+                relatedFormId: undefined,
+                relatedAppointmentId: undefined,
+              }}
+              onClose={() => setNotification(null)}
+            />
+          )}
+        </>
+      )}
+
+      {/* Modal: Review Form */}
+      {selectedForm && selectedForm.template && showReviewModal && (
+        <Modal
+          title={`Review Form: ${selectedForm.template.name}`}
+          isOpen={showReviewModal}
+          onClose={handleCloseReview}
+          size="large"
+        >
+          <FormReview
+            formId={selectedForm.form.formID}
+            formData={{
+              ...selectedForm.form,
+              formType: selectedForm.form.formType,
+              submittedAt: selectedForm.form.submittedAt,
+            }}
+            formTemplate={selectedForm.template}
+            onDecision={handleDecision}
+          />
+        </Modal>
       )}
     </div>
   );

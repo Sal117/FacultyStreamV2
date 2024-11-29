@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import "./NavigationBar.css";
 import isslogo from "../assets/images/IISv2_logo.webp";
 import cnlogo from "../assets/images/CN_logo.png";
-
+import { ModeToggle } from "@/components/mode-toggle"; // Import the ModeToggle component
+//import "../styles/index.css";
 interface NavigationBarProps {
   isAuthenticated: boolean;
 }
@@ -68,6 +69,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAuthenticated }) => {
           </>
         )}
       </ul>
+      <div className="navbar-right">
+        <ModeToggle /> {/* Add the dark mode toggle here */}
+      </div>
     </nav>
   );
 };

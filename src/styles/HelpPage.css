@@ -1,75 +1,241 @@
-/* Container styling */
-.help-page-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    color: #333;
-}
+/* HelpPage.css */
 
-/* Page header styling */
-.help-page-container h1 {
-    font-size: 2rem;
-    color: #4a90e2;
+/* General Styles */
+.help-page {
+    padding: 20px;
+    font-family: "Inter", sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+    animation: fadeInPage 0.8s ease-in-out;
+  }
+  
+  /* Header Styles */
+  .help-header {
     text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-/* FAQ list styling */
-.faq-list {
+    margin-bottom: 40px;
+  }
+  
+  .title {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    animation: slideIn 1s ease-out;
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+    color: var(--secondary);
+    margin-bottom: 20px;
+  }
+  
+  .search-bar {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px;
+    border: 2px solid var(--input-border);
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-bar:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+  }
+  
+  /* Quick Links Section */
+  .quick-links {
+    margin-bottom: 40px;
+  }
+  
+  .links-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  
+  .links-container button {
+    padding: 15px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--button-text);
+    background: var(--primary);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .links-container button:hover {
+    background: var(--button-primary-hover);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+  }
+  
+  /* FAQ Section Styles */
+  .faq-section {
+    margin-top: 40px;
+  }
+  
+  .faq-category {
+    margin-bottom: 30px;
+  }
+  
+  .faq-category h3 {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--input-border);
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  details {
+    background: var(--muted);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  details:hover {
+    background: var(--primary);
+    color: var(--button-text);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  summary {
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  
+  details p {
+    margin-top: 10px;
+    color: var(--foreground);
+    line-height: 1.5;
+  }
+  
+  /* Contact Support Section */
+  .contact-support {
+    margin-top: 50px;
+    padding: 30px;
+    background: var(--card-bg);
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .contact-support h2 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .contact-support p {
+    font-size: 1rem;
+    color: var(--foreground);
+    text-align: center;
+  }
+  
+  .contact-support ul {
     list-style: none;
     padding: 0;
-}
-
-.faq-list li {
-    margin-bottom: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-.faq-list li:hover {
-    transform: translateY(-2px);
-}
-
-/* FAQ question styling */
-.faq-question {
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    color: #4a90e2;
-    transition: color 0.3s ease;
-}
-
-.faq-question:hover {
-    color: #357ab8;
-}
-
-/* FAQ answer styling */
-.faq-answer {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .contact-support ul li {
     font-size: 1rem;
-    margin-top: 0.5rem;
-    line-height: 1.5;
-    color: #555;
-    display: none;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    .help-page-container {
-        padding: 1.5rem;
+    color: var(--secondary);
+    margin: 10px 0;
+  }
+  
+  .contact-support ul li a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .contact-support ul li a:hover {
+    color: var(--button-link-hover);
+  }
+  
+  .contact-support button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--button-text);
+    background: var(--button-secondary-bg);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .contact-support button:hover {
+    background: var(--button-secondary-hover);
+    transform: translateY(-3px);
+  }
+  
+  /* Animations */
+  @keyframes fadeInPage {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
     }
-
-    .help-page-container h1 {
-        font-size: 1.8rem;
+    100% {
+      opacity: 1;
+      transform: translateY(0);
     }
-
-    .faq-question {
-        font-size: 1.1rem;
+  }
+  
+  @keyframes slideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
     }
-
-    .faq-answer {
-        font-size: 0.9rem;
+    100% {
+      opacity: 1;
+      transform: translateY(0);
     }
-}
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .title {
+      font-size: 2rem;
+    }
+  
+    .subtitle {
+      font-size: 1rem;
+    }
+  
+    .search-bar {
+      width: 100%;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  
+    .faq-category h3 {
+      font-size: 1.5rem;
+    }
+  
+    .links-container button {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
+  

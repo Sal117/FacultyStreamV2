@@ -1,126 +1,173 @@
-/* SystemSettings.css */
+/* src/styles/SystemSettings.css */
 
-/* Container Styling */
+/* Container Styles */
+.system-settings-page {
+  background-color: var(--page-background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
 .system-settings-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    transition: all 0.3s ease;
-    animation: fadeIn 0.5s ease-out;
-    margin-left: 250px; /* Align with sidebar */
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+/* Page Title */
+.page-title {
+  font-size: 2rem;
+  color: var(--foreground);
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.page-title::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary);
+  margin: 10px auto 0;
+  border-radius: 2px;
+}
+
+/* Loading and Error Messages */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: 20px 0;
+}
+
+.error-message {
+  color: var(--destructive-bg);
+  background-color: rgba(220, 53, 69, 0.1);
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Settings Form */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background-color: var(--card-bg);
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-section h2 {
+  font-size: 1.5rem;
+  color: var(--foreground);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 5px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group select {
+  padding: 10px 15px;
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input[type="number"]:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--button-primary-bg);
+  box-shadow: 0 0 5px var(--button-primary-bg);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Toggle Switch for Checkboxes */
+.form-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary);
+  transition: transform 0.2s ease;
+}
+
+.form-group input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+/* Save Button */
+.save-button {
+  align-self: flex-start;
+  padding: 12px 20px;
+  background-color: var(--button-primary-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.save-button:hover {
+  background-color: var(--button-primary-hover);
+  transform: translateY(-2px);
+}
+
+.save-button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-form {
+    padding: 20px;
   }
-  
-  /* Header Styling */
-  .system-settings-container h1 {
-    font-size: 2.4rem;
-    font-weight: bold;
-    color: #333;
+
+  .settings-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .save-button {
+    width: 100%;
     text-align: center;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
   }
-  
-  /* Form Styling */
-  .system-settings-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  
-  .system-settings-container label {
-    font-weight: 500;
-    color: #555;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1.1rem;
-    transition: color 0.3s;
-  }
-  
-  .system-settings-container input[type="number"],
-  .system-settings-container input[type="checkbox"] {
-    padding: 0.6rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    transition: border-color 0.3s ease;
-    margin-top: 5px;
-  }
-  
-  .system-settings-container input[type="number"]:focus,
-  .system-settings-container input[type="checkbox"]:focus {
-    border-color: #007bff;
-    outline: none;
-  }
-  
-  /* Button Styling */
-  .system-settings-container button[type="submit"] {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, background-color 0.3s ease;
-  }
-  
-  .system-settings-container button[type="submit"]:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-  }
-  
-  /* Error Message Styling */
-  .system-settings-container .error {
-    color: #e74c3c;
-    font-size: 0.9rem;
-    text-align: center;
-    margin-top: 0.5rem;
-  }
-  
-  /* Loading Spinner */
-  .loading-spinner {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-  }
-  
-  /* Animation */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .system-settings-container {
-      margin-left: 80px; /* Adjust for collapsed sidebar */
-      padding: 1.5rem;
-    }
-  
-    .system-settings-container h1 {
-      font-size: 1.8rem;
-    }
-  
-    .system-settings-container label {
-      font-size: 1rem;
-    }
-  
-    .system-settings-container button[type="submit"] {
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-    }
-  
-    .system-settings-container input[type="number"],
-    .system-settings-container input[type="checkbox"] {
-      padding: 0.5rem;
-    }
-  }
-  
+}

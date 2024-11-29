@@ -1,11 +1,11 @@
 /* General container styling */
 .facilities-booking-container {
   font-family: 'Arial', sans-serif;
-  color: #333;
+  color: var(--foreground);
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
@@ -20,7 +20,7 @@
   font-size: 2rem;
   margin-bottom: 20px;
   text-align: center;
-  color: #0056b3;
+  color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -31,7 +31,7 @@
   display: block;
   margin-bottom: 8px;
   font-size: 1rem;
-  color: #0056b3;
+  color: var(--primary);
 }
 
 .booking-form select,
@@ -39,23 +39,25 @@
   width: 100%;
   padding: 12px;
   margin-bottom: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 1rem;
+  background: var(--input-bg);
+  color: var(--foreground);
   outline: none;
   transition: border-color 0.3s ease;
 }
 
 .booking-form select:focus,
 .booking-form input[type='date']:focus {
-  border-color: #0056b3;
+  border-color: var(--primary);
   box-shadow: 0 0 5px rgba(0, 86, 179, 0.2);
 }
 
 .check-availability-btn,
 .confirm-booking-btn {
-  background: #0056b3;
-  color: #fff;
+  background: var(--button-primary-bg);
+  color: var(--button-text);
   font-weight: bold;
   padding: 12px 20px;
   border: none;
@@ -69,13 +71,13 @@
 
 .check-availability-btn:hover,
 .confirm-booking-btn:hover {
-  background: #0041a3;
+  background: var(--button-primary-hover);
   transform: scale(1.03);
 }
 
 .check-availability-btn:disabled,
 .confirm-booking-btn:disabled {
-  background: #ddd;
+  background: var(--muted);
   cursor: not-allowed;
 }
 
@@ -87,7 +89,7 @@
 .available-slots h4 {
   font-size: 1.2rem;
   margin-bottom: 10px;
-  color: #0056b3;
+  color: var(--primary);
 }
 
 .available-slots ul {
@@ -99,30 +101,31 @@
 }
 
 .available-slots li {
-  background: #f0f8ff;
-  color: #333;
+  background: var(--muted);
+  color: var(--foreground);
   padding: 10px 15px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .available-slots li:hover {
-  background: #d9eaff;
+  background: var(--primary);
+  color: var(--button-text);
   transform: scale(1.05);
 }
 
 .available-slots li.selected {
-  background: #0056b3;
-  color: #fff;
-  border-color: #0041a3;
+  background: var(--primary);
+  color: var(--button-text);
+  border-color: var(--button-primary-hover);
 }
 
 /* Selected Slot Section */
 .selected-slot {
   margin-top: 20px;
-  background: #f0f8ff;
+  background: var(--muted);
   padding: 10px 15px;
   border-radius: 8px;
   text-align: center;
@@ -130,20 +133,20 @@
 
 .selected-slot p {
   font-weight: bold;
-  color: #0056b3;
+  color: var(--primary);
   margin-bottom: 10px;
 }
 
 /* Error and Success Messages */
 .error-message {
-  color: #d9534f;
+  color: var(--destructive-bg);
   font-weight: bold;
   margin-bottom: 20px;
   text-align: center;
 }
 
 .booking-message {
-  color: #5cb85c;
+  color: var(--success-bg);
   font-weight: bold;
   margin-top: 20px;
   text-align: center;

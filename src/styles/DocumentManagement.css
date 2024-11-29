@@ -3,16 +3,16 @@
     max-width: 800px;
     margin: 2rem auto;
     padding: 1.5rem;
-    background-color: #fefefe;
+    background-color: var(--card-bg);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    color: #333;
+    color: var(--foreground);
 }
 
 /* Header Styling */
 .document-management h1 {
     font-size: 2rem;
-    color: #2c3e50;
+    color: var(--foreground);
     text-align: center;
     margin-bottom: 1.5rem;
 }
@@ -21,14 +21,14 @@
 .upload-section {
     padding: 1rem;
     border-radius: 8px;
-    background-color: #fafafa;
-    border: 1px solid #e0e0e0;
+    background-color: var(--muted);
+    border: 1px solid var(--input-border);
     margin-bottom: 2rem;
 }
 
 .upload-section h3 {
     font-size: 1.5rem;
-    color: #3498db;
+    color: var(--primary);
     margin-bottom: 1rem;
 }
 
@@ -37,10 +37,12 @@
     width: 100%;
     padding: 0.8rem;
     margin-bottom: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 5px;
     font-size: 1rem;
     resize: vertical;
+    background: var(--input-bg);
+    color: var(--foreground);
     transition: border-color 0.3s ease;
 }
 
@@ -50,7 +52,7 @@
 
 .upload-section input[type="text"]:focus,
 .upload-section textarea:focus {
-    border-color: #3498db;
+    border-color: var(--primary);
     outline: none;
 }
 
@@ -58,8 +60,8 @@
 .upload-section button {
     padding: 0.6rem 1.5rem;
     font-size: 1rem;
-    color: #fff;
-    background-color: #3498db;
+    color: var(--button-text);
+    background-color: var(--button-primary-bg);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -67,7 +69,7 @@
 }
 
 .upload-section button:hover {
-    background-color: #2980b9;
+    background-color: var(--button-primary-hover);
 }
 
 .upload-section progress {
@@ -79,11 +81,11 @@
 }
 
 progress::-webkit-progress-bar {
-    background-color: #e0e0e0;
+    background-color: var(--input-border);
 }
 
 progress::-webkit-progress-value {
-    background-color: #3498db;
+    background-color: var(--primary);
 }
 
 /* Document List */
@@ -93,7 +95,7 @@ progress::-webkit-progress-value {
 
 .documents-list h3 {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--foreground);
     margin-bottom: 1rem;
 }
 
@@ -101,8 +103,8 @@ progress::-webkit-progress-value {
 .document-item {
     padding: 1rem;
     border-radius: 8px;
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background-color: var(--muted);
+    border: 1px solid var(--input-border);
     margin-bottom: 1rem;
     transition: box-shadow 0.3s ease;
 }
@@ -113,17 +115,17 @@ progress::-webkit-progress-value {
 
 .document-item h4 {
     font-size: 1.2rem;
-    color: #3498db;
+    color: var(--primary);
     margin: 0 0 0.5rem;
 }
 
 .document-item p {
-    color: #555;
+    color: var(--secondary);
     margin-bottom: 0.5rem;
 }
 
 .document-item a {
-    color: #3498db;
+    color: var(--primary);
     text-decoration: none;
     font-weight: 500;
 }

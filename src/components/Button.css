@@ -1,32 +1,106 @@
+/* src/components/Button.css */
+
 .button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    outline: none;
-  }
-  
-  .button:hover {
-    background-color: #0056b3;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  .button:active {
-    transform: translateY(0px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  .button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Variants */
+.button--primary {
+  background-color: var(--button-primary-bg);
+  color: var(--button-text);
+}
+
+.button--primary:hover {
+  background-color: var(--button-primary-hover);
+}
+
+.button--secondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.button--secondary:hover {
+  background-color: var(--button-secondary-hover);
+}
+
+.button--danger {
+  background-color: var(--button-danger-bg);
+  color: var(--button-text);
+}
+
+.button--danger:hover {
+  background-color: var(--button-danger-hover);
+}
+
+.button--success {
+  background-color: var(--button-success-bg);
+  color: var(--button-text);
+}
+
+.button--success:hover {
+  background-color: var(--button-success-hover);
+}
+
+.button--link {
+  background-color: transparent;
+  color: var(--button-link-text);
+  text-decoration: underline;
+  padding: 0;
+}
+
+.button--link:hover {
+  color: var(--button-link-hover);
+}
+
+/* Sizes */
+.button--small {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.button--medium {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.button--large {
+  padding: 14px 28px;
+  font-size: 18px;
+}
+
+/* Disabled State */
+.button:disabled,
+.button[aria-disabled="true"] {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button:disabled:hover,
+.button[aria-disabled="true"]:hover {
+  background-color: var(--button-disabled-bg);
+}
+
+/* Focus State for Accessibility */
+.button:focus {
+  box-shadow: 0 0 0 3px var(--button-focus-ring);
+}
+
+/* Active State */
+.button:active {
+  transform: scale(0.98);
+}
+
+/* Additional Custom Classes if needed */

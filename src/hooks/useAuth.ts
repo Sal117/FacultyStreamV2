@@ -10,4 +10,3 @@ export const useAuth = () => {
 
   return context;
 }
-// Custom hook for accessing authentication context easily anywhere in the app.

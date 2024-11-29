@@ -1,0 +1,205 @@
+/* src/components/AnnouncementCard.css */
+
+/* Reset styles */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Announcement Card Container */
+  .announcement-card {
+    background-color: var(--card-bg, #fff);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--box-shadow, 0 4px 8px rgba(0, 0, 0, 0.1));
+    margin-bottom: 24px;
+    font-family: 'Roboto', sans-serif;
+    color: var(--foreground, #333);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .announcement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-hover, 0 8px 16px rgba(0, 0, 0, 0.15));
+  }
+  
+  /* Announcement Image */
+  .announcement-image img {
+    width: 100%;
+    max-height: 400px; 
+    display: block;
+    object-fit: cover;
+  }
+  
+  /* Content Wrapper */
+  .announcement-content-wrapper {
+    padding: 20px;
+  }
+  
+  /* Header */
+  .announcement-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+  
+  .announcement-title {
+    font-size: 1.5rem;
+    color: var(--primary, #007bff);
+    margin-bottom: 5px;
+  }
+  
+  .announcement-date {
+    font-size: 0.9rem;
+    color: var(--secondary, #6c757d);
+  }
+  
+  /* Creator */
+  .announcement-creator {
+    font-size: 0.9rem;
+    color: var(--secondary, #6c757d);
+    margin-bottom: 10px;
+  }
+  
+  /* Event Date */
+  .event-date {
+    font-size: 1rem;
+    color: var(--foreground, #333);
+    margin-bottom: 10px;
+  }
+  
+  /* Content */
+  .announcement-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--foreground, #333);
+    margin-bottom: 15px;
+  }
+  
+  /* Attachments */
+  .announcement-attachments {
+    margin-bottom: 15px;
+  }
+  
+  .announcement-attachments h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: var(--primary, #007bff);
+  }
+  
+  .announcement-attachments ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .announcement-attachments li {
+    margin-bottom: 6px;
+  }
+  
+  .announcement-attachments a {
+    color: var(--primary, #007bff);
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  
+  .announcement-attachments a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Links (Buttons) */
+  .announcement-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .announcement-link-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--button-primary-bg, #007bff);
+    color: var(--button-text, #fff);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+
+  /* Admin Actions */
+.announcement-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .announcement-actions .edit-button,
+  .announcement-actions .delete-button {
+    padding: 8px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-button {
+    background-color: var(--button-secondary-bg, #6c757d);
+  }
+  
+  .edit-button:hover {
+    background-color: var(--button-secondary-hover, #5a6268);
+  }
+  
+  .delete-button {
+    background-color: var(--destructive-bg, #dc3545);
+  }
+  
+  .delete-button:hover {
+    background-color: var(--destructive-hover, #c82333);
+  }
+  
+  .announcement-link-button:hover {
+    background-color: var(--button-primary-hover, #0056b3);
+  }
+  
+  /* Responsive Design */
+  @media (min-width: 768px) {
+    .announcement-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .announcement-card {
+      display: flex;
+      flex-direction: row;
+    }
+  
+    .announcement-image {
+      flex: 1;
+    }
+  
+    .announcement-content-wrapper {
+      flex: 2;
+      padding: 20px;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .announcement-card {
+      flex-direction: column;
+    }
+  
+    .announcement-content-wrapper {
+      padding: 15px;
+    }
+  }
+  
+  /* Additional Styling */
+  .announcement-card + .announcement-card {
+    margin-top: 24px;
+  }
+  

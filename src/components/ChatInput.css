@@ -1,0 +1,93 @@
+/* src/styles/ChatInput.css */
+
+/* Chat input container */
+.chat-input {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-top: 1px solid var(--chat-input-border);
+    background-color: var(--chat-input-bg);
+  }
+  
+  /* Text area */
+  .chat-input textarea {
+    flex: 1;
+    resize: none;
+    padding: 12px 15px;
+    border-radius: 25px;
+    border: 1px solid var(--chat-input-border);
+    font-size: 1em;
+    margin-right: 10px;
+    outline: none;
+    background-color: var(--chat-input-bg);
+    color: var(--foreground);
+    transition: border-color 0.2s;
+  }
+  
+  .chat-input textarea:focus {
+    border-color: var(--primary);
+  }
+  
+  /* Placeholder text */
+  .chat-input textarea::placeholder {
+    color: var(--secondary);
+  }
+  
+  /* Send button */
+  .chat-input button {
+    padding: 10px;
+    border: none;
+    background-color: var(--chat-send-btn-bg);
+    color: var(--chat-send-btn-text);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.1s;
+  }
+  
+  .chat-input button:hover {
+    background-color: var(--chat-send-btn-hover-bg);
+    transform: scale(1.05);
+  }
+  
+  .chat-input button:disabled {
+    background-color: var(--button-disabled-bg);
+    color: var(--button-disabled-text);
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Adjustments for dark mode */
+  .dark .chat-input textarea::placeholder {
+    color: var(--secondary);
+  }
+  
+  /* Input focus effect */
+  .chat-input textarea:focus {
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .chat-input textarea {
+      font-size: 0.9em;
+    }
+  
+    .chat-input button {
+      width: 40px;
+      height: 40px;
+      font-size: 1em;
+    }
+  }
+  
+  /* Transition effects */
+  .chat-input textarea,
+  .chat-input button {
+    transition: all 0.2s ease-in-out;
+  }
+  

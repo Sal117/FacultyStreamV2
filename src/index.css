@@ -1,0 +1,350 @@
+/* src/index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Light Mode Variables */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --muted: #f8f9fa;
+  --card-bg: #ffffff;
+  --navbar-bg: linear-gradient(135deg, #007bff, #0056b3);
+  --sidebar-bg: linear-gradient(135deg, #007bff, #0056b3);
+  --sidebar-text: #343a40;
+  --modal-bg: #ffffff;
+  --notification-bg: #007bff;
+  --footer-bg: linear-gradient(135deg, #007bff, #0056b3);
+  --footer-text: #ffffff;
+
+  /* Buttons */
+  --button-primary-bg: #007bff;
+  --button-primary-hover: #0056b3;
+  --button-secondary-bg: #6c757d;
+  --button-secondary-hover: #5a6268;
+  --button-text: #ffffff;
+  --button-secondary-text: #ffffff;
+  --button-link-text: #007bff;
+  --button-link-hover: #0056b3;
+  --button-danger-bg: #dc3545;
+  --button-danger-hover: #c82333;
+  --button-success-bg: #28a745;
+  --button-success-hover: #218838;
+  --button-link-bg: transparent;
+  --button-link-hover-bg: transparent;
+
+  /* Disabled Buttons */
+  --button-disabled-bg: #d6d6d6;
+  --button-disabled-text: #a1a1a1;
+
+  /* Focus Ring */
+  --button-focus-ring: #80bdff;
+
+  /* Alerts/Status Colors */
+  --success-bg: #28a745;
+  --success-hover: #1e7e34;
+  --destructive-bg: #dc3545;
+  --destructive-hover: #bd2130;
+
+  /* Input Fields */
+  --input-bg: #ffffff;
+  --input-border: #ccc;
+
+  /* Links and Hover */
+  --hover-color: #0066cc;
+
+  /* Page Background */
+  --page-background: linear-gradient(to bottom, #f1f8ff, #e3ebf5);
+  --overlayL: rgba(62, 62, 62, 0.1);
+
+  --sidebar-logo: url('src/assets/images/sidebarLogo_light.png'); 
+  
+   /* Chatbot Header */
+   --chatbot-header-bg: var(--primary);
+   --chatbot-header-text: #ffffff;
+
+   /* Chat Messages */
+   --chatbot-message-user-bg:  #0066cc; /* Light green */
+   --chatbot-message-user-text: #f1e7e7;
+   --chatbot-message-bot-bg: #f1f0f0; /* Light gray */
+   --chatbot-message-bot-text: #000000;
+
+   /* Message Timestamps */
+   --message-timestamp-color: #888888;
+
+   /* Chat Input Field */
+   --chatbot-input-bg: #ffffff;
+   --chatbot-input-text: #000000;
+   --chatbot-input-border: #cccccc;
+
+   /* Send Button */
+   --chatbot-send-btn-bg: var(--button-primary-bg);
+   --chatbot-send-btn-hover-bg: var(--button-primary-hover);
+   --chatbot-send-btn-text: var(--button-text);
+
+   /* Chatbot Container */
+   --chatbot-container-bg: var(--background);
+   --chatbot-scrollbar-bg: #f1f1f1;
+   --chatbot-scrollbar-thumb: #888888;
+
+   /* Loading Indicator */
+   --chatbot-typing-indicator: #555555;
+
+   /* Chat Page Specific Variables */
+  --chat-bg: var(--muted);
+  --chat-message-bg: #ffffff;
+  --chat-message-text: var(--foreground);
+  --chat-message-own-bg: #dcf8c6; /* Light green for own messages */
+  --chat-message-own-text: var(--foreground);
+  --chat-timestamp-color: #999999;
+  --chat-input-bg: #ffffff;
+  --chat-input-border: #cccccc;
+  --chat-send-btn-bg: var(--button-primary-bg);
+  --chat-send-btn-hover-bg: var(--button-primary-hover);
+  --chat-send-btn-text: var(--button-text);
+/* Modal var*/
+
+--modal-overlay-bg: rgba(0, 0, 0, 0.5);
+--modal-bg: #fff;
+--modal-text: #333;
+--modal-border-color: #ddd;
+--modal-close-button-color: #999;
+--modal-close-button-hover-color: #333;
+--modal-button-text-color: #fff;
+--modal-button-cancel-bg: #6c757d;
+--modal-button-cancel-hover-bg: #5a6268;
+--modal-button-confirm-bg: #dc3545;
+--modal-button-confirm-hover-bg: #c82333;
+--modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+
+}
+
+/* Global Dark Mode Variables */
+.dark {
+  --sidebar-logo: url('src/assets/images/SidebarLogo_dark.png');
+  --overlayL: rgba(0, 0, 0, 0.5);
+
+  --background: #121212;
+  --foreground: #f8f9fa;
+  --primary: #bb86fc;
+  --secondary: #374151;
+  --muted: #1e293b;
+  --card-bg: #1e293b;
+  --navbar-bg: linear-gradient(135deg, #374151, #1e293b);
+  --sidebar-bg: linear-gradient(135deg, #374151, #1e293b);
+  --sidebar-text: #cbd5e0;
+  --modal-bg: #2d3748;
+  --notification-bg: #3b82f6;
+  --footer-bg: linear-gradient(135deg, #374151, #1e293b);
+  --footer-text: #cbd5e0;
+
+  /* Buttons */
+  --button-primary-bg: #bb86fc;
+  --button-primary-hover: #9d7de3;
+  --button-secondary-bg: #374151;
+  --button-secondary-hover: #2d3748;
+  --button-text: #ffffff;
+  --button-secondary-text: #ffffff;
+  --button-link-text: #3498db;
+  --button-link-hover: #2980b9;
+  --button-danger-bg: #dc3545;
+  --button-danger-hover: #c82333;
+  --button-success-bg: #28a745;
+  --button-success-hover: #218838;
+  --button-link-bg: transparent;
+  --button-link-hover-bg: transparent;
+
+  /* Disabled Buttons */
+  --button-disabled-bg: #555555;
+  --button-disabled-text: #95a5a6;
+
+  /* Focus Ring */
+  --button-focus-ring: #3498db;
+
+  /* Alerts/Status Colors */
+  --success-bg: #28a745;
+  --success-hover: #1e7e34;
+  --destructive-bg: #dc3545;
+  --destructive-hover: #bd2130;
+
+  /* Input Fields */
+  --input-bg: #1e293b;
+  --input-border: #4a5568;
+
+  /* Links and Hover */
+  --hover-color: #80bfff;
+
+  /* Page Background */
+  --page-background: #121212;
+
+  /* Chatbot Specific Variables */
+
+  /* Chatbot Header */
+  --chatbot-header-bg: var(--primary);
+  --chatbot-header-text: #E4E6EB;
+
+  /* Chat Messages */
+  --chatbot-message-user-bg: #bb86fc; /* Dark teal */
+  --chatbot-message-user-text: #E4E6EB;
+  --chatbot-message-bot-bg: #3A3B3C; /* Dark gray */
+  --chatbot-message-bot-text: #E4E6EB;
+
+  /* Message Timestamps */
+  --message-timestamp-color: #b0b3b8;
+
+  /* Chat Input Field */
+  --chatbot-input-bg: #3A3B3C;
+  --chatbot-input-text: #E4E6EB;
+  --chatbot-input-border: #5A5B5C;
+
+  /* Send Button */
+  --chatbot-send-btn-bg: var(--button-primary-bg);
+  --chatbot-send-btn-hover-bg: var(--button-primary-hover);
+  --chatbot-send-btn-text: var(--button-text);
+
+  /* Chatbot Container */
+  --chatbot-container-bg: var(--background);
+  --chatbot-scrollbar-bg: #3A3B3C;
+  --chatbot-scrollbar-thumb: #5A5B5C;
+
+  /* Loading Indicator */
+  --chatbot-typing-indicator: #E4E6EB;
+
+
+   /* Chat Page Specific Variables */
+   --chat-bg: #1a1a1a;
+   --chat-message-bg: #2a2a2a;
+   --chat-message-text: #eaeaea;
+   --chat-message-own-bg: #054740; /* Dark teal for own messages */
+   --chat-message-own-text: #eaeaea;
+   --chat-timestamp-color: #777777;
+   --chat-input-bg: #1e1e1e;
+   --chat-input-border: #333333;
+   --chat-send-btn-bg: var(--button-primary-bg);
+   --chat-send-btn-hover-bg: var(--button-primary-hover);
+   --chat-send-btn-text: var(--button-text);
+  /* Modal dark theme*/
+
+  --modal-overlay-bg: rgba(0, 0, 0, 0.8);
+  --modal-bg: #1e1e1e;
+  --modal-text: #f0f0f0;
+  --modal-border-color: #444;
+  --modal-close-button-color: #bbb;
+  --modal-close-button-hover-color: #fff;
+  --modal-button-text-color: #fff;
+  --modal-button-cancel-bg: #444;
+  --modal-button-cancel-hover-bg: #555;
+  --modal-button-confirm-bg: #d9534f;
+  --modal-button-confirm-hover-bg: #c9302c;
+  --modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Global Styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Navigation Bar */
+.navbar {
+  background: var(--navbar-bg);
+  color: var(--foreground);
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--navbar-bg);
+  
+}
+
+/* Footer */
+.footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+}
+
+/* Card */
+.card {
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.button-primary {
+  background-color: var(--button-primary-bg);
+  color: #fff;
+}
+
+.button-primary:hover {
+  background-color: var(--button-primary-hover);
+}
+
+.button-secondary {
+  background-color: var(--button-secondary-bg);
+  color: #fff;
+}
+
+.button-secondary:hover {
+  background-color: var(--button-secondary-hover);
+}
+
+/* Input Fields */
+.input {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--foreground);
+}
+
+/* Notification Banner */
+.notification-banner {
+  background-color: var(--notification-bg);
+  color: #fff;
+}
+
+/* Modal */
+.modal {
+  background-color: var(--modal-bg);
+  color: var(--foreground);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+  .app-content {
+    margin-left: 80px;
+  }
+}

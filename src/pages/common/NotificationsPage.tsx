@@ -10,6 +10,7 @@ type Notification = {
   timestamp: Timestamp; // Firestore Timestamp
   userId?: string; // Optional userId for filtering notifications
   relatedFormId?: string; // Optional form linkage
+  recipientId?: string;
 };
 
 const NotificationsPage = () => {

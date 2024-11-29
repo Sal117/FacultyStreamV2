@@ -2,8 +2,8 @@
 .sidebar {
   width: 250px;
   height: 100vh;
-  background-color: #343a40;
-  color: #fff;
+  background: var(--sidebar-bg); /* Replaced linear-gradient(135deg, #007bff, #0056b3) */
+  color: var(--sidebar-text); /* Replaced #fff */
   padding: 20px;
   position: fixed;
   top: 0;
@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3); /* Optional: Replace with a variable if dynamic shadows are needed */
   z-index: 1000;
   transition: transform 0.3s ease, width 0.3s ease;
 }
@@ -19,6 +19,7 @@
 .sidebar.collapsed {
   width: 80px; /* Width for collapsed state */
 }
+
 
 .logo-section {
   margin-bottom: 30px;
@@ -33,7 +34,7 @@
 
 .logo:hover {
   transform: scale(1.1) rotateY(20deg); /* 3D effect on hover */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional: Replace with a variable */
 }
 
 .nav-list {
@@ -46,7 +47,7 @@
   padding: 15px 0;
   text-align: center;
   cursor: pointer;
-  border-bottom: 1px solid #555;
+  border-bottom: 1px solid var(--input-border); /* Replaced #555 */
   transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
   font-size: 18px;
   position: relative;
@@ -54,6 +55,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  color: var(--sidebar-text); /* Ensures dynamic text color */
 }
 
 .nav-icon {
@@ -62,13 +64,13 @@
 }
 
 .nav-item:hover {
-  background-color: #007bff;
+  background-color: var(--primary); /* Replaced #007bff */
   transform: translateX(10px) rotateY(5deg); /* Add 3D rotation */
-  color: #fff;
+  color: var(--button-text); /* Ensures consistent text color */
 }
 
 .nav-item:active {
-  background-color: #0056b3;
+  background-color: var(--button-primary-hover); /* Replaced #0056b3 */
 }
 
 .nav-item::before {
@@ -77,7 +79,7 @@
   left: 0;
   height: 100%;
   width: 5px;
-  background-color: #007bff;
+  background-color: var(--primary); /* Replaced #007bff */
   transform: scaleY(0);
   transition: transform 0.3s ease;
 }

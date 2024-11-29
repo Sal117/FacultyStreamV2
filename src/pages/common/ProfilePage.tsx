@@ -4,8 +4,10 @@ import {
   updateUserProfile,
   changeUserPassword,
 } from "../../services/authService";
+import { storageService } from "../../services/storageService";
 import profilePic from "../../assets/images/profile_placeholder.webp";
 import "../../styles/ProfilePage.css";
+import { ThemeProvider } from "../../components/theme-provider";
 
 const ProfilePage: React.FC = () => {
   const [userData, setUserData] = useState<any>({});
@@ -13,10 +15,13 @@ const ProfilePage: React.FC = () => {
   const [updatedName, setUpdatedName] = useState<string>("");
   const [updatedEmail, setUpdatedEmail] = useState<string>("");
   const [updatedFaculty, setUpdatedFaculty] = useState<string>("");
+  const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState<string>("");
+  const [updatedAddress, setUpdatedAddress] = useState<string>("");
   const [profilePicture, setProfilePicture] = useState<string | null>(
     profilePic
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const [DOB, setDOB] = useState<string>(""); // Initialize DOB state
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] =
     useState<boolean>(false);
@@ -33,12 +38,19 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       const user = await getCurrentUser();
+      console.log("Fetched user data on reload:", user);
       if (user) {
         setUserData(user);
         setUpdatedName(user.name || "");
         setUpdatedEmail(user.email || "");
         setUpdatedFaculty(user.faculty || "");
-        setProfilePicture(user.profilePicture || profilePic);
+        setUpdatedPhoneNumber(user.phoneNumber || "");
+        console.log("Phone Number State after fetch:", user.phoneNumber);
+        setUpdatedAddress(user.address || "");
+        console.log("Address State after fetch:", user.address);
+        setProfilePicture(user.profilePicture || profilePic); // Default profile picture if empty
+        setDOB(user.DOB || ""); // Add DOB
+        console.log("DOB State after fetch:", user.DOB);
       }
     };
     fetchUserData();
@@ -51,29 +63,60 @@ const ProfilePage: React.FC = () => {
         name: updatedName,
         email: updatedEmail,
         faculty: updatedFaculty,
+        phoneNumber: updatedPhoneNumber,
+        address: updatedAddress,
+        profilePicture,
+        DOB, // Save DOB
       });
+
       setUserData({
         ...userData,
         name: updatedName,
         email: updatedEmail,
         faculty: updatedFaculty,
+        phoneNumber: updatedPhoneNumber,
+        address: updatedAddress,
         profilePicture,
+        DOB,
       });
+
       setEditing(false);
     } catch (error) {
-      console.error("Profile update failed: ", error);
+      console.error("Profile update failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleProfilePictureChange = (
+  const handleProfilePictureChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (event.target.files && event.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => setProfilePicture(reader.result as string);
-      reader.readAsDataURL(event.target.files[0]);
+      const file = event.target.files[0];
+      try {
+        setLoading(true);
+
+        // Use userData.uid instead of userData.userId
+        const uploadedUrl = await storageService.uploadFile(
+          `profilePictures/${userData.uid}`,
+          file,
+          (progress) => {
+            console.log(`Upload progress: ${progress}%`);
+          }
+        );
+
+        // Set the uploaded file's URL to the state
+        setProfilePicture(uploadedUrl);
+        console.log("Profile picture uploaded successfully:", uploadedUrl);
+
+        // Update Firestore with the new profile picture URL
+        await updateUserProfile({ profilePicture: uploadedUrl });
+        setUserData({ ...userData, profilePicture: uploadedUrl });
+      } catch (error) {
+        console.error("Profile picture upload failed:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -84,11 +127,10 @@ const ProfilePage: React.FC = () => {
     }
 
     try {
-      // Validate the current password first before proceeding
-      await changeUserPassword(currentPassword, newPassword); // This will throw an error if currentPassword is wrong
+      await changeUserPassword(currentPassword, newPassword);
       setPasswordUpdateError(null);
       setPasswordUpdateMessage("Password updated successfully!");
-      setIsPasswordModalOpen(false); // Close the modal after success
+      setIsPasswordModalOpen(false);
     } catch (error) {
       setPasswordUpdateMessage(null);
       setPasswordUpdateError("Failed to update password. Please try again.");
@@ -136,6 +178,24 @@ const ProfilePage: React.FC = () => {
                 value={updatedFaculty}
                 onChange={(e) => setUpdatedFaculty(e.target.value)}
               />
+              <label>Phone Number:</label>
+              <input
+                type="tel"
+                value={updatedPhoneNumber}
+                onChange={(e) => setUpdatedPhoneNumber(e.target.value)}
+              />
+              <label>Address:</label>
+              <input
+                type="text"
+                value={updatedAddress}
+                onChange={(e) => setUpdatedAddress(e.target.value)}
+              />
+              <label>Date of Birth:</label>
+              <input
+                type="date"
+                value={DOB}
+                onChange={(e) => setDOB(e.target.value)}
+              />
               <button
                 onClick={handleUpdate}
                 className="btn-save"
@@ -150,13 +210,23 @@ const ProfilePage: React.FC = () => {
           ) : (
             <>
               <p>
-                <strong>Name:</strong> {userData.name}
+                <strong>Name:</strong> {userData.name || "Not provided"}
               </p>
               <p>
-                <strong>Email:</strong> {userData.email}
+                <strong>Email:</strong> {userData.email || "Not provided"}
               </p>
               <p>
-                <strong>Faculty:</strong> {userData.faculty}
+                <strong>Faculty:</strong> {userData.faculty || "Not provided"}
+              </p>
+              <p>
+                <strong>Phone Number:</strong>{" "}
+                {userData.phoneNumber || "Not provided"}
+              </p>
+              <p>
+                <strong>Address:</strong> {userData.address || "Not provided"}
+              </p>
+              <p>
+                <strong>Date of Birth:</strong> {userData.DOB || "Not provided"}
               </p>
               <button onClick={() => setEditing(true)} className="btn-edit">
                 Edit Profile
@@ -172,7 +242,6 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Password Update Modal */}
       {isPasswordModalOpen && (
         <div className="password-modal">
           <div className="modal-content">

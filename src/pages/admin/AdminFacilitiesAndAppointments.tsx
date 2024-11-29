@@ -276,8 +276,12 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
 
         {notification && (
           <NotificationBanner
-            type="info"
-            message={notification}
+            notification={{
+              id: "temp-id", // Provide a unique temporary ID if notification lacks one
+              type: "info", // Specify the type
+              message: notification, // Use the notification content
+              timestamp: new Date(), // Add a timestamp
+            }}
             onClose={() => setNotification(null)}
           />
         )}

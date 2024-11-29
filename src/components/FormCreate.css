@@ -1,0 +1,239 @@
+/* src/components/FormCreate.css */
+
+/* Container Styling */
+.form-create {
+  background: var(--card-bg);
+  padding: 25px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  font-family: "Roboto", sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Heading Styles */
+.form-create h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Form Group Styling */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--foreground);
+}
+
+.form-group .required {
+  color: red;
+  margin-left: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group select {
+  padding: 10px 15px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="date"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.form-group small {
+  margin-top: 5px;
+  color: var(--secondary);
+}
+
+/* Checkbox Group Styling */
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-group label {
+  margin-right: 10px;
+}
+
+/* Fields Section Styling */
+.fields-section {
+  margin-bottom: 40px;
+}
+
+.fields-section h3 {
+  font-size: 1.8rem;
+  color: var(--secondary);
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--input-border);
+  padding-bottom: 10px;
+  display: inline-block;
+  animation: fadeInLeft 0.5s ease forwards;
+}
+
+/* Form Field Styling */
+.form-field {
+  margin-bottom: 25px;
+}
+
+.form-field .form-group {
+  margin-bottom: 15px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.option-item input[type="text"] {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.option-item button {
+  flex: 0;
+}
+
+/* Remove Field Button */
+.remove-field-btn {
+  background: var(--destructive-bg);
+  color: var(--button-text);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.remove-field-btn:hover {
+  background: var(--destructive-hover);
+  transform: translateY(-2px);
+}
+
+.remove-field-btn:focus {
+  outline: 2px solid var(--button-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Add Field Button */
+.fields-section > button {
+  margin-top: 10px;
+}
+
+/* Responsible Parties Styling */
+#responsibleParties {
+  height: 120px; /* Adjust as needed for better visibility */
+}
+
+#responsibleParties option {
+  padding: 5px;
+}
+
+/* Error & Success Messages */
+.error-message,
+.success-message {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: var(--button-text);
+}
+
+.error-message {
+  background-color: var(--destructive-bg);
+}
+
+.success-message {
+  background-color: var(--success-bg);
+}
+
+/* Submit Button Styling */
+.form-create-form > button {
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-create {
+    padding: 20px 15px;
+  }
+
+  .form-create h2 {
+    font-size: 2rem;
+    margin-bottom: 25px;
+  }
+
+  .fields-section h3 {
+    font-size: 1.6rem;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="number"],
+  .form-group input[type="date"],
+  .form-group textarea,
+  .form-group select {
+    padding: 8px 12px;
+  }
+
+  .remove-field-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -5,14 +5,14 @@
   align-items: center;
   justify-content: center;
   padding: 30px;
-  background-color: #f8f9fa; /* Light background for the notifications page */
+  background-color: var(--background);
   min-height: 100vh;
   font-family: 'Arial', sans-serif;
 }
 
 .notifications-page h1 {
   font-size: 2.5em;
-  color: #333;
+  color: var(--foreground);
   margin-bottom: 20px;
 }
 
@@ -20,7 +20,7 @@
   width: 100%;
   max-width: 900px;
   padding: 20px;
-  background-color: #fff;
+  background-color: var(--card-bg);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -43,38 +43,38 @@
 }
 
 .notification-info {
-  background-color: #e7f5ff;
-  border-left: 4px solid #007bff;
+  background-color: var(--notification-bg);
+  border-left: 4px solid var(--primary);
 }
 
 .notification-success {
-  background-color: #d4edda;
-  border-left: 4px solid #28a745;
+  background-color: var(--success-bg);
+  border-left: 4px solid var(--success-hover);
 }
 
 .notification-error {
-  background-color: #f8d7da;
-  border-left: 4px solid #dc3545;
+  background-color: var(--destructive-bg);
+  border-left: 4px solid var(--destructive-hover);
 }
 
 /* Notification Text Styling */
 .notification p {
   flex-grow: 1;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--foreground);
 }
 
 .notification button {
   background-color: transparent;
   border: none;
-  color: #007bff;
+  color: var(--primary);
   cursor: pointer;
   font-size: 1.1rem;
   transition: color 0.3s;
 }
 
 .notification button:hover {
-  color: #0056b3;
+  color: var(--button-primary-hover);
 }
 
 /* Loading Spinner */
@@ -98,7 +98,7 @@
   .notification p {
     font-size: 1rem;
   }
-  
+
   .notification button {
     font-size: 1rem;
   }

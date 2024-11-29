@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import React, { Suspense, lazy, useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -10,8 +12,12 @@ import NavigationBar from "./components/NavigationBar";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
 import { RoleProvider } from "./context/RoleContext";
+import { ThemeProvider } from "./components/theme-provider"; // Import ThemeProvider
 import "./styles/App.css";
-
+import "./index.css";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // Lazy-loaded pages
 const MainPage = lazy(() => import("./pages/common/MainPage"));
 const LoginPage = lazy(() => import("./pages/common/LoginPage"));
@@ -25,6 +31,7 @@ const HelpPage = lazy(() => import("./pages/common/HelpPage"));
 const NotificationsPage = lazy(
   () => import("./pages/common/NotificationsPage")
 );
+const ChatPage = lazy(() => import("./pages/chat/ChatPage")); // Added ChatPage import
 
 // Admin Pages
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -58,10 +65,13 @@ const NotFound = () => (
 );
 
 const AppContent: React.FC = () => {
-  const [userRole, setUserRole] = useState<string | null>(
+  const [, setUserRole] = useState<string | null>(
     localStorage.getItem("userRole")
   );
+
+  const { user, loading } = useAuth();
   const location = useLocation();
+  const userRole = user?.role || null;
 
   useEffect(() => {
     if (userRole) {
@@ -76,9 +86,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app">
-      <NavigationBar isAuthenticated={!shouldHideSidebar} />
-      {userRole && !shouldHideSidebar && <Sidebar userRole={userRole} />}{" "}
-      {/* Sidebar with userRole prop */}
+      <NavigationBar isAuthenticated={!!user && !shouldHideSidebar} />
+      {userRole && !shouldHideSidebar && <Sidebar userRole={userRole} />}
       <main
         className={`app-content ${
           userRole && !shouldHideSidebar ? "with-sidebar" : ""
@@ -107,6 +116,10 @@ const AppContent: React.FC = () => {
             <Route
               path="/appointment"
               element={userRole ? <Appointment /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/chat"
+              element={userRole ? <ChatPage /> : <Navigate to="/login" />} // Added ChatPage route
             />
             <Route
               path="/chatbot"
@@ -170,6 +183,7 @@ const AppContent: React.FC = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
+        <ToastContainer />
       </main>
       <Footer />
     </div>
@@ -178,14 +192,18 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <RoleProvider>
-    <AppContent />
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   </RoleProvider>
 );
 
 export default function AppWrapper() {
   return (
     <Router>
-      <App />
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <App />
+      </ThemeProvider>
     </Router>
   );
 }

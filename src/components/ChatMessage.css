@@ -1,0 +1,169 @@
+/* src/styles/ChatMessage.css */
+
+/* Chat message container */
+.chat-message {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 15px;
+    animation: fadeInUp 0.3s ease-in-out;
+  }
+  
+  .chat-message.own-message {
+    flex-direction: row-reverse;
+  }
+  
+  .chat-message .avatar {
+    margin-right: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .chat-message.own-message .avatar {
+    margin-left: 10px;
+    margin-right: 0;
+  }
+  
+  .chat-message .avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* Message content */
+  .chat-message .message-content {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 20px;
+    background-color: var(--chat-message-bg);
+    color: var(--chat-message-text);
+    position: relative;
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chat-message.own-message .message-content {
+    background-color: var(--chat-message-own-bg);
+    color: var(--chat-message-own-text);
+  }
+  
+  /* Message bubble arrow */
+  .chat-message .message-content::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent var(--chat-message-bg) transparent transparent;
+  }
+  
+  .chat-message.own-message .message-content::after {
+    left: auto;
+    right: -10px;
+    border-color: transparent transparent transparent var(--chat-message-own-bg);
+  }
+  
+  /* Username */
+  .chat-message .username {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Message text */
+  .chat-message .text {
+    font-size: 1em;
+  }
+  
+  /* Attachments */
+  .chat-message .attachments {
+    margin-top: 10px;
+  }
+  
+  .chat-message .attachments a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  
+  .chat-message .attachments a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Timestamp */
+  .chat-message .timestamp {
+    font-size: 0.8em;
+    color: var(--chat-timestamp-color);
+    margin-top: 5px;
+    align-self: flex-end;
+    position: absolute;
+    bottom: -18px;
+    right: 0;
+  }
+  
+  .chat-message.own-message .timestamp {
+    right: auto;
+    left: 0;
+  }
+  
+  /* Reactions */
+  .chat-message .reactions {
+    margin-top: 8px;
+    display: flex;
+  }
+  
+  .chat-message .reaction {
+    margin-right: 5px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  
+  .chat-message .reaction:hover {
+    transform: scale(1.2);
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .chat-message .message-content {
+      max-width: 85%;
+    }
+  }
+  
+  /* Hover effects */
+  .chat-message .message-content:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Adjustments for dark mode */
+  .dark .chat-message .message-content {
+    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Message content link styling */
+  .chat-message .message-content a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+  
+  .chat-message .message-content a:hover {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  
+  /* Transition effects */
+  .chat-message,
+  .chat-message .message-content {
+    transition: all 0.2s ease-in-out;
+  }
+  

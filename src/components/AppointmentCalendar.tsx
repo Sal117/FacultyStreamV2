@@ -16,6 +16,7 @@ interface AppointmentCalendarProps {
   selectedDate: Date | null;
   onDateChange: (date: Date | null) => void;
   userId: string; // Dynamic userId to fetch appointments
+  appointments?: Appointment[];
 }
 
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({

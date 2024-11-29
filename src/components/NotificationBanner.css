@@ -5,26 +5,26 @@
   padding: 15px;
   margin: 10px 0;
   border-radius: 8px;
-  color: white;
+  color: var(--button-text); /* Replaced white */
   font-size: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .notification-banner.info {
-  background-color: #3498db;
+  background-color: var(--notification-bg); /* Replaced #3498db */
 }
 
 .notification-banner.alert {
-  background-color: #e74c3c;
+  background-color: var(--destructive-bg); /* Replaced #e74c3c */
 }
 
 .notification-banner.success {
-  background-color: #2ecc71;
+  background-color: var(--success-bg); /* Replaced #2ecc71 */
 }
 
 .notification-banner.update {
-  background-color: #f39c12;
+  background-color: #f39c12; /* Optional: Define a variable if this is reused */
 }
 
 .notification-content {
@@ -35,7 +35,7 @@
 
 .timestamp {
   font-size: 0.8rem;
-  color: #f1f1f1;
+  color: var(--muted); /* Replaced #f1f1f1 */
 }
 
 .notification-actions {
@@ -47,7 +47,7 @@
 .close-btn {
   background: none;
   border: none;
-  color: white;
+  color: var(--button-text); /* Replaced white */
   font-size: 1rem;
   cursor: pointer;
   padding: 5px 10px;
@@ -55,10 +55,7 @@
   transition: background-color 0.3s ease;
 }
 
-.action-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
+.action-btn:hover,
 .close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(var(--foreground-rgb), 0.2); /* Dynamic hover effect */
 }

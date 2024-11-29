@@ -1,5 +1,12 @@
+// src/pages/DocumentManagement.tsx
+
 import React, { useState, useEffect } from "react";
-import { databaseService } from "../../services/databaseService";
+import {
+  getDocuments,
+  saveDocument,
+  updateDocument,
+  deleteDocument,
+} from "../../services/databaseService";
 import { storageService } from "../../services/storageService";
 import { auth } from "../../services/firebase";
 import "../../styles/DocumentManagement.css";
@@ -23,15 +30,16 @@ const DocumentManagement: React.FC = () => {
   const [documentDescription, setDocumentDescription] = useState<string>("");
 
   useEffect(() => {
-    const fetchDocuments = async () => {
+    const fetchDocumentsData = async () => {
       try {
-        const fetchedDocuments = await databaseService.getDocuments();
+        const fetchedDocuments = await getDocuments();
         setDocuments(fetchedDocuments);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+        // Optionally, set an error state here to inform the user
       }
     };
-    fetchDocuments();
+    fetchDocumentsData();
   }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,8 +72,7 @@ const DocumentManagement: React.FC = () => {
         (progress: number) => setUploadProgress(progress)
       );
 
-      const newDocument: Document = {
-        documentId: databaseService.generateDocumentId(),
+      const newDocument = {
         title: documentTitle,
         description: documentDescription,
         fileUrl: fileUrl,
@@ -74,13 +81,20 @@ const DocumentManagement: React.FC = () => {
         createdBy: auth.currentUser.uid,
       };
 
-      await databaseService.saveDocument(newDocument);
-      setDocuments([...documents, newDocument]);
+      const documentId = await saveDocument(newDocument);
+
+      const savedDocument: Document = {
+        documentId: documentId,
+        ...newDocument,
+      };
+
+      setDocuments([...documents, savedDocument]);
       setUploading(false);
       resetForm();
-    } catch (error) {
-      console.error("Error uploading document:", error);
+    } catch (err) {
+      console.error("Error uploading document:", err);
       setUploading(false);
+      // Optionally, set an error state here to inform the user
     }
   };
 
@@ -92,46 +106,77 @@ const DocumentManagement: React.FC = () => {
   };
 
   return (
-    <div className="document-management">
-      <h1>Faculty Document Management</h1>
-      <div className="upload-section">
-        <h3>Upload New Document</h3>
-        <input
-          type="text"
-          placeholder="Document Title"
-          value={documentTitle}
-          onChange={(e) => setDocumentTitle(e.target.value)}
-        />
-        <textarea
-          placeholder="Document Description"
-          value={documentDescription}
-          onChange={(e) => setDocumentDescription(e.target.value)}
-        />
-        <input type="file" onChange={handleFileChange} />
-        {uploading && (
-          <progress value={uploadProgress} max="100">
-            {uploadProgress}%
-          </progress>
-        )}
-        <button onClick={handleUpload} disabled={uploading}>
-          {uploading ? "Uploading..." : "Upload"}
-        </button>
-      </div>
-      <div className="documents-list">
-        <h3>Managed Documents</h3>
-        {documents.length > 0 ? (
-          documents.map((doc) => (
-            <div key={doc.documentId} className="document-item">
-              <h4>{doc.title}</h4>
-              <p>{doc.description}</p>
-              <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                View/Download
-              </a>
-            </div>
-          ))
-        ) : (
-          <p>No documents to manage.</p>
-        )}
+    <div className="document-management-page">
+      <div className="document-management-container">
+        <h1>Faculty Document Management</h1>
+        <div className="upload-section">
+          <h3>Upload New Document</h3>
+          <input
+            type="text"
+            placeholder="Document Title"
+            value={documentTitle}
+            onChange={(e) => setDocumentTitle(e.target.value)}
+          />
+          <textarea
+            placeholder="Document Description"
+            value={documentDescription}
+            onChange={(e) => setDocumentDescription(e.target.value)}
+          />
+          <input type="file" onChange={handleFileChange} />
+          {uploading && (
+            <progress value={uploadProgress} max="100">
+              {uploadProgress}%
+            </progress>
+          )}
+          <button onClick={handleUpload} disabled={uploading}>
+            {uploading ? "Uploading..." : "Upload"}
+          </button>
+        </div>
+        <div className="documents-list">
+          <h3>Managed Documents</h3>
+          {documents.length > 0 ? (
+            documents.map((doc) => (
+              <div key={doc.documentId} className="document-item">
+                <h4>{doc.title}</h4>
+                <p>{doc.description}</p>
+                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                  View/Download
+                </a>
+                {/* Optionally, add buttons to update or delete documents */}
+                <div className="document-actions">
+                  <button
+                    onClick={() => {
+                      // Implement update functionality if needed
+                    }}
+                    className="update-doc-btn"
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await deleteDocument(doc.documentId);
+                        setDocuments(
+                          documents.filter(
+                            (d) => d.documentId !== doc.documentId
+                          )
+                        );
+                      } catch (err) {
+                        console.error("Error deleting document:", err);
+                        // Optionally, set an error state here to inform the user
+                      }
+                    }}
+                    className="delete-doc-btn"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No documents to manage.</p>
+          )}
+        </div>
       </div>
     </div>
   );

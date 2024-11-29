@@ -9,8 +9,8 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-  color: #333;
-  background-color: #f4f6f8;
+  color: var(--foreground);
+  background-color: var(--background);
 }
 
 /* Main Dashboard Styling */
@@ -22,8 +22,8 @@ body {
 /* Sidebar Styling */
 .sidebar {
   width: 250px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
   padding: 20px;
   transition: width 0.3s ease;
 }
@@ -44,13 +44,13 @@ body {
 
 .dashboard-content h1 {
   font-size: 2rem;
-  color: #34495e;
+  color: var(--foreground);
   margin-bottom: 20px;
 }
 
 /* Dashboard Section Styling */
 .dashboard-section {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -63,7 +63,7 @@ body {
 
 .dashboard-section h2 {
   font-size: 1.5rem;
-  color: #3498db;
+  color: var(--primary);
   margin-bottom: 10px;
 }
 
@@ -75,10 +75,10 @@ body {
 }
 
 .appointment-card {
-  background: #f8f9fa;
+  background: var(--muted);
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   transition: box-shadow 0.3s ease;
 }
 
@@ -88,18 +88,18 @@ body {
 
 .appointment-card .title {
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--foreground);
 }
 
 .appointment-card .description {
   margin-top: 10px;
-  color: #666;
+  color: var(--secondary);
 }
 
 /* Buttons Styling */
 button {
-  background-color: #3498db;
-  color: white;
+  background-color: var(--button-primary-bg);
+  color: var(--button-text);
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -108,7 +108,7 @@ button {
 }
 
 button:hover {
-  background-color: #2980b9;
+  background-color: var(--button-primary-hover);
 }
 
 /* Notification Banner Styling */
@@ -120,33 +120,33 @@ button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
+  color: var(--button-text);
   transition: transform 0.3s ease;
 }
 
 .notification-banner.info {
-  background-color: #3498db;
+  background-color: var(--notification-bg);
 }
 
 .notification-banner.alert {
-  background-color: #e74c3c;
+  background-color: var(--destructive-bg);
 }
 
 .notification-banner.update {
-  background-color: #f39c12;
+  background-color: var(--success-bg);
 }
 
 .notification-banner button {
   background: transparent;
   border: none;
   font-size: 1.2rem;
-  color: white;
+  color: var(--button-text);
   cursor: pointer;
   transition: color 0.3s ease;
 }
 
 .notification-banner button:hover {
-  color: #bdc3c7;
+  color: var(--muted);
 }
 
 /* Calendar Styling */
@@ -157,7 +157,7 @@ button:hover {
 .custom-calendar {
   border: none;
   border-radius: 8px;
-  background: #ecf0f1;
+  background: var(--muted);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 

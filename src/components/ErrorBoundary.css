@@ -1,54 +1,112 @@
-/* ErrorBoundary.css */
+/* Base Styles */
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: var(--page-background); /* Updated to use dynamic background */
+  margin: 0;
+  padding: 0;
+}
 
-.error-fallback {
-    max-width: 600px;
-    margin: 100px auto;
+/* Form Container */
+.dynamic-form {
+  max-width: 600px;
+  margin: 50px auto;
+  background: var(--card-bg); /* Dynamic card background */
+  border-radius: 8px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Light shadow remains unchanged */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dynamic-form:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Hover effect remains dynamic */
+}
+
+.dynamic-form h2 {
+  font-size: 1.8rem;
+  color: var(--foreground); /* Dynamic text color */
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  color: var(--secondary); /* Dynamic label color */
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  color: var(--foreground); /* Dynamic input text color */
+  background-color: var(--input-bg); /* Dynamic input background */
+  border: 1px solid var(--input-border); /* Dynamic input border */
+  border-radius: 5px;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow remains constant */
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: var(--button-primary-bg); /* Dynamic focus border */
+  box-shadow: 0 0 5px var(--button-primary-bg); /* Dynamic focus shadow */
+}
+
+.input-error {
+  border-color: var(--destructive-bg) !important; /* Dynamic error border */
+  background-color: rgba(231, 76, 60, 0.1); /* Light red background for error */
+}
+
+.error-text {
+  font-size: 0.9rem;
+  color: var(--destructive-bg); /* Dynamic error text color */
+  margin-top: 5px;
+}
+
+/* Submit Button */
+button[type="submit"] {
+  width: 100%;
+  background-color: var(--button-primary-bg); /* Dynamic button background */
+  color: var(--button-text); /* Dynamic button text color */
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: var(--button-primary-hover); /* Dynamic hover background */
+  transform: scale(1.02);
+}
+
+button[type="submit"]:disabled {
+  background-color: var(--button-disabled-bg); /* Dynamic disabled background */
+  color: var(--button-disabled-text); /* Dynamic disabled text color */
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dynamic-form {
     padding: 20px;
-    text-align: center;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.5s ease-in-out;
   }
-  
-  .error-fallback h2 {
+
+  .dynamic-form h2 {
     font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 10px;
   }
-  
-  .error-fallback p {
-    font-size: 1rem;
-    margin-top: 0;
+
+  button[type="submit"] {
+    font-size: 0.9rem;
   }
-  
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .error-fallback {
-      margin: 50px 20px;
-      padding: 15px;
-    }
-  
-    .error-fallback h2 {
-      font-size: 1.25rem;
-    }
-  
-    .error-fallback p {
-      font-size: 0.9rem;
-    }
-  }
-  
+}

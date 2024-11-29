@@ -1,3 +1,5 @@
+// src/context/AuthContext.tsx
+
 import React, {
   createContext,
   useContext,
@@ -10,66 +12,96 @@ import { authService, CustomUser } from "../services/authService";
 interface AuthContextType {
   user: CustomUser | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   changeUserPassword: (
     currentPassword: string,
     newPassword: string
-  ) => Promise<void>; // Expose the updatePassword function
+  ) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
+  loading: true,
   login: async () => {},
   logout: async () => {},
-  changeUserPassword: async () => {}, // Provide a dummy function for fallback
+  changeUserPassword: async () => {},
 });
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  console.log("AuthProvider component is rendering");
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<CustomUser | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged(
-      (user: CustomUser | null) => {
-        setUser(user);
-        setIsAuthenticated(!!user);
+    console.log("AuthProvider useEffect is running");
+    const unsubscribe = authService.onAuthStateChanged((authUser) => {
+      console.log(
+        "AuthContext onAuthStateChanged callback called with authUser:",
+        authUser
+      );
+      if (authUser) {
+        setUser(authUser);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
-    );
-    return unsubscribe;
-  }, []);
+      setLoading(false);
+    });
 
+    return () => unsubscribe();
+  }, []);
   const login = async (email: string, password: string) => {
-    const user = await authService.login(email, password);
-    setUser(user);
-    setIsAuthenticated(true);
+    try {
+      const loggedInUser = await authService.login(email, password);
+      setUser(loggedInUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error; // Re-throw to handle in the component if needed
+    }
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
+    try {
+      await authService.logout();
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+      throw error;
+    }
   };
 
   const changeUserPassword = async (
     currentPassword: string,
     newPassword: string
   ) => {
-    if (user) {
+    try {
       await authService.changeUserPassword(currentPassword, newPassword);
-    } else {
-      console.error("User not authenticated");
+    } catch (error) {
+      console.error("Change password failed:", error);
+      throw error;
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, login, logout, changeUserPassword }}
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        login,
+        logout,
+        changeUserPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

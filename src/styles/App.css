@@ -1,12 +1,10 @@
-/* App.css */
-
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   font-family: 'Arial', sans-serif;
-  background-color: #f4f4f9;
-  color: #333;
+  background: var(--page-background); /* Use theme variable for background */
+  color: var(--foreground); /* Use theme variable for text color */
 }
 
 .app-content {
@@ -28,16 +26,16 @@
 
 a {
   text-decoration: none;
-  color: #004080;
+  color: var(--foreground); /* Use theme variable for link color */
 }
 
 a:hover {
-  color: #0066cc;
+  color: var(--primary); /* Use theme variable for hover color */
 }
 
 button {
-  background-color: #004080;
-  color: white;
+  background-color: var(--button-primary-bg); /* Use theme variable for button background */
+  color: var(--button-text); /* Use theme variable for button text color */
   padding: 10px 20px;
   border: none;
   cursor: pointer;
@@ -47,19 +45,27 @@ button {
 }
 
 button:hover {
-  background-color: #0066cc;
+  background-color: var(--button-primary-hover); /* Use theme variable for button hover */
 }
 
 input, select {
   padding: 10px;
   margin: 5px 0;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border); /* Use theme variable for border */
   border-radius: 5px;
   width: 100%;
+  background-color: var(--input-bg); /* Use theme variable for input background */
+  color: var(--foreground); /* Use theme variable for input text color */
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary); /* Use primary color for focus */
 }
 
 label {
   font-weight: bold;
   margin-top: 10px;
   display: block;
+  color: var(--foreground); /* Use theme variable for label text color */
 }

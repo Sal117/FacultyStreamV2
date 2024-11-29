@@ -1,144 +1,201 @@
+// src/pages/admin/SystemSettings.tsx
+
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import {
   getSystemSettings,
   updateSystemSettings,
   getFacilitiesSettings,
   updateFacilitiesSettings,
-} from "../../services/databaseService"; // Added facilitiesService methods
+} from "../../services/databaseService"; // Import necessary services
 import LoadingSpinner from "../../components/LoadingSpinner";
 import "../../styles/SystemSettings.css";
-import Sidebar from "../../components/Sidebar";
 
-const SystemSettings = () => {
-  const [settings, setSettings] = useState({
+interface SystemSettingsType {
+  maxAppointmentsPerDay: number;
+  enableRegistration: boolean;
+  // Add other system settings fields here as needed
+}
+
+interface FacilitiesSettingsType {
+  maxBookingsPerFacility: number;
+  enableFacilityBooking: boolean;
+  // Add other facilities settings fields here as needed
+}
+
+const SystemSettings: React.FC = () => {
+  const [systemSettings, setSystemSettings] = useState<SystemSettingsType>({
     maxAppointmentsPerDay: 0,
     enableRegistration: false,
   });
-  const [facilitiesSettings, setFacilitiesSettings] = useState({
-    maxBookingsPerFacility: 0,
-    enableFacilityBooking: false,
-  }); // New state for facilities settings
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
+  const [facilitiesSettings, setFacilitiesSettings] =
+    useState<FacilitiesSettingsType>({
+      maxBookingsPerFacility: 0,
+      enableFacilityBooking: false,
+    });
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  // Fetch settings on component mount
   useEffect(() => {
-    async function fetchSettings() {
+    const fetchSettings = async () => {
       setLoading(true);
+      setError("");
       try {
-        const fetchedSettings = await getSystemSettings();
-        const fetchedFacilitiesSettings = await getFacilitiesSettings(); // Fetch facilities settings
-        setSettings(fetchedSettings);
-        setFacilitiesSettings(fetchedFacilitiesSettings); // Set facilities settings
-      } catch (error) {
+        const fetchedSystemSettings = await getSystemSettings();
+        const fetchedFacilitiesSettings = await getFacilitiesSettings();
+        setSystemSettings(fetchedSystemSettings);
+        setFacilitiesSettings(fetchedFacilitiesSettings);
+      } catch (err) {
         setError("Failed to load settings.");
-        console.error(error);
+        console.error("Error fetching settings:", err);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchSettings();
   }, []);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, checked, type } = event.target;
-    if (name in settings) {
-      setSettings((prev) => ({
+  // Handle input changes for both system and facilities settings
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value, type } = event.target;
+
+    // Use type narrowing to safely access the checked property
+    const newValue =
+      type === "checkbox"
+        ? (event.target as HTMLInputElement).checked
+        : Number(value);
+
+    // Update system settings
+    if (name in systemSettings) {
+      setSystemSettings((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: newValue,
       }));
-    } else if (name in facilitiesSettings) {
+    }
+
+    // Update facilities settings
+    if (name in facilitiesSettings) {
       setFacilitiesSettings((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: newValue,
       }));
     }
   };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  // Handle form submission
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
-    updateSystemSettings(settings)
-      .then(() => {
-        alert("Settings updated successfully!");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError("Failed to update settings.");
-        console.error(error);
-        setLoading(false);
-      });
+    setError("");
 
-    updateFacilitiesSettings(facilitiesSettings) // Handle facilities settings update
-      .then(() => {
-        alert("Facilities settings updated successfully!");
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError("Failed to update facilities settings.");
-        console.error(error);
-        setLoading(false);
-      });
+    try {
+      await Promise.all([
+        updateSystemSettings(systemSettings),
+        updateFacilitiesSettings(facilitiesSettings),
+      ]);
+      alert("Settings updated successfully!");
+    } catch (err) {
+      setError("Failed to update settings.");
+      console.error("Error updating settings:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h1>System Settings</h1>
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>
-              Max Appointments Per Day:
-              <input
-                type="number"
-                name="maxAppointmentsPerDay"
-                value={settings.maxAppointmentsPerDay}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Enable Registration:
-              <input
-                type="checkbox"
-                name="enableRegistration"
-                checked={settings.enableRegistration}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
+    <div className="system-settings-page">
+      <div className="system-settings-container">
+        <h1>System Settings</h1>
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <form onSubmit={handleSubmit} className="settings-form">
+            {/* System Settings Section */}
+            <section className="settings-section">
+              <h2>General Settings</h2>
 
-          <div>
-            <h2>Facilities Booking Settings</h2>
-            <label>
-              Max Bookings Per Facility:
-              <input
-                type="number"
-                name="maxBookingsPerFacility"
-                value={facilitiesSettings.maxBookingsPerFacility}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Enable Facility Booking:
-              <input
-                type="checkbox"
-                name="enableFacilityBooking"
-                checked={facilitiesSettings.enableFacilityBooking}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
+              <div className="form-group">
+                <label htmlFor="maxAppointmentsPerDay">
+                  Max Appointments Per Day:
+                  <input
+                    type="number"
+                    id="maxAppointmentsPerDay"
+                    name="maxAppointmentsPerDay"
+                    value={systemSettings.maxAppointmentsPerDay}
+                    onChange={handleChange}
+                    min={0}
+                    required
+                  />
+                </label>
+              </div>
 
-          <button type="submit">Save Settings</button>
-          {error && <p className="error">{error}</p>}
-        </form>
-      )}
+              <div className="form-group">
+                <label htmlFor="enableRegistration">
+                  Enable Registration:
+                  <input
+                    type="checkbox"
+                    id="enableRegistration"
+                    name="enableRegistration"
+                    checked={systemSettings.enableRegistration}
+                    onChange={handleChange}
+                  />
+                </label>
+              </div>
+
+              {/* Add more system settings fields here as needed */}
+            </section>
+
+            {/* Facilities Settings Section */}
+            <section className="settings-section">
+              <h2>Facilities Booking Settings</h2>
+
+              <div className="form-group">
+                <label htmlFor="maxBookingsPerFacility">
+                  Max Bookings Per Facility:
+                  <input
+                    type="number"
+                    id="maxBookingsPerFacility"
+                    name="maxBookingsPerFacility"
+                    value={facilitiesSettings.maxBookingsPerFacility}
+                    onChange={handleChange}
+                    min={0}
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="enableFacilityBooking">
+                  Enable Facility Booking:
+                  <input
+                    type="checkbox"
+                    id="enableFacilityBooking"
+                    name="enableFacilityBooking"
+                    checked={facilitiesSettings.enableFacilityBooking}
+                    onChange={handleChange}
+                  />
+                </label>
+              </div>
+
+              {/* Add more facilities settings fields here as needed */}
+            </section>
+
+            {/* Submit Button */}
+            <button type="submit" className="save-button">
+              Save Settings
+            </button>
+
+            {/* Error Message */}
+            {error && <p className="error-message">{error}</p>}
+          </form>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,9 @@
+// src/components/Sidebar.tsx
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "./theme-provider"; // Importing the theme logic
 import "./Sidebar.css";
-import SecondaryLogo from "../assets/images/ICSDI_secondary_logo.webp";
 import {
   FaUser,
   FaCalendar,
@@ -13,6 +15,7 @@ import {
   FaUsers,
   FaClipboardList,
   FaTools, // Added a new icon for AdminFacilitiesAndAppointments
+  FaComments, // Added icon for ChatPage
 } from "react-icons/fa";
 
 interface SidebarProps {
@@ -21,6 +24,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
   const navigate = useNavigate();
+  const { theme } = useTheme(); // Fetch the current theme
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -35,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
         path: "/facilities-booking",
       },
       { label: "Appointments", icon: <FaCalendar />, path: "/appointment" },
+      { label: "Chat", icon: <FaComments />, path: "/chat" }, // Added Chat page
       { label: "Chatbot", icon: <FaRobot />, path: "/chatbot" },
     ];
 
@@ -82,11 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
       return [
         ...commonItems,
         { label: "Dashboard", icon: <FaHome />, path: "/student-dashboard" },
-        {
-          label: "Documents",
-          icon: <FaFileAlt />,
-          path: "/documents-access",
-        },
+        { label: "Documents", icon: <FaFileAlt />, path: "/documents-access" },
         { label: "Forms", icon: <FaClipboardList />, path: "/student-forms" },
       ];
     }
@@ -95,10 +96,16 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
     return commonItems;
   };
 
+  // Determine the correct logo based on the theme
+  const logoSrc =
+    theme === "light"
+      ? "src/assets/images/sidebarLogo_light.png"
+      : "src/assets/images/SidebarLogo_dark.png";
+
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="logo-section" onClick={toggleSidebar}>
-        <img src={SecondaryLogo} alt="ICSDI Logo" className="logo" />
+        <img src={logoSrc} alt="Sidebar Logo" className="logo" />
       </div>
       <ul className="nav-list">
         {getMenuItems().map((item) => (

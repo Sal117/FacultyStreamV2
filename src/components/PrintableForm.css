@@ -1,0 +1,129 @@
+/* src/components/PrintableForm.css */
+
+.printable-form {
+    padding: 20px;
+    background-color: #fff;
+    color: #000;
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: auto;
+    border: 1px solid #000;
+  }
+  
+  .printable-header {
+    margin-bottom: 30px;
+  }
+  
+  .header-images {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .university-logo {
+    width: 120px;
+    height: auto;
+  }
+  
+  .form-title {
+    flex: 1;
+    font-size: 28px;
+    margin: 0 20px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  
+  .icsdi-logo {
+    width: 120px;
+    height: auto;
+  }
+  
+  .printable-main {
+    margin-bottom: 30px;
+  }
+  
+  .student-data,
+  .faculty-feedback {
+    margin-bottom: 20px;
+  }
+  
+  .student-data h2,
+  .faculty-feedback h2 {
+    font-size: 20px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+    border: 1px solid #000;
+    text-align: left;
+    vertical-align: top;
+  }
+  
+  .data-table th {
+    width: 30%;
+    background-color: #f0f0f0;
+  }
+  
+  .printable-footer {
+    text-align: center;
+    border-top: 1px solid #000;
+    padding-top: 10px;
+    font-size: 14px;
+    position: relative;
+  }
+  
+  .footer-images {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .faculty-stamp {
+    width: 150px;
+    height: auto;
+    margin-right: 20px;
+  }
+  
+  .icsdi-logo-footer {
+    width: 150px;
+    height: auto;
+  }
+  
+  @media print {
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+    }
+  
+    .printable-form {
+      border: none;
+      box-shadow: none;
+      margin: 0;
+      width: auto;
+    }
+  
+    .university-logo,
+    .icsdi-logo,
+    .faculty-stamp,
+    .icsdi-logo-footer {
+      max-width: 100%;
+    }
+  
+    .printable-footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+  }
+  

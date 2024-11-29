@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  color: #ffffff;
+  color: var(--foreground);
   background-image: url("../../assets/images/background.webp");
   background-size: cover;
   background-position: center;
@@ -14,7 +14,7 @@
 
 /* Overlay for Darkening Background */
 .overlay {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--overlayL);
   width: 100%;
   height: 100%;
   padding: 20px;
@@ -28,20 +28,27 @@
 .hero-section {
   text-align: center;
   margin-bottom: 30px;
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 .hero-section h1 {
   font-size: 3.5em;
   font-weight: 700;
   margin-bottom: 15px;
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 .hero-section p {
-  font-size: 1.2em;
+  font-size: 1.8em;
   max-width: 600px;
+  text-align: center;
+  font-weight: bold; /* Make the text bold for better visibility */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Stronger shadow for better contrast */
+  color: var(--foreground); /* Ensures compatibility with light and dark modes */
+  line-height: 1.8; /* Adds more spacing between lines for better readability */
 }
+
+
 
 /* Faculty Selection Section */
 .faculty-selection {
@@ -51,9 +58,9 @@
 }
 
 .faculty-selection h2 {
-  font-size: 1.8em;
+  font-size: 1.9em;
   margin-bottom: 20px;
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 /* Dropdown Styling */
@@ -71,9 +78,9 @@
   width: 100%;
   padding: 14px 20px;
   border-radius: 10px;
-  border: 2px solid #007bff;
-  background-color: #ffffff;
-  color: #6f7ab8;
+  border: 2px solid var(--primary);
+  background-color: var(--input-bg);
+  color: var(--foreground);
   font-size: 1.1em;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -81,41 +88,43 @@
 }
 
 .dropdown:hover {
-  background-color: #e2e9f0;
-  border-color: #0056b3;
+  background-color: var(--muted);
+  border-color: var(--button-primary-hover);
   box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
 }
 
 .dropdown:focus {
   outline: none;
-  box-shadow: 0 0 5px 2px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 0 5px 2px var(--primary);
 }
 
+/* Navigate Button */
 .navigate-button {
   width: 100%;
   margin-top: 15px;
   padding: 14px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: #ffffff;
+  background: var(--navbar-bg);
+  color: var(--button-text);
   font-size: 1.2em;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px var(--primary);
 }
 
 .navigate-button:hover {
-  background: linear-gradient(90deg, #0056b3, #004494);
+  background: var(--button-primary-hover);
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
 }
 
 .navigate-button:active {
   transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 4px 10px var(--primary);
 }
+
 /* Features Section */
 .features-section {
   text-align: center;
@@ -129,17 +138,19 @@
   flex-wrap: wrap;
 }
 
+/* Feature Cards */
 .feature-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--card-bg);
   padding: 15px;
   border-radius: 15px;
   width: 300px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
 }
 
 .feature-card img {
@@ -151,12 +162,12 @@
 
 .feature-card h3 {
   font-size: 1.5em;
-  color: #333;
+  color: var(--foreground);
 }
 
 .feature-card p {
   font-size: 1em;
-  color: #555;
+  color: var(--secondary);
 }
 
 /* Responsive Design */

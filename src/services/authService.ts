@@ -1,8 +1,10 @@
+// src/services/authService.ts
+
 import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
   User,
   updatePassword as firebaseUpdatePassword,
   sendPasswordResetEmail,
@@ -26,16 +28,24 @@ const db = getFirestore(firebaseApp);
 export interface CustomUser extends User {
   role: "student" | "faculty" | "admin";
   name?: string;
+  address?: string;
   faculty?: string;
+  DOB?: string;
+  phoneNumber: string; // User's phone number
   profilePicture?: string;
+  isActive?: boolean; // Whether the user is active
 }
 
 const createCustomUser = (user: User, data: any): CustomUser => ({
-  ...user,
-  role: data.role || "student",
-  name: data.name || "Unknown",
-  faculty: data.faculty || "",
-  profilePicture: data.profilePicture || "",
+  ...user, // Include all properties of the Auth user object
+  role: data.role || "student", // Default to "student" if role is not provided
+  name: data.name || "Unknown", // Default to "Unknown" if name is not provided
+  faculty: data.faculty || "", // Default to an empty string if faculty is not provided
+  profilePicture: data.profilePicture || "", // Default to an empty string if no profile picture
+  phoneNumber: data.phoneNumber || "", // Default to an empty string if phone number is not provided
+  address: data.address || "", // Default to an empty string if address is not provided
+  DOB: data.DOB || "", // Default to an empty string if DOB is not provided
+  isActive: data.isActive !== undefined ? data.isActive : true, // Default to `true` if not provided
 });
 
 export const authService = {
@@ -71,25 +81,38 @@ export const authService = {
     }
   },
 
-  // Listen for authentication state changes
-  onAuthStateChanged: (callback: (user: CustomUser | null) => void): void => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const authenticatedUser: CustomUser = createCustomUser(user, userData);
-            console.log("Authentication state changed: User is authenticated", authenticatedUser);
-            callback(authenticatedUser);
-          } else {
+  // Listen for authentication state changes and return unsubscribe function
+  onAuthStateChanged: (
+    callback: (user: CustomUser | null) => void
+  ): (() => void) => {
+    return firebaseOnAuthStateChanged(auth, (firebaseUser) => {
+      console.log("firebaseOnAuthStateChanged called with firebaseUser:", firebaseUser);
+      if (firebaseUser) {
+        // Fetch the user's Firestore document
+        getDoc(doc(db, "users", firebaseUser.uid))
+          .then((userDoc) => {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              const authenticatedUser: CustomUser = createCustomUser(
+                firebaseUser,
+                userData
+              );
+              console.log(
+                "Authentication state changed: User is authenticated",
+                authenticatedUser
+              );
+              callback(authenticatedUser);
+            } else {
+              console.warn("User document does not exist in Firestore.");
+              callback(null);
+            }
+          })
+          .catch((error) => {
+            console.error("Error retrieving user document:", error);
             callback(null);
-          }
-        } catch (error) {
-          console.error("Error during authentication state change:", error);
-          callback(null);
-        }
+          });
       } else {
+        console.log("User is signed out.");
         callback(null);
       }
     });
@@ -100,11 +123,16 @@ export const authService = {
     if (auth.currentUser) {
       try {
         const currentUser = auth.currentUser;
+
+        // Fetch the user's Firestore document
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+
+          // Merge Auth data with Firestore data
           return createCustomUser(currentUser, userData);
         } else {
+          console.warn("User document does not exist in Firestore.");
           return null;
         }
       } catch (error) {
@@ -113,15 +141,24 @@ export const authService = {
       }
     }
 
+    // Handle cases where auth.currentUser is null
     return new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        unsubscribe();
+      const unsubscribe = firebaseOnAuthStateChanged(auth, async (user) => {
+        unsubscribe(); // Unsubscribe from the listener
         if (user) {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            resolve(createCustomUser(user, userData));
-          } else {
+          try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+
+              // Merge Auth data with Firestore data
+              resolve(createCustomUser(user, userData));
+            } else {
+              console.warn("User document does not exist in Firestore.");
+              resolve(null);
+            }
+          } catch (error) {
+            console.error("Error retrieving user document:", error);
             resolve(null);
           }
         } else {
@@ -132,7 +169,15 @@ export const authService = {
   },
 
   // Update user profile
-  updateUserProfile: async (updatedData: { name?: string; email?: string; faculty?: string }): Promise<void> => {
+  updateUserProfile: async (updatedData: {
+    name?: string;
+    email?: string;
+    faculty?: string;
+    phoneNumber?: string; // Add phoneNumber
+    address?: string; // Add address
+    profilePicture?: string | null;
+    DOB?: string;
+  }): Promise<void> => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error("No user is currently logged in.");
@@ -148,7 +193,10 @@ export const authService = {
   },
 
   // Change user password
-  changeUserPassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+  changeUserPassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> => {
     const currentUser = auth.currentUser;
     if (!currentUser || !currentUser.email) {
       throw new Error("No user is logged in or email is unavailable.");

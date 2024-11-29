@@ -1,17 +1,24 @@
+// src/pages/FacilitiesBooking.tsx
+
 import React, { useState, useEffect } from "react";
 import { Timestamp } from "firebase/firestore";
-import { databaseService } from "../../services/databaseService";
+import {
+  getFacilities,
+  getAvailableSlots,
+  bookFacility,
+} from "../../services/databaseService";
+import { auth } from "../../services/firebase"; // Import auth to get current user
 import "../../styles/FacilitiesBooking.css";
 import Sidebar from "../../components/Sidebar";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
-// Define types for facilities and slots
 interface Facility {
   id: string;
   name: string;
-  location: string; // Include location
-  status: string; // Include status
-  availableSlots: string[]; // Ensure availableSlots is part of the Facility
-  capacity?: number; // Optional capacity field
+  location: string;
+  status: string;
+  availableSlots: string[];
+  capacity?: number;
 }
 
 const FacilitiesBooking: React.FC = () => {
@@ -29,8 +36,7 @@ const FacilitiesBooking: React.FC = () => {
     const fetchFacilities = async () => {
       try {
         setLoading(true);
-        const facilitiesList: Facility[] =
-          await databaseService.getFacilities();
+        const facilitiesList: Facility[] = await getFacilities();
 
         // Filter facilities with "pending" status
         const filteredFacilities = facilitiesList.filter(
@@ -39,8 +45,8 @@ const FacilitiesBooking: React.FC = () => {
 
         setFacilities(filteredFacilities);
         setLoading(false);
-      } catch (error) {
-        console.error("Error fetching facilities:", error);
+      } catch (err) {
+        console.error("Error fetching facilities:", err);
         setError("Error fetching facilities. Please try again later.");
         setLoading(false);
       }
@@ -85,7 +91,7 @@ const FacilitiesBooking: React.FC = () => {
 
     try {
       setLoading(true);
-      const slots = await databaseService.getAvailableSlots(
+      const slots = await getAvailableSlots(
         selectedFacility,
         Timestamp.fromDate(selectedDate)
       );
@@ -94,8 +100,8 @@ const FacilitiesBooking: React.FC = () => {
         slots.length > 0 ? "" : "No slots available for the selected date."
       );
       setLoading(false);
-    } catch (error) {
-      console.error("Error checking availability:", error);
+    } catch (err) {
+      console.error("Error checking availability:", err);
       setMessage("Error checking availability. Please try again later.");
       setLoading(false);
     }
@@ -112,89 +118,107 @@ const FacilitiesBooking: React.FC = () => {
       return;
     }
 
+    // Ensure the user is authenticated
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setMessage("You must be logged in to book a facility.");
+      return;
+    }
+
+    const userId = currentUser.uid;
+
     try {
       setLoading(true);
-      await databaseService.bookFacility(
+      await bookFacility(
         selectedFacility,
         selectedSlot,
-        Timestamp.fromDate(new Date(bookingDate))
+        Timestamp.fromDate(new Date(bookingDate)),
+        userId
       );
       setMessage("Booking confirmed! Your slot is now reserved.");
       setAvailableSlots([]); // Clear available slots after booking
       setSelectedSlot(""); // Clear selected slot after booking
       setLoading(false);
-    } catch (error) {
-      console.error("Error booking facility:", error);
+    } catch (err) {
+      console.error("Error booking facility:", err);
       setMessage("Error booking facility. Please try again later.");
       setLoading(false);
     }
   };
 
   return (
-    <div className="facilities-booking-container">
-      <h2>Facilities Booking</h2>
-      {loading && <p>Loading...</p>}
-      {error && <p className="error-message">{error}</p>}
+    <div className="facilities-booking-page">
+      {/* Assuming Sidebar is part of the layout */}
+      <div className="facilities-booking-container">
+        <h2>Facilities Booking</h2>
+        {loading && <LoadingSpinner />}
+        {error && <p className="error-message">{error}</p>}
 
-      <div className="booking-form">
-        <label>Facility:</label>
-        <select value={selectedFacility} onChange={handleFacilityChange}>
-          <option value="">Select a facility</option>
-          {facilities.map((facility) => (
-            <option key={facility.id} value={facility.id}>
-              <strong> {facility.name} </strong>- {facility.location}{" "}
-              {facility.capacity ? `(Capacity: ${facility.capacity})` : ""}
-            </option>
-          ))}
-        </select>
+        <div className="booking-form">
+          <label htmlFor="facility-select">Facility:</label>
+          <select
+            id="facility-select"
+            value={selectedFacility}
+            onChange={handleFacilityChange}
+          >
+            <option value="">Select a facility</option>
+            {facilities.map((facility) => (
+              <option key={facility.id} value={facility.id}>
+                <strong>{facility.name}</strong> - {facility.location}{" "}
+                {facility.capacity ? `(Capacity: ${facility.capacity})` : ""}
+              </option>
+            ))}
+          </select>
 
-        <label>Date:</label>
-        <input
-          type="date"
-          value={bookingDate}
-          onChange={handleDateChange}
-          min={new Date().toISOString().split("T")[0]} // Prevent past dates
-        />
+          <label htmlFor="booking-date">Date:</label>
+          <input
+            type="date"
+            id="booking-date"
+            value={bookingDate}
+            onChange={handleDateChange}
+            min={new Date().toISOString().split("T")[0]} // Prevent past dates
+          />
 
-        <button
-          onClick={checkAvailability}
-          className="check-availability-btn"
-          disabled={loading || selectedFacility === ""}
-        >
-          Check Availability
-        </button>
+          <button
+            onClick={checkAvailability}
+            className="check-availability-btn"
+            disabled={loading || selectedFacility === ""}
+          >
+            Check Availability
+          </button>
 
-        {availableSlots.length > 0 && (
-          <div className="available-slots">
-            <h4>Available Slots:</h4>
-            <ul>
-              {availableSlots.map((slot, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSlotSelection(slot)}
-                  className={selectedSlot === slot ? "selected" : ""}
-                >
-                  {slot}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {availableSlots.length > 0 && (
+            <div className="available-slots">
+              <h4>Available Slots:</h4>
+              <ul>
+                {availableSlots.map((slot, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSlotSelection(slot)}
+                    className={selectedSlot === slot ? "selected" : ""}
+                  >
+                    {slot}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        {selectedSlot && (
-          <div className="selected-slot">
-            <p>Selected Slot: {selectedSlot}</p>
-            <button
-              onClick={handleBooking}
-              className="confirm-booking-btn"
-              disabled={loading}
-            >
-              Confirm Booking
-            </button>
-          </div>
-        )}
+          {selectedSlot && (
+            <div className="selected-slot">
+              <p>Selected Slot: {selectedSlot}</p>
+              <button
+                onClick={handleBooking}
+                className="confirm-booking-btn"
+                disabled={loading}
+              >
+                Confirm Booking
+              </button>
+            </div>
+          )}
 
-        {message && <p className="booking-message">{message}</p>}
+          {message && <p className="booking-message">{message}</p>}
+        </div>
       </div>
     </div>
   );

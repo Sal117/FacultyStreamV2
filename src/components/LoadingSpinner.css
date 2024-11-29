@@ -1,37 +1,89 @@
 .spinner-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.5); /* semi-transparent white background */
-    z-index: 1000; /* high index to ensure it covers other content */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border-left-color: #09f;
-    animation: spin 1s ease infinite;
-  }
-  
-  @keyframes spin {
-    0% {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(var(--foreground-rgb), 0.5); /* Semi-transparent overlay, dynamic for dark mode */
+  z-index: 1000; /* High index to ensure it covers other content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enhanced Spinner */
+.spinner {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: conic-gradient(var(--button-primary-bg), transparent);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), black);
+  animation: spin 1s linear infinite;
+}
+
+/* Inner Pulse */
+.spinner::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  background: var(--card-bg); /* Matches theme background */
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Keyframes for spinning */
+@keyframes spin {
+  0% {
       transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
   }
-  
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+/* Keyframes for pulsing */
+@keyframes pulse {
+  0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+  }
+  50% {
+      transform: translate(-50%, -50%) scale(1.3);
+      opacity: 0.5;
+  }
+}
+
+/* Subtle glow effect */
+.spinner-overlay::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--button-primary-bg) 0%, transparent 70%);
+  opacity: 0.2;
+  animation: glow 2s infinite alternate;
+}
+
+/* Keyframes for glowing */
+@keyframes glow {
+  0% {
+      opacity: 0.1;
+      transform: scale(1);
+  }
+  100% {
+      opacity: 0.4;
+      transform: scale(1.2);
+  }
+}

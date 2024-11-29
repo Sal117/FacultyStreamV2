@@ -1,41 +1,42 @@
 .form-input {
-    margin-bottom: 20px;
-    position: relative;
-  }
-  
-  .form-input label {
-    display: block;
-    margin-bottom: 5px;
-    color: #666;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-  }
-  
-  .input:focus {
-    border-color: #0056b3;
-    outline: none;
-  }
-  
-  .input.valid {
-    border-color: #28a745; /* Green for valid input */
-  }
-  
-  .input.invalid {
-    border-color: #dc3545; /* Red for error */
-  }
-  
-  .error-message {
-    color: #dc3545;
-    font-size: 0.875em;
-    position: absolute;
-    left: 0;
-    bottom: -20px;
-  }
-  
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.form-input label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--secondary); /* Replaced #666 */
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--input-border); /* Replaced #ccc */
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  background-color: var(--input-bg); /* Added input background for dark mode */
+  color: var(--foreground); /* Text color */
+}
+
+.input:focus {
+  border-color: var(--button-primary-bg); /* Replaced #0056b3 */
+  outline: none;
+}
+
+.input.valid {
+  border-color: var(--success-bg); /* Replaced #28a745 */
+}
+
+.input.invalid {
+  border-color: var(--destructive-bg); /* Replaced #dc3545 */
+}
+
+.error-message {
+  color: var(--destructive-bg); /* Replaced #dc3545 */
+  font-size: 0.875em;
+  position: absolute;
+  left: 0;
+  bottom: -20px;
+}
