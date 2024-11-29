@@ -10,6 +10,7 @@ import AppointmentCalendar from "../../components/AppointmentCalendar";
 import Sidebar from "../../components/Sidebar";
 import NotificationBanner from "../../components/NotificationBanner";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { generateGoogleMeetLink } from "../../utils/meetingUtils";
 import "../../styles/Appointment.css";
 
 const Appointment: React.FC = () => {
@@ -114,6 +115,14 @@ const Appointment: React.FC = () => {
     checkAvailability();
   }, [selectedDate, selectedUsers]);
 
+  useEffect(() => {
+    if (meetingType === 'online') {
+      setMeetingLink(generateGoogleMeetLink());
+    } else {
+      setMeetingLink('');
+    }
+  }, [meetingType]);
+
   const generateTimeSlots = () => {
     const slots = [];
     for (let hour = 9; hour < 17; hour++) {
@@ -138,16 +147,16 @@ const Appointment: React.FC = () => {
         startTime: selectedStartTime,
         endTime: selectedEndTime,
         meetingType,
-        meetingLink: meetingType === 'online' ? meetingLink : undefined,
-        facilityId: meetingType === 'physical' ? selectedFacility : undefined,
+        meetingLink: meetingType === 'online' ? meetingLink : null,
+        facilityId: meetingType === 'physical' ? selectedFacility : null,
         notes,
         status: currentUserData.role === 'faculty' ? 'accepted' : 'pending',
         createdBy: currentUserData.id,
-        createdByRole: currentUserData.role as 'faculty' | 'student',
+        createdByRole: currentUserData.role,
         createdByName: currentUserData.name
       };
 
-      await appointmentService.addAppointmentWithSecondaryUser(appointmentData, currentUserData.name);
+      await appointmentService.createAppointment(appointmentData);
       setNotification("Appointment created successfully!");
       
       // Reset form
@@ -269,8 +278,8 @@ const Appointment: React.FC = () => {
               <input
                 type="text"
                 value={meetingLink}
-                onChange={(e) => setMeetingLink(e.target.value)}
-                placeholder="Enter meeting link (optional)"
+                readOnly
+                className="meeting-link-input"
               />
             </div>
           )}

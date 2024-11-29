@@ -323,6 +323,20 @@ button:active {
   text-decoration: underline;
 }
 
+/* Meeting Link Input */
+.meeting-link-input {
+  background-color: #f3f4f6;
+  cursor: default;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.meeting-link-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

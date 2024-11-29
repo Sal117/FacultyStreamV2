@@ -2,7 +2,6 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
@@ -18,12 +17,15 @@ const firebaseConfig = {
   measurementId: "G-YETQ94850X"
 };
 
-
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const firebaseApp = initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);
+export const storage = getStorage(firebaseApp);
 
-export const firebaseApp = app;  // Exporting 'app' as 'firebaseApp'
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-export const storage = getStorage(app);
+// Configure Storage
+const storageRef = storage;
+storageRef.maxOperationRetryTime = 10000; // 10 seconds
+storageRef.maxUploadRetryTime = 10000; // 10 seconds
+
+export { storageRef };
