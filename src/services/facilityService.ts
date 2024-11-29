@@ -57,12 +57,19 @@ class FacilityService {
   async getAllFacilities(): Promise<Facility[]> {
     try {
       const snapshot = await getDocs(collection(db, 'facilities'));
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: (doc.data().createdAt as Timestamp).toDate(),
-        updatedAt: (doc.data().updatedAt as Timestamp).toDate()
-      } as Facility));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
+          updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate() : new Date(),
+          schedule: data.schedule || {},
+          amenities: data.amenities || [],
+          status: data.status || 'available',
+          type: data.type || 'meeting-room'
+        } as Facility;
+      });
     } catch (error) {
       console.error('Failed to fetch facilities:', error);
       throw new Error('Failed to fetch facilities');
@@ -76,7 +83,7 @@ class FacilityService {
       const dateString = date.toISOString().split('T')[0];
       
       return facilities.filter(facility => {
-        const schedule = facility.schedule[dateString];
+        const schedule = facility.schedule?.[dateString];
         if (!schedule) return true; // No bookings for this date
 
         // Check if the facility is available for the entire time range
@@ -97,6 +104,10 @@ class FacilityService {
     }
   }
 
+  private isTimeOverlap(start1: string, end1: string, start2: string, end2: string): boolean {
+    return start1 < end2 && end1 > start2;
+  }
+
   // Reserve a facility for an appointment
   async reserveFacility(
     facilityId: string,
@@ -115,31 +126,24 @@ class FacilityService {
 
       const dateString = date.toISOString().split('T')[0];
       const timeSlot = `${startTime}-${endTime}`;
-      const facility = facilityDoc.data() as Facility;
+      const currentData = facilityDoc.data();
+      const schedule = currentData.schedule || {};
 
-      // Initialize schedule for the date if it doesn't exist
-      if (!facility.schedule[dateString]) {
-        facility.schedule[dateString] = {};
+      // Initialize the schedule for this date if it doesn't exist
+      if (!schedule[dateString]) {
+        schedule[dateString] = {};
       }
 
-      // Check for conflicts
-      for (const existingSlot in facility.schedule[dateString]) {
-        const [existingStart, existingEnd] = existingSlot.split('-');
-        if (
-          this.isTimeOverlap(startTime, endTime, existingStart, existingEnd) &&
-          !facility.schedule[dateString][existingSlot].isAvailable
-        ) {
-          throw new Error('Time slot is already reserved');
-        }
-      }
+      // Update the time slot
+      schedule[dateString][timeSlot] = {
+        isAvailable: false,
+        appointmentId
+      };
 
-      // Update the facility's schedule
       await updateDoc(facilityRef, {
-        [`schedule.${dateString}.${timeSlot}`]: {
-          isAvailable: false,
-          appointmentId
-        },
-        updatedAt: Timestamp.now()
+        schedule,
+        updatedAt: Timestamp.now(),
+        status: 'reserved'
       });
 
     } catch (error) {
@@ -157,15 +161,26 @@ class FacilityService {
   ): Promise<void> {
     try {
       const facilityRef = doc(db, 'facilities', facilityId);
+      const facilityDoc = await getDoc(facilityRef);
+      
+      if (!facilityDoc.exists()) {
+        throw new Error('Facility not found');
+      }
+
       const dateString = date.toISOString().split('T')[0];
       const timeSlot = `${startTime}-${endTime}`;
+      const currentData = facilityDoc.data();
+      const schedule = currentData.schedule || {};
+
+      if (schedule[dateString] && schedule[dateString][timeSlot]) {
+        schedule[dateString][timeSlot].isAvailable = true;
+        delete schedule[dateString][timeSlot].appointmentId;
+      }
 
       await updateDoc(facilityRef, {
-        [`schedule.${dateString}.${timeSlot}`]: {
-          isAvailable: true,
-          appointmentId: null
-        },
-        updatedAt: Timestamp.now()
+        schedule,
+        updatedAt: Timestamp.now(),
+        status: 'available'
       });
 
     } catch (error) {
@@ -207,26 +222,6 @@ class FacilityService {
       console.error('Error checking facility availability:', error);
       throw error;
     }
-  }
-
-  // Helper function to check if two time ranges overlap
-  private isTimeOverlap(
-    start1: string,
-    end1: string,
-    start2: string,
-    end2: string
-  ): boolean {
-    const [h1, m1] = start1.split(':').map(Number);
-    const [h2, m2] = end1.split(':').map(Number);
-    const [h3, m3] = start2.split(':').map(Number);
-    const [h4, m4] = end2.split(':').map(Number);
-
-    const time1 = h1 * 60 + m1;
-    const time2 = h2 * 60 + m2;
-    const time3 = h3 * 60 + m3;
-    const time4 = h4 * 60 + m4;
-
-    return Math.max(time1, time3) < Math.min(time2, time4);
   }
 
   // Helper function to check if two time ranges conflict
