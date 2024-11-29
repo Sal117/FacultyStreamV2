@@ -179,7 +179,7 @@ const Appointment: React.FC = () => {
         status: 'pending' as const,
         createdBy: user.uid,
         createdByName: currentUserData.name,
-        createdByRole: currentUserData.role,
+        createdByRole: currentUserData.role === 'admin' ? 'faculty' : currentUserData.role,
         facultyId: currentUserData.role === 'student' ? selectedUsers[0] : user.uid,
         studentIds: currentUserData.role === 'student' ? [user.uid] : selectedUsers,
         notes,

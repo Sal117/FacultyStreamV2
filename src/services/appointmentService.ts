@@ -59,17 +59,38 @@ class AppointmentService {
         }
       }
 
-      const firestoreData = this.convertToFirestore({
+      const now = Timestamp.now();
+      const firestoreData: Omit<FirestoreAppointment, 'id'> = {
         ...appointmentData,
+        date: Timestamp.fromDate(appointmentData.date),
         meetingLink: appointmentData.meetingLink || null,
-        facilityId: appointmentData.facilityId || null
+        facilityId: appointmentData.facilityId || null,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const docRef = await addDoc(this.appointmentsRef, firestoreData);
+
+      // Notify users about new appointment
+      const notificationData = {
+        message: `New appointment scheduled for ${appointmentData.date.toLocaleDateString()}`,
+        type: 'info' as NotificationType,
+        relatedAppointmentId: docRef.id
+      };
+
+      // Notify faculty
+      await notificationService.notify({
+        ...notificationData,
+        recipientId: appointmentData.facultyId
       });
 
-      const docRef = await addDoc(this.appointmentsRef, {
-        ...firestoreData,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      // Notify students
+      for (const studentId of appointmentData.studentIds) {
+        await notificationService.notify({
+          ...notificationData,
+          recipientId: studentId
+        });
+      }
 
       return docRef.id;
     } catch (error) {
@@ -220,44 +241,43 @@ class AppointmentService {
   }
 
   async updateAppointmentStatus(
-    appointmentId: string, 
+    appointmentId: string,
     status: Appointment['status'],
     updatedBy: string
   ): Promise<void> {
     try {
-      const appointment = await this.getAppointment(appointmentId);
-      if (!appointment) {
+      const docRef = doc(this.appointmentsRef, appointmentId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
         throw new Error('Appointment not found');
       }
 
-      await updateDoc(doc(this.appointmentsRef, appointmentId), {
+      const appointment = this.convertFromFirestore(docSnap.data(), appointmentId);
+      const now = Timestamp.now();
+
+      await updateDoc(docRef, {
         status,
-        updatedAt: Timestamp.now(),
+        updatedAt: now,
         updatedBy
       });
 
-      // Notify relevant users
-      const getStatusType = (status: string): NotificationType => {
-        if (status === 'accepted') return 'success';
-        if (status === 'rejected') return 'error';
-        return 'alert';
-      };
-
+      // Notify users about status update
       const notificationData = {
-        message: `Appointment status has been updated to ${status}`,
-        type: getStatusType(status),
-        relatedAppointmentId: appointmentId,
-        read: false
+        message: `Appointment for ${appointment.date.toLocaleDateString()} has been ${status}`,
+        type: 'info' as NotificationType,
+        relatedAppointmentId: appointmentId
       };
 
-      // Notify all involved parties
-      await notificationService.createNotification({
+      // Notify faculty
+      await notificationService.notify({
         ...notificationData,
         recipientId: appointment.facultyId
       });
 
+      // Notify students
       for (const studentId of appointment.studentIds) {
-        await notificationService.createNotification({
+        await notificationService.notify({
           ...notificationData,
           recipientId: studentId
         });

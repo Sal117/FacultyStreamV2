@@ -98,21 +98,33 @@
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
 }
 
 .appointment-actions button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .accept-btn {
-  background-color: var(--success-color);
-  color: white;
+  background-color: #28a745;
+}
+
+.accept-btn:hover {
+  background-color: #218838;
 }
 
 .reject-btn {
-  background-color: var(--error-color);
-  color: white;
+  background-color: #dc3545;
+}
+
+.reject-btn:hover {
+  background-color: #c82333;
 }
 
 .delete-btn {
@@ -125,8 +137,12 @@
 }
 
 .reschedule-btn {
-  background-color: var(--warning-color);
-  color: white;
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.reschedule-btn:hover {
+  background-color: #e0a800;
 }
 
 /* Dark mode support */

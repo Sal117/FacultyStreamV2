@@ -59,11 +59,10 @@ const StudentDashboard: React.FC = () => {
     const fetchAnnouncements = async () => {
       try {
         const result = await announcementService.getAllAnnouncements();
-        const firestoreAnnouncements = result as unknown as FirestoreAnnouncement[];
-        const convertedAnnouncements: Announcement[] = firestoreAnnouncements.map(announcement => ({
+        const convertedAnnouncements: Announcement[] = result.map(announcement => ({
           ...announcement,
-          createdAt: announcement.createdAt.toDate(),
-          date: announcement.date?.toDate() || undefined
+          createdAt: announcement.createdAt instanceof Date ? announcement.createdAt : new Date(announcement.createdAt),
+          date: announcement.date instanceof Date ? announcement.date : announcement.date ? new Date(announcement.date) : undefined
         }));
         setAnnouncements(convertedAnnouncements);
       } catch (error) {
