@@ -49,7 +49,7 @@ const FacultyDashboard: React.FC = () => {
           }
         );
 
-        const unsubscribeNotifications = notificationService.subscribeToUserNotifications(
+        const unsubscribeNotifications = notificationService.listenToNotifications(
           user.uid,
           (newNotifications: FirestoreNotification[]) => {
             setNotifications(newNotifications.map(notification => ({

@@ -292,11 +292,15 @@ export class AppointmentService {
       }
 
       const status = appointmentData.createdByRole === 'faculty' ? 'accepted' : 'pending';
-      const appointmentId = await this.createAppointment({
+      const appointmentToCreate = {
         ...appointmentData,
         status,
-        createdByName
-      });
+        createdByName,
+        meetingLink: appointmentData.meetingLink || null,
+        facilityId: appointmentData.facilityId || null
+      };
+      
+      const appointmentId = await this.createAppointment(appointmentToCreate);
 
       const appointment = await this.getAppointment(appointmentId);
       if (!appointment) {
@@ -304,22 +308,20 @@ export class AppointmentService {
       }
 
       // Notify relevant users
-      await notificationService.createNotification({
+      await notificationService.notify({
         message: `Your appointment request has been ${status}`,
         type: status === 'accepted' ? 'success' : 'error',
         recipientId: appointment.createdBy,
-        relatedAppointmentId: appointmentId,
-        read: false
+        relatedAppointmentId: appointmentId
       });
 
       // Notify faculty if student created
       if (appointment.createdByRole === 'student') {
-        await notificationService.createNotification({
+        await notificationService.notify({
           message: `A student has requested an appointment for ${appointment.date}`,
           type: 'alert',
           recipientId: appointment.facultyId,
-          relatedAppointmentId: appointmentId,
-          read: false
+          relatedAppointmentId: appointmentId
         });
       }
 
@@ -335,7 +337,7 @@ export class AppointmentService {
       const appointmentDoc = await getDoc(doc(this.appointmentsRef, appointmentId));
       if (!appointmentDoc.exists()) return null;
       
-      return this.convertFromFirestore(appointmentDoc.data(), appointmentDoc.id);
+      return this.convertFromFirestore(appointmentDoc.data(), appointmentId);
     } catch (error) {
       console.error('Error getting appointment by id:', error);
       throw error;
@@ -540,12 +542,11 @@ export class AppointmentService {
       // Send notification
       const appointment = await this.getAppointment(appointmentId);
       if (appointment) {
-        await notificationService.createNotification({
+        await notificationService.notify({
           message: 'Your appointment has been accepted',
           type: 'success',
           recipientId: appointment.createdBy,
-          relatedAppointmentId: appointmentId,
-          read: false
+          relatedAppointmentId: appointmentId
         });
       }
     } catch (error) {
@@ -565,12 +566,11 @@ export class AppointmentService {
       // Send notification
       const appointment = await this.getAppointment(appointmentId);
       if (appointment) {
-        await notificationService.createNotification({
+        await notificationService.notify({
           message: 'Your appointment has been rejected',
           type: 'error',
           recipientId: appointment.createdBy,
-          relatedAppointmentId: appointmentId,
-          read: false
+          relatedAppointmentId: appointmentId
         });
       }
     } catch (error) {
