@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Appointment {
   id: string;
   facultyId: string;
@@ -13,9 +15,19 @@ export interface Appointment {
   createdBy: string;
   createdByRole: 'student' | 'faculty';
   createdByName: string;
-  createdAt?: Date;
+  createdAt: Date;
   updatedAt?: Date;
   updatedBy?: string;
 }
 
-export type AppointmentPayload = Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>;
+export interface FirestoreAppointment extends Omit<Appointment, 'date' | 'createdAt' | 'updatedAt'> {
+  date: Timestamp;
+  createdAt: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface CalendarAppointment extends Appointment {
+  title: string;
+  start: Date;
+  end: Date;
+}

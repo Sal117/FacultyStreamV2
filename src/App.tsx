@@ -53,7 +53,11 @@ const AppointmentManagement = lazy(
 );
 
 // Student Pages
-const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
+const StudentDashboard = lazy(() =>
+  import("./pages/student/StudentDashboard").then((module) => ({
+    default: module.default,
+  }))
+);
 const StudentForms = lazy(() => import("./pages/student/StudentForms"));
 const DocumentsAccess = lazy(() => import("./pages/student/DocumentsAccess"));
 

@@ -116,38 +116,39 @@
 }
 
 .appointment-actions button {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: 5px;
   font-weight: 500;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.appointment-actions button:hover {
-  transform: translateY(-2px);
-}
-
-.appointment-actions button:active {
-  transform: translateY(0);
-  opacity: 0.9;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: #ffffff;
 }
 
 .accept-btn {
-  background-color: var(--success-bg);
-  color: var(--button-text);
+  background-color: #4CAF50;  /* Green */
+}
+
+.accept-btn:hover {
+  background-color: #45a049;
 }
 
 .reject-btn {
-  background-color: var(--destructive-bg);
-  color: var(--button-text);
+  background-color: #f44336;  /* Red */
 }
 
-.reschedule-btn {
-  background-color: var(--warning-bg);
-  color: var(--button-text);
+.reject-btn:hover {
+  background-color: #da190b;
+}
+
+.delete-btn {
+  background-color: #dc3545;  /* Danger Red */
+  color: #ffffff;
+  margin-left: auto;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
 }
 
 /* Reschedule form */

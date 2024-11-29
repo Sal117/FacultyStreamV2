@@ -1,14 +1,9 @@
 /* AppointmentCalendar.css */
 .appointment-calendar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
-  background: var(--card-bg);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
+  padding: 1rem;
+  background: var(--background-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -54,6 +49,126 @@ h2 {
   border-radius: 50%;
   margin: 5px auto 0 auto;
   box-shadow: 0 0 5px rgba(220, 53, 69, 0.8); /* Optional: Replace with a variable */
+}
+
+.fc .fc-toolbar {
+  margin-bottom: 1.5rem !important;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.fc .fc-button-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: none !important;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: var(--primary-color-dark) !important;
+  border-color: var(--primary-color-dark) !important;
+  opacity: 0.9;
+}
+
+.fc .fc-button-primary:disabled {
+  background-color: var(--disabled-color) !important;
+  border-color: var(--disabled-color) !important;
+}
+
+.fc .fc-daygrid-day {
+  transition: background-color 0.2s ease;
+}
+
+.fc .fc-daygrid-day:hover {
+  background-color: var(--hover-color);
+}
+
+.fc .fc-daygrid-day-number {
+  font-weight: 500;
+  color: var(--text-color);
+  padding: 0.5rem;
+}
+
+.fc-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 1px 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+}
+
+.appointment-pending {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color-dark) !important;
+}
+
+.appointment-accepted {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color-dark) !important;
+}
+
+.appointment-rejected {
+  background-color: var(--error-color) !important;
+  border-color: var(--error-color-dark) !important;
+}
+
+.appointment-cancelled {
+  background-color: var(--disabled-color) !important;
+  border-color: var(--disabled-color-dark) !important;
+  text-decoration: line-through;
+}
+
+.fc .fc-timegrid-slot {
+  height: 2.5rem !important;
+}
+
+.fc .fc-timegrid-axis {
+  font-weight: 500;
+}
+
+.fc .fc-day-today {
+  background-color: var(--highlight-color) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fc-theme-standard .fc-scrollgrid {
+    border-color: var(--border-color-dark);
+  }
+  
+  .fc-theme-standard td, 
+  .fc-theme-standard th {
+    border-color: var(--border-color-dark);
+  }
+
+  .fc .fc-day-other .fc-daygrid-day-number {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.2rem !important;
+  }
+
+  .fc .fc-button {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.9rem !important;
+  }
 }
 
 .appointments-list {

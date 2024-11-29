@@ -9,28 +9,35 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // buffer: 'buffer', // Comment out
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  define: {
-    // global: {}, // Comment out
-  },
-  
-  server: {
-    hmr: {
-      overlay: false, // Disable HMR overlay for errors
-    },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
-        globals: {
-          // buffer: 'Buffer', // Comment out
-        },
-      },
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'router-vendor': ['react-router-dom'],
+          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore']
+        }
+      }
     },
+    chunkSizeWarningLimit: 1000
   },
+  server: {
+    port: 5173,
+    hmr: {
+      overlay: true
+    },
+    watch: {
+      usePolling: true
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore']
+  }
 });
 
 // TypeScript interfaces remain unchanged

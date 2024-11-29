@@ -1,6 +1,6 @@
 import { db } from '../config/firebase';
 import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, onSnapshot } from 'firebase/firestore';
-import type { Appointment } from '../types/appointment';
+import type { Appointment, FirestoreAppointment } from '../types/appointment';
 import { notificationService } from './notificationService';
 import { facilityService } from './facilityService';
 import type { Notification } from '../types/notification';
@@ -13,7 +13,7 @@ class AppointmentService {
   private appointmentsRef = collection(db, 'appointments');
 
   // Convert Firestore data to Appointment type
-  private convertToAppointment(data: any, id: string): Appointment {
+  private convertFromFirestore(data: any, id: string): Appointment {
     return {
       id,
       facultyId: data.facultyId,
@@ -22,8 +22,8 @@ class AppointmentService {
       startTime: data.startTime,
       endTime: data.endTime,
       meetingType: data.meetingType,
-      meetingLink: data.meetingLink,
-      facilityId: data.facilityId,
+      meetingLink: data.meetingLink || null,
+      facilityId: data.facilityId || null,
       notes: data.notes,
       status: data.status,
       createdBy: data.createdBy,
@@ -32,6 +32,16 @@ class AppointmentService {
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate(),
       updatedBy: data.updatedBy
+    };
+  }
+
+  // Convert Appointment type to Firestore data
+  private convertToFirestore(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Omit<FirestoreAppointment, 'id'> {
+    return {
+      ...data,
+      date: Timestamp.fromDate(data.date),
+      meetingLink: data.meetingLink || null,
+      facilityId: data.facilityId || null
     };
   }
 
@@ -49,13 +59,18 @@ class AppointmentService {
         }
       }
 
-      const appointmentWithDates = {
+      const firestoreData = this.convertToFirestore({
         ...appointmentData,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        meetingLink: appointmentData.meetingLink || null,
+        facilityId: appointmentData.facilityId || null
+      });
 
-      const docRef = await addDoc(this.appointmentsRef, appointmentWithDates);
+      const docRef = await addDoc(this.appointmentsRef, {
+        ...firestoreData,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+
       return docRef.id;
     } catch (error) {
       console.error('Error creating appointment:', error);
@@ -68,7 +83,7 @@ class AppointmentService {
       const appointmentDoc = await getDoc(doc(this.appointmentsRef, appointmentId));
       if (!appointmentDoc.exists()) return null;
       
-      return this.convertToAppointment(appointmentDoc.data(), appointmentDoc.id);
+      return this.convertFromFirestore(appointmentDoc.data(), appointmentDoc.id);
     } catch (error) {
       console.error('Error getting appointment:', error);
       throw error;
@@ -79,7 +94,7 @@ class AppointmentService {
     try {
       const q = query(this.appointmentsRef, where('facultyId', '==', facultyId));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
     } catch (error) {
       console.error('Error getting faculty appointments:', error);
       throw error;
@@ -90,7 +105,7 @@ class AppointmentService {
     try {
       const q = query(this.appointmentsRef, where('studentIds', 'array-contains', studentId));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
     } catch (error) {
       console.error('Error getting student appointments:', error);
       throw error;
@@ -112,7 +127,7 @@ class AppointmentService {
       }
 
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
     } catch (error) {
       console.error('Error getting user appointments:', error);
       throw error;
@@ -217,7 +232,7 @@ class AppointmentService {
 
       await updateDoc(doc(this.appointmentsRef, appointmentId), {
         status,
-        updatedAt: new Date(),
+        updatedAt: Timestamp.now(),
         updatedBy
       });
 
@@ -264,28 +279,32 @@ class AppointmentService {
 
   async deleteAppointment(appointmentId: string): Promise<void> {
     try {
-      const appointment = await this.getAppointment(appointmentId);
-      if (!appointment) {
+      const docRef = doc(this.appointmentsRef, appointmentId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
         throw new Error('Appointment not found');
       }
 
-      await deleteDoc(doc(this.appointmentsRef, appointmentId));
+      const appointment = this.convertFromFirestore(docSnap.data(), appointmentId);
+      await deleteDoc(docRef);
 
       // Notify users about deletion
       const notificationData = {
-        message: `The appointment scheduled for ${appointment.date} has been deleted`,
+        message: `The appointment scheduled for ${appointment.date.toLocaleDateString()} has been deleted`,
         type: 'alert' as NotificationType,
-        relatedAppointmentId: appointmentId,
-        read: false
+        relatedAppointmentId: appointmentId
       };
 
-      await notificationService.createNotification({
+      // Notify faculty
+      await notificationService.notify({
         ...notificationData,
         recipientId: appointment.facultyId
       });
 
+      // Notify students
       for (const studentId of appointment.studentIds) {
-        await notificationService.createNotification({
+        await notificationService.notify({
           ...notificationData,
           recipientId: studentId
         });
@@ -304,7 +323,7 @@ class AppointmentService {
         where('facultyId', '==', facultyId)
       );
       const querySnapshot = await getDocs(q);
-      const appointments = querySnapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      const appointments = querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
       
       // Sort in memory instead
       return appointments.sort((a, b) => {
@@ -329,7 +348,7 @@ class AppointmentService {
     );
 
     return onSnapshot(q, (snapshot) => {
-      const appointments = snapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      const appointments = snapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
       
       // Sort in memory instead
       const sortedAppointments = appointments.sort((a, b) => {
@@ -354,7 +373,7 @@ class AppointmentService {
     );
 
     return onSnapshot(q, (snapshot) => {
-      const appointments = snapshot.docs.map(doc => this.convertToAppointment(doc.data(), doc.id));
+      const appointments = snapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
       
       // Sort in memory
       const sortedAppointments = appointments.sort((a, b) => {
@@ -374,7 +393,7 @@ class AppointmentService {
       const appointmentRef = doc(this.appointmentsRef, appointmentId);
       await updateDoc(appointmentRef, {
         status: 'accepted',
-        updatedAt: new Date(),
+        updatedAt: Timestamp.now(),
       });
 
       // Send notification
@@ -399,7 +418,7 @@ class AppointmentService {
       const appointmentRef = doc(this.appointmentsRef, appointmentId);
       await updateDoc(appointmentRef, {
         status: 'rejected',
-        updatedAt: new Date(),
+        updatedAt: Timestamp.now(),
       });
 
       // Send notification

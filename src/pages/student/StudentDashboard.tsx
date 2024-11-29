@@ -1,24 +1,18 @@
 // src/pages/student/StudentDashboard.tsx
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import AppointmentCalendar from "../../components/AppointmentCalendar";
 import Sidebar from "../../components/Sidebar";
 import NotificationBanner from "../../components/NotificationBanner";
-import { appointmentService, Appointment } from "../../services/appointmentService";
+import AnnouncementCard from "../../components/AnnouncementCard";
+import { useAuth } from "../../context/AuthContext";
 import { notificationService } from "../../services/notificationService";
+import { appointmentService } from "../../services/appointmentService";
 import { announcementService } from "../../services/announcementService";
-import { AuthContext } from "../../context/AuthContext";
+import type { Notification, FirestoreNotification } from "../../types/notification";
+import type { Appointment } from "../../types/appointment";
+import type { Announcement, FirestoreAnnouncement } from "../../types/announcement";
 import "../../styles/StudentDashboard.css";
-import LoadingSpinner from "../../components/LoadingSpinner";
-import Card from "../../components/Card";
-import Button from "../../components/Button";
-import AnnouncementCard from '../../components/AnnouncementCard';
-import { Timestamp } from "firebase/firestore";
-import type { Announcement, NotificationPayload } from '../../components/types';
-
-interface FirestoreNotification extends Omit<NotificationPayload, 'timestamp'> {
-  timestamp: Timestamp;
-}
 
 interface CalendarAppointment extends Appointment {
   faculty: string;
@@ -26,75 +20,81 @@ interface CalendarAppointment extends Appointment {
 }
 
 const StudentDashboard: React.FC = () => {
-  const { user } = useContext(AuthContext);
-  const [appointments, setAppointments] = useState<CalendarAppointment[]>([]);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [notifications, setNotifications] = useState<NotificationPayload[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
   useEffect(() => {
-    const loadData = async () => {
+    if (!user?.uid) return;
+
+    // Subscribe to notifications
+    const unsubscribeNotifications = notificationService.listenToNotifications(
+      user.uid,
+      (firestoreNotifications: FirestoreNotification[]) => {
+        const convertedNotifications: Notification[] = firestoreNotifications.map(notification => ({
+          ...notification,
+          timestamp: notification.timestamp.toDate()
+        }));
+        setNotifications(convertedNotifications);
+      }
+    );
+
+    // Subscribe to appointments
+    const unsubscribeAppointments = appointmentService.subscribeToStudentAppointments(
+      user.uid,
+      (newAppointments: Appointment[]) => {
+        setAppointments(newAppointments.map(appointment => ({
+          ...appointment,
+          faculty: appointment.facultyId,
+          room: appointment.facilityId || ''
+        })));
+      }
+    );
+
+    // Fetch announcements
+    const fetchAnnouncements = async () => {
       try {
-        if (!user) {
-          throw new Error('User not authenticated');
-        }
-
-        const unsubscribeAppointments = appointmentService.subscribeToStudentAppointments(
-          user.uid,
-          (newAppointments: Appointment[]) => {
-            setAppointments(newAppointments.map(appointment => ({
-              ...appointment,
-              faculty: appointment.facultyId,
-              room: appointment.facilityId || ''
-            })));
-          }
-        );
-
-        const unsubscribeAnnouncements = announcementService.subscribeToAnnouncements(
-          (newAnnouncements: Announcement[]) => {
-            setAnnouncements(newAnnouncements.map(announcement => ({
-              ...announcement,
-              id: announcement.announcementId,
-              createdBy: announcement.createdByUid
-            })));
-          }
-        );
-
-        const unsubscribeNotifications = notificationService.subscribeToUserNotifications(
-          user.uid,
-          (newNotifications: FirestoreNotification[]) => {
-            setNotifications(newNotifications.map(notification => ({
-              ...notification,
-              timestamp: notification.timestamp.toDate()
-            })));
-          }
-        );
-
-        setLoading(false);
-
-        return () => {
-          unsubscribeAppointments();
-          unsubscribeAnnouncements();
-          unsubscribeNotifications();
-        };
+        const result = await announcementService.getAllAnnouncements();
+        const firestoreAnnouncements = result as unknown as FirestoreAnnouncement[];
+        const convertedAnnouncements: Announcement[] = firestoreAnnouncements.map(announcement => ({
+          ...announcement,
+          createdAt: announcement.createdAt.toDate(),
+          date: announcement.date?.toDate() || undefined
+        }));
+        setAnnouncements(convertedAnnouncements);
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        setError('Failed to load dashboard data');
-        setLoading(false);
+        console.error("Error fetching announcements:", error);
       }
     };
+    fetchAnnouncements();
 
-    loadData();
+    setLoading(false);
+
+    return () => {
+      unsubscribeNotifications();
+      unsubscribeAppointments();
+    };
   }, [user]);
 
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
   };
 
+  const handleAnnouncementDelete = async (id: string) => {
+    try {
+      await announcementService.deleteAnnouncement(id);
+      setAnnouncements(prev => prev.filter(a => a.id !== id));
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+    }
+  };
+
   if (loading) {
-    return <LoadingSpinner />;
+    return <div>Loading...</div>;
   }
 
   return (
@@ -129,18 +129,8 @@ const StudentDashboard: React.FC = () => {
             announcements.map((announcement) => (
               <AnnouncementCard
                 key={announcement.id}
-                announcement={{
-                  id: announcement.id,
-                  title: announcement.title,
-                  content: announcement.content,
-                  createdBy: announcement.createdBy,
-                  createdAt: announcement.createdAt,
-                  type: announcement.type,
-                  date: announcement.date,
-                  imageUrl: announcement.imageUrl,
-                  attachments: announcement.attachments,
-                  links: announcement.links
-                }}
+                announcement={announcement}
+                onDelete={handleAnnouncementDelete}
               />
             ))
           ) : (

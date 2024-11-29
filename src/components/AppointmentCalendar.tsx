@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from "react";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import "./AppointmentCalendar.css";
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { appointmentService } from "../services/appointmentService";
-
-interface Appointment {
-  appointmentId: string;
-  date: Date;
-  faculty: string;
-  status: string;
-  room: string;
-}
+import type { Appointment } from "../types/appointment";
+import "./AppointmentCalendar.css";
 
 interface AppointmentCalendarProps {
   selectedDate: Date | null;
   onDateChange: (date: Date | null) => void;
-  userId: string; // Dynamic userId to fetch appointments
+  userId: string;
   appointments?: Appointment[];
 }
 
@@ -23,107 +18,79 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   selectedDate,
   onDateChange,
   userId,
+  appointments: propAppointments,
 }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [appointmentsForSelectedDate, setAppointmentsForSelectedDate] =
-    useState<Appointment[]>([]);
-  const [highlightedDates, setHighlightedDates] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [loading, setLoading] = useState(true);
 
-  // Fetch all appointments for the user on component mount
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const allAppointments = await appointmentService.getAppointmentsForUser(
-          userId
-        );
-        setAppointments(allAppointments);
-
-        // Highlight dates with appointments
-        const datesWithAppointments: { [key: string]: boolean } = {};
-        allAppointments.forEach((appointment) => {
-          const dateKey = appointment.date.toISOString().split("T")[0]; // YYYY-MM-DD
-          datesWithAppointments[dateKey] = true;
-        });
-        setHighlightedDates(datesWithAppointments);
+        if (propAppointments) {
+          setAppointments(propAppointments);
+        } else {
+          const fetchedAppointments = await appointmentService.getAppointmentsForUser(userId);
+          setAppointments(fetchedAppointments);
+        }
       } catch (error) {
-        console.error("Error fetching appointments:", error);
+        console.error('Error fetching appointments:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAppointments();
-  }, [userId]);
+  }, [userId, propAppointments]);
 
-  // Update appointments for the selected date
-  useEffect(() => {
-    if (selectedDate) {
-      const dateKey = selectedDate.toISOString().split("T")[0];
-      const filteredAppointments = appointments.filter(
-        (appointment) =>
-          appointment.date.toISOString().split("T")[0] === dateKey
-      );
-      setAppointmentsForSelectedDate(filteredAppointments);
-    } else {
-      setAppointmentsForSelectedDate([]);
+  const calendarEvents = appointments.map(appointment => ({
+    id: appointment.id,
+    title: `Appointment with ${appointment.createdByName}`,
+    start: new Date(`${appointment.date.toDateString()} ${appointment.startTime}`),
+    end: new Date(`${appointment.date.toDateString()} ${appointment.endTime}`),
+    className: `appointment-${appointment.status}`,
+    extendedProps: {
+      meetingType: appointment.meetingType,
+      status: appointment.status,
+      notes: appointment.notes
     }
-  }, [selectedDate, appointments]);
-
-  // Handle calendar tile content (highlighting dates with appointments)
-  const tileContent = ({ date }: { date: Date }) => {
-    const dateKey = date.toISOString().split("T")[0];
-    return highlightedDates[dateKey] ? (
-      <div className="appointment-marker" title="Appointments available"></div>
-    ) : null;
-  };
-
-  // Handle calendar date selection
-  const handleDateChange = (date: Date | null) => {
-    if (date instanceof Date) {
-      onDateChange(date);
-    } else {
-      onDateChange(null); // Clear if invalid date
-    }
-  };
+  }));
 
   return (
     <div className="appointment-calendar">
-      <h2>Appointment Calendar</h2>
-      <Calendar
-        onChange={(date) => handleDateChange(date as Date | null)}
-        value={selectedDate}
-        tileContent={tileContent}
-        locale="en-US"
-        className="custom-calendar"
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        }}
+        events={calendarEvents}
+        selectable={true}
+        selectMirror={true}
+        dayMaxEvents={true}
+        weekends={true}
+        select={(info) => {
+          onDateChange(info.start);
+        }}
+        eventClick={(info) => {
+          console.log('Event clicked:', info.event);
+        }}
+        height="auto"
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          meridiem: false,
+          hour12: false
+        }}
+        slotMinTime="08:00:00"
+        slotMaxTime="20:00:00"
+        allDaySlot={false}
+        slotDuration="00:30:00"
+        expandRows={true}
+        stickyHeaderDates={true}
+        nowIndicator={true}
       />
-
-      <div className="appointments-list">
-        {selectedDate && (
-          <h3>Appointments for {selectedDate.toLocaleDateString("en-US")}</h3>
-        )}
-        {appointmentsForSelectedDate.length > 0 ? (
-          <ul>
-            {appointmentsForSelectedDate.map((appointment) => (
-              <li key={appointment.appointmentId}>
-                <strong>Faculty:</strong> {appointment.faculty} <br />
-                <strong>Room:</strong> {appointment.room} <br />
-                <strong>Status:</strong> {appointment.status} <br />
-                <strong>Time:</strong>{" "}
-                {new Date(appointment.date).toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>
-            {selectedDate
-              ? "No appointments for this date."
-              : "Select a date to view appointments."}
-          </p>
-        )}
-      </div>
     </div>
   );
 };

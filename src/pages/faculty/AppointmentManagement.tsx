@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { appointmentService, Appointment } from "../../services/appointmentService";
+import { appointmentService } from "../../services/appointmentService";
 import { userService } from "../../services/userService";
 import { facilityService } from "../../services/facilityService";
 import AppointmentCalendar from "../../components/AppointmentCalendar";
+import AppointmentCard from "../../components/AppointmentCard"; // Import AppointmentCard component
 import "../../styles/AppointmentManagement.css";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import type { Appointment } from "../../types/appointment";
 
 const AppointmentManagement: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
@@ -17,16 +19,27 @@ const AppointmentManagement: React.FC = () => {
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [notification, setNotification] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch appointments and related data
   useEffect(() => {
     const fetchData = async () => {
-      if (!currentUser?.uid) return;
+      if (authLoading) return; // Wait for auth to initialize
+      
+      if (!isAuthenticated || !user?.uid) {
+        console.log("No authenticated user:", { isAuthenticated, userId: user?.uid });
+        setError("Please log in to view appointments");
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       try {
-        const [fetchedAppointments, fetchedUsers, fetchedFacilities] = await Promise.all([
-          appointmentService.getAppointmentsWithSecondaryUser(currentUser.uid),
+        console.log("Fetching appointments for faculty:", user.uid);
+        const fetchedAppointments = await appointmentService.getFacultyAppointments(user.uid);
+        console.log("Fetched appointments:", fetchedAppointments);
+
+        const [fetchedUsers, fetchedFacilities] = await Promise.all([
           userService.getAllUsers(),
           facilityService.getAllFacilities()
         ]);
@@ -35,148 +48,152 @@ const AppointmentManagement: React.FC = () => {
         setFilteredAppointments(fetchedAppointments);
         setUsers(fetchedUsers);
         setFacilities(fetchedFacilities);
+        setError(null);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError("Failed to load appointments");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [currentUser]);
+  }, [user, authLoading, isAuthenticated]);
 
   // Filter appointments by status and date
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!selectedDate || !appointments.length) return;
 
-    const filtered = appointments.filter(app => {
-      const sameDate = app.date.toDateString() === selectedDate.toDateString();
-      return filterStatus === "all" ? sameDate : sameDate && app.status === filterStatus;
+    let filtered = appointments;
+
+    // Filter by date
+    filtered = filtered.filter(appointment => {
+      const appointmentDate = appointment.date;
+      return (
+        appointmentDate.getFullYear() === selectedDate.getFullYear() &&
+        appointmentDate.getMonth() === selectedDate.getMonth() &&
+        appointmentDate.getDate() === selectedDate.getDate()
+      );
     });
 
+    // Filter by status
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(appointment => appointment.status === filterStatus);
+    }
+
     setFilteredAppointments(filtered);
-  }, [filterStatus, selectedDate, appointments]);
+  }, [selectedDate, appointments, filterStatus]);
 
-  const handleAppointmentStatusChange = async (
-    appointmentId: string,
-    newStatus: Appointment['status']
-  ) => {
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+  };
+
+  const handleStatusChange = (status: string) => {
+    setFilterStatus(status);
+  };
+
+  const handleStatusUpdate = async (appointmentId: string, newStatus: Appointment['status']) => {
+    if (!user) return;
+
     try {
-      if (!currentUser?.uid) {
-        throw new Error('No authenticated user found');
-      }
-
-      setLoading(true);
-      await appointmentService.updateAppointmentStatus(
-        appointmentId,
-        newStatus,
-        currentUser.uid
-      );
+      await appointmentService.updateAppointmentStatus(appointmentId, newStatus, user.uid);
       
-      const updatedAppointments = appointments.map((appointment) =>
-        appointment.id === appointmentId
-          ? { ...appointment, status: newStatus }
-          : appointment
-      );
-      
+      // Refresh appointments
+      const updatedAppointments = await appointmentService.getFacultyAppointments(user.uid);
       setAppointments(updatedAppointments);
-      setFilteredAppointments(updatedAppointments);
-      setNotification(`Appointment ${newStatus} successfully!`);
+      
+      setNotification(`Appointment ${newStatus} successfully`);
+      setTimeout(() => setNotification(""), 3000);
     } catch (error) {
       console.error("Error updating appointment status:", error);
-      setNotification("Failed to update appointment status.");
-    } finally {
-      setLoading(false);
+      setNotification("Failed to update appointment status");
+      setTimeout(() => setNotification(""), 3000);
     }
   };
 
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!user) return;
+
+    if (!window.confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await appointmentService.deleteAppointment(appointmentId);
+      
+      // Refresh appointments
+      const updatedAppointments = await appointmentService.getFacultyAppointments(user.uid);
+      setAppointments(updatedAppointments);
+      
+      setNotification('Appointment deleted successfully');
+      setTimeout(() => setNotification(""), 3000);
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      setNotification("Failed to delete appointment");
+      setTimeout(() => setNotification(""), 3000);
+    }
+  };
+
+  if (loading || authLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isAuthenticated) {
+    return <div className="error-message">Please log in to view appointments</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
   return (
     <div className="appointment-management">
-      <h2>Manage Appointments</h2>
-      
-      <div className="filters-section">
-        <AppointmentCalendar
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-          userId={currentUser?.uid ?? ""}
-        />
-
-        <div className="status-filter">
-          <label>Filter by Status:</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
+      <div className="header">
+        <h1>Appointment Management</h1>
+        {notification && (
+          <div className="notification">{notification}</div>
+        )}
       </div>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="appointments-list">
-          {filteredAppointments.length > 0 ? (
-            filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="appointment-card">
-                <div className="appointment-details">
-                  <h3>Appointment with {
-                    users.find(u => u.id === (
-                      currentUser?.uid === appointment.primaryUserId 
-                        ? appointment.secondaryUserId 
-                        : appointment.primaryUserId
-                    ))?.name || "Unknown"
-                  }</h3>
-                  
-                  <p><strong>Date:</strong> {appointment.date.toLocaleDateString()}</p>
-                  <p><strong>Time:</strong> {appointment.startTime} - {appointment.endTime}</p>
-                  
-                  {appointment.meetingType === 'physical' && (
-                    <p>
-                      <strong>Facility:</strong>{" "}
-                      {facilities.find(f => f.id === appointment.facilityId)?.name || "Unknown"}
-                    </p>
-                  )}
-                  
-                  {appointment.meetingType === 'online' && appointment.meetingLink && (
-                    <p>
-                      <strong>Meeting Link:</strong>{" "}
-                      <a href={appointment.meetingLink} target="_blank" rel="noopener noreferrer">
-                        Join Meeting
-                      </a>
-                    </p>
-                  )}
-                  
-                  <p><strong>Status:</strong> <span className={`status ${appointment.status}`}>{appointment.status}</span></p>
-                </div>
+      <div className="filters">
+        <select
+          value={filterStatus}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          className="status-filter"
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="rejected">Rejected</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
 
-                {appointment.status === "pending" && (
-                  <div className="appointment-actions">
-                    <button
-                      onClick={() => handleAppointmentStatusChange(appointment.id, "accepted")}
-                      className="accept-btn"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => handleAppointmentStatusChange(appointment.id, "rejected")}
-                      className="reject-btn"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <p>No appointments found for the selected date and status.</p>
-          )}
-        </div>
-      )}
+      <div className="calendar-section">
+        <AppointmentCalendar
+          selectedDate={selectedDate}
+          onDateChange={handleDateChange}
+          appointments={appointments}
+          userId={user?.uid || ''}
+        />
+      </div>
+
+      <div className="appointments-list">
+        <h2>Appointments for {selectedDate?.toLocaleDateString()}</h2>
+        {filteredAppointments.length === 0 ? (
+          <p>No appointments found for this date.</p>
+        ) : (
+          filteredAppointments.map((appointment) => (
+            <AppointmentCard
+              key={appointment.id}
+              appointment={appointment}
+              currentUserRole="faculty"
+              onStatusChange={handleStatusUpdate}
+              onDelete={handleDeleteAppointment}
+            />
+          ))
+        )}
+      </div>
     </div>
   );
 };
