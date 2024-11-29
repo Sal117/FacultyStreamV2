@@ -13,6 +13,8 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { generateGoogleMeetLink } from "../../utils/meetingUtils";
 import Select from 'react-select';
 import "../../styles/Appointment.css";
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 interface AppUser {
   id: string;
@@ -43,6 +45,8 @@ const Appointment: React.FC = () => {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [meetingLink, setMeetingLink] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,70 +148,49 @@ const Appointment: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !currentUserData) return;
-
-    if (!selectedUsers.length) {
-      setNotification({
-        type: 'error',
-        message: `Please select ${currentUserData.role === 'student' ? 'a faculty member' : 'student(s)'}`
-      });
+    
+    if (!user || !currentUserData || !selectedDate) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    if (!selectedDate) {
-      setNotification({
-        type: 'error',
-        message: 'Please select a date'
-      });
-      return;
-    }
-
-    if (!selectedStartTime || !selectedEndTime) {
-      setNotification({
-        type: 'error',
-        message: 'Please select a time slot'
-      });
-      return;
-    }
+    setIsSubmitting(true);
 
     try {
-      const appointmentData = {
+      const appointmentData: Omit<AppointmentType, 'id' | 'createdAt' | 'updatedAt'> = {
         date: selectedDate,
         startTime: selectedStartTime,
         endTime: selectedEndTime,
         meetingType,
-        status: 'pending' as const,
+        status: 'pending',
         createdBy: user.uid,
         createdByName: currentUserData.name,
         createdByRole: currentUserData.role === 'admin' ? 'faculty' : currentUserData.role,
         facultyId: currentUserData.role === 'student' ? selectedUsers[0] : user.uid,
         studentIds: currentUserData.role === 'student' ? [user.uid] : selectedUsers,
         notes,
-        meetingLink: meetingType === 'online' ? meetingLink : '',
-        facilityId: meetingType === 'physical' ? selectedFacility : ''
+        meetingLink: meetingType === 'online' ? meetingLink : null,
+        facilityId: meetingType === 'physical' ? selectedFacility : null
       };
 
       await appointmentService.createAppointment(appointmentData);
-      
-      setNotification({
-        type: 'success',
-        message: 'Appointment request submitted successfully'
-      });
-
-      // Reset form
-      setSelectedUsers([]);
-      setSelectedDate(null);
-      setSelectedStartTime("");
-      setSelectedEndTime("");
-      setNotes("");
-      setMeetingLink("");
-      setSelectedFacility("");
+      toast.success('Appointment created successfully!');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error creating appointment:', error);
-      setNotification({
-        type: 'error',
-        message: 'Failed to create appointment'
-      });
+      if (error instanceof Error) {
+        if (error.message.includes('time slot is not available')) {
+          toast.error('This time slot is already booked with the selected faculty member. Please choose a different date or time.');
+        } else if (error.message.includes('Facility is not available')) {
+          toast.error('The selected facility is not available at this time. Please choose a different facility or time slot.');
+        } else {
+          toast.error(error.message || 'Failed to create appointment. Please try again.');
+        }
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -442,7 +425,7 @@ const Appointment: React.FC = () => {
         <button 
           className="submit-button"
           type="submit"
-          disabled={!selectedDate || selectedUsers.length === 0 || !selectedStartTime || !selectedEndTime || (meetingType === 'physical' && !selectedFacility)}
+          disabled={!selectedDate || selectedUsers.length === 0 || !selectedStartTime || !selectedEndTime || (meetingType === 'physical' && !selectedFacility) || isSubmitting}
         >
           {currentUserData.role === 'student' 
             ? 'Request Appointment' 

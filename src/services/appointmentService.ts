@@ -36,44 +36,109 @@ class AppointmentService {
   }
 
   // Convert Appointment type to Firestore data
-  private convertToFirestore(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Omit<FirestoreAppointment, 'id'> {
+  private convertToFirestore(appointmentData: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Omit<FirestoreAppointment, 'id'> {
+    const now = Timestamp.now();
     return {
-      ...data,
-      date: Timestamp.fromDate(data.date),
-      meetingLink: data.meetingLink || null,
-      facilityId: data.facilityId || null
+      ...appointmentData,
+      date: Timestamp.fromDate(appointmentData.date),
+      meetingLink: appointmentData.meetingLink || null,
+      facilityId: appointmentData.facilityId || null,
+      createdAt: now,
+      updatedAt: now
     };
+  }
+
+  async isTimeSlotAvailable(
+    facultyId: string,
+    date: Date,
+    startTime: string,
+    endTime: string
+  ): Promise<boolean> {
+    try {
+      // Convert date to start and end of day for query
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Query only by facultyId to avoid requiring composite index
+      const q = query(
+        this.appointmentsRef,
+        where('facultyId', '==', facultyId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const appointments = querySnapshot.docs.map(doc => 
+        this.convertFromFirestore(doc.data(), doc.id)
+      );
+
+      // Filter appointments for the specific date in memory
+      const sameDataAppointments = appointments.filter(appointment => {
+        const appointmentDate = appointment.date;
+        return appointmentDate >= startOfDay && appointmentDate <= endOfDay;
+      });
+
+      // Check for time slot conflicts
+      const requestedStart = new Date(`${date.toDateString()} ${startTime}`);
+      const requestedEnd = new Date(`${date.toDateString()} ${endTime}`);
+
+      for (const appointment of sameDataAppointments) {
+        if (appointment.status === 'rejected' || appointment.status === 'cancelled') {
+          continue; // Skip rejected or cancelled appointments
+        }
+
+        const existingStart = new Date(`${appointment.date.toDateString()} ${appointment.startTime}`);
+        const existingEnd = new Date(`${appointment.date.toDateString()} ${appointment.endTime}`);
+
+        // Check if there's any overlap
+        if (
+          (requestedStart >= existingStart && requestedStart < existingEnd) || // New start time falls within existing appointment
+          (requestedEnd > existingStart && requestedEnd <= existingEnd) || // New end time falls within existing appointment
+          (requestedStart <= existingStart && requestedEnd >= existingEnd) // New appointment completely encompasses existing one
+        ) {
+          return false; // Time slot is not available
+        }
+      }
+
+      return true; // No conflicts found
+    } catch (error) {
+      console.error('Error checking time slot availability:', error);
+      throw error;
+    }
   }
 
   async createAppointment(appointmentData: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
+      // Check if the time slot is available
+      const isAvailable = await this.isTimeSlotAvailable(
+        appointmentData.facultyId,
+        appointmentData.date,
+        appointmentData.startTime,
+        appointmentData.endTime
+      );
+
+      if (!isAvailable) {
+        throw new Error('This time slot is not available with the selected faculty member.');
+      }
+
       if (appointmentData.meetingType === 'physical' && appointmentData.facilityId) {
-        const isAvailable = await facilityService.checkFacilityAvailability(
+        const isFacilityAvailable = await facilityService.checkFacilityAvailability(
           appointmentData.facilityId,
           appointmentData.date,
           appointmentData.startTime,
           appointmentData.endTime
         );
-        if (!isAvailable) {
+        if (!isFacilityAvailable) {
           throw new Error('Facility is not available for the selected time slot');
         }
       }
 
-      const now = Timestamp.now();
-      const firestoreData: Omit<FirestoreAppointment, 'id'> = {
-        ...appointmentData,
-        date: Timestamp.fromDate(appointmentData.date),
-        meetingLink: appointmentData.meetingLink || null,
-        facilityId: appointmentData.facilityId || null,
-        createdAt: now,
-        updatedAt: now,
-      };
-
+      const firestoreData = this.convertToFirestore(appointmentData);
       const docRef = await addDoc(this.appointmentsRef, firestoreData);
 
       // Notify users about new appointment
       const notificationData = {
-        message: `New appointment scheduled for ${appointmentData.date.toLocaleDateString()}`,
+        message: `New appointment scheduled for ${appointmentData.date.toLocaleDateString()} at ${appointmentData.startTime}`,
         type: 'info' as NotificationType,
         relatedAppointmentId: docRef.id
       };
@@ -113,9 +178,19 @@ class AppointmentService {
 
   async getFacultyAppointments(facultyId: string): Promise<Appointment[]> {
     try {
-      const q = query(this.appointmentsRef, where('facultyId', '==', facultyId));
+      // Query only by facultyId to avoid requiring composite index
+      const q = query(
+        this.appointmentsRef,
+        where('facultyId', '==', facultyId)
+      );
+
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
+      const appointments = querySnapshot.docs.map(doc => 
+        this.convertFromFirestore(doc.data(), doc.id)
+      );
+
+      // Sort appointments by date in memory
+      return appointments.sort((a, b) => b.date.getTime() - a.date.getTime());
     } catch (error) {
       console.error('Error getting faculty appointments:', error);
       throw error;
@@ -124,9 +199,19 @@ class AppointmentService {
 
   async getStudentAppointments(studentId: string): Promise<Appointment[]> {
     try {
-      const q = query(this.appointmentsRef, where('studentIds', 'array-contains', studentId));
+      // Query only by studentIds array to avoid requiring composite index
+      const q = query(
+        this.appointmentsRef,
+        where('studentIds', 'array-contains', studentId)
+      );
+
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
+      const appointments = querySnapshot.docs.map(doc => 
+        this.convertFromFirestore(doc.data(), doc.id)
+      );
+
+      // Sort appointments by date in memory
+      return appointments.sort((a, b) => b.date.getTime() - a.date.getTime());
     } catch (error) {
       console.error('Error getting student appointments:', error);
       throw error;
@@ -337,20 +422,18 @@ class AppointmentService {
 
   async getAppointmentsForFaculty(facultyId: string): Promise<Appointment[]> {
     try {
-      // Temporarily remove the orderBy clause to avoid requiring composite index
+      // Query only by facultyId to avoid requiring composite index
       const q = query(
         this.appointmentsRef,
         where('facultyId', '==', facultyId)
       );
       const querySnapshot = await getDocs(q);
-      const appointments = querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
-      
-      // Sort in memory instead
-      return appointments.sort((a, b) => {
-        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-        return dateB.getTime() - dateA.getTime();
-      });
+      const appointments = querySnapshot.docs.map(doc => 
+        this.convertFromFirestore(doc.data(), doc.id)
+      );
+
+      // Sort appointments by date in memory
+      return appointments.sort((a, b) => b.date.getTime() - a.date.getTime());
     } catch (error) {
       console.error('Error getting faculty appointments:', error);
       throw error;
@@ -361,7 +444,7 @@ class AppointmentService {
     facultyId: string,
     callback: (appointments: Appointment[]) => void
   ): () => void {
-    // Temporarily remove the orderBy clause to avoid requiring composite index
+    // Query only by facultyId to avoid requiring composite index
     const q = query(
       this.appointmentsRef,
       where('facultyId', '==', facultyId)
@@ -370,12 +453,8 @@ class AppointmentService {
     return onSnapshot(q, (snapshot) => {
       const appointments = snapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
       
-      // Sort in memory instead
-      const sortedAppointments = appointments.sort((a, b) => {
-        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-        return dateB.getTime() - dateA.getTime();
-      });
+      // Sort appointments by date in memory
+      const sortedAppointments = appointments.sort((a, b) => b.date.getTime() - a.date.getTime());
       
       callback(sortedAppointments);
     }, (error) => {
@@ -395,12 +474,8 @@ class AppointmentService {
     return onSnapshot(q, (snapshot) => {
       const appointments = snapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
       
-      // Sort in memory
-      const sortedAppointments = appointments.sort((a, b) => {
-        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-        return dateB.getTime() - dateA.getTime();
-      });
+      // Sort appointments by date in memory
+      const sortedAppointments = appointments.sort((a, b) => b.date.getTime() - a.date.getTime());
       
       callback(sortedAppointments);
     }, (error) => {
