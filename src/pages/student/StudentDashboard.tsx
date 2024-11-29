@@ -24,6 +24,7 @@ const StudentDashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [processedAnnouncements, setProcessedAnnouncements] = useState<Announcement[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +60,20 @@ const StudentDashboard: React.FC = () => {
     const fetchAnnouncements = async () => {
       try {
         const result = await announcementService.getAllAnnouncements();
-        const convertedAnnouncements: Announcement[] = result.map(announcement => ({
-          ...announcement,
-          createdAt: announcement.createdAt instanceof Date ? announcement.createdAt : new Date(announcement.createdAt),
-          date: announcement.date instanceof Date ? announcement.date : announcement.date ? new Date(announcement.date) : undefined
+        const processedAnnouncements: Announcement[] = result.map(announcement => ({
+          id: announcement.announcementId,
+          createdAt: announcement.createdAt,
+          date: announcement.date || new Date(),
+          title: announcement.title,
+          content: announcement.content,
+          createdBy: announcement.createdByUid,
+          createdByName: announcement.createdByName,
+          type: announcement.type === 'announcement' ? 'general' : 'event',
+          imageUrl: announcement.imageUrl,
+          attachments: announcement.attachments || [],
+          links: announcement.links || []
         }));
-        setAnnouncements(convertedAnnouncements);
+        setProcessedAnnouncements(processedAnnouncements);
       } catch (error) {
         console.error("Error fetching announcements:", error);
       }
@@ -86,7 +95,7 @@ const StudentDashboard: React.FC = () => {
   const handleAnnouncementDelete = async (id: string) => {
     try {
       await announcementService.deleteAnnouncement(id);
-      setAnnouncements(prev => prev.filter(a => a.id !== id));
+      setProcessedAnnouncements(prev => prev.filter(a => a.id !== id));
     } catch (error) {
       console.error("Error deleting announcement:", error);
     }
@@ -124,8 +133,8 @@ const StudentDashboard: React.FC = () => {
 
         <section className="announcements-section">
           <h2>Announcements</h2>
-          {announcements.length > 0 ? (
-            announcements.map((announcement) => (
+          {processedAnnouncements.length > 0 ? (
+            processedAnnouncements.map((announcement) => (
               <AnnouncementCard
                 key={announcement.id}
                 announcement={announcement}

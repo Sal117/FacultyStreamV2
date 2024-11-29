@@ -1,14 +1,10 @@
 .appointment-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.appointment-card:hover {
-  transform: translateY(-2px);
+  border: 1px solid #e0e0e0;
 }
 
 .appointment-header {
@@ -17,40 +13,14 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .appointment-header h3 {
   margin: 0;
-  color: var(--text-color);
+  color: #333333;
   font-size: 1.2rem;
-}
-
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.status-pending {
-  background-color: var(--warning-color-light);
-  color: var(--warning-color);
-}
-
-.status-accepted {
-  background-color: var(--success-color-light);
-  color: var(--success-color);
-}
-
-.status-rejected {
-  background-color: var(--error-color-light);
-  color: var(--error-color);
-}
-
-.status-cancelled {
-  background-color: var(--disabled-color-light);
-  color: var(--disabled-color);
+  font-weight: 600;
 }
 
 .appointment-details {
@@ -67,16 +37,16 @@
 
 .label {
   font-weight: 500;
-  color: var(--text-color-secondary);
+  color: #4a4a4a;
   min-width: 100px;
 }
 
 .value {
-  color: var(--text-color);
+  color: #333333;
 }
 
 .meeting-link {
-  color: var(--primary-color);
+  color: #2c5282;
   text-decoration: none;
 }
 
@@ -89,7 +59,7 @@
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid #e0e0e0;
 }
 
 .appointment-actions button {
@@ -112,61 +82,64 @@
 }
 
 .accept-btn {
-  background-color: #28a745;
+  background-color: #22c55e;
 }
 
 .accept-btn:hover {
-  background-color: #218838;
+  background-color: #1a9641;
 }
 
 .reject-btn {
-  background-color: #dc3545;
+  background-color: #ef4444;
 }
 
 .reject-btn:hover {
-  background-color: #c82333;
+  background-color: #c53030;
 }
 
 .delete-btn {
-  background-color: #dc3545;
+  background-color: #ef4444;
   margin-left: auto;
 }
 
 .delete-btn:hover {
-  background-color: #c82333;
+  background-color: #c53030;
 }
 
 .reschedule-btn {
-  background-color: #ffc107;
+  background-color: #eab308;
   color: #212529;
 }
 
 .reschedule-btn:hover {
-  background-color: #e0a800;
+  background-color: #d69e2e;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .appointment-card {
-    background: var(--card-bg-dark);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
 
-  .status-pending {
-    background-color: var(--warning-color-dark);
-  }
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
 
-  .status-accepted {
-    background-color: var(--success-color-dark);
-  }
+.status-accepted {
+  background-color: #d1fae5;
+  color: #065f46;
+}
 
-  .status-rejected {
-    background-color: var(--error-color-dark);
-  }
+.status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
 
-  .status-cancelled {
-    background-color: var(--disabled-color-dark);
-  }
+.status-cancelled {
+  background-color: #e5e7eb;
+  color: #374151;
 }
 
 /* Responsive design */

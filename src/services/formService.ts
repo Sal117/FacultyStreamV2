@@ -268,36 +268,68 @@ class FormService {
   // =====================
 
   // Student: Fetch available form templates for submission (based on availability)
-  async getAvailableFormTemplatesForStudent(
-    //remove/add based on testing later first argument Remove
-    
-  ): Promise<FormTemplate[]> {
+  async getAvailableFormTemplatesForStudent(): Promise<FormTemplate[]> {
     try {
-      await this.ensureStudent();
+      // First ensure the user is authenticated and is a student
+      const user = await this.ensureStudent();
+      
+      if (!user || !user.uid) {
+        throw new Error("User authentication required");
+      }
+
+      // Get reference to form templates collection
       const templatesCollection = collection(this.db, "FormTemplates");
-      // Query where 'availableToStudents' is true
+      
+      // Simple query for available templates
       const q = query(
         templatesCollection,
         where("availableToStudents", "==", true)
       );
+
+      // Execute query
       const snapshot = await getDocs(q);
+
+      // Map documents to FormTemplate objects
       const templates = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        ...doc.data()
       })) as FormTemplate[];
 
-      // Enhance templates with responsible parties' names
-      const enhancedTemplates = await this.getFormTemplatesWithResponsiblePartyNames(
-        templates
-      );
+      // If no templates found, return empty array
+      if (templates.length === 0) {
+        return [];
+      }
 
-      return enhancedTemplates;
+      try {
+        // Enhance templates with responsible party names
+        const enhancedTemplates = await this.getFormTemplatesWithResponsiblePartyNames(
+          templates
+        );
+        return enhancedTemplates;
+      } catch (enhanceError) {
+        // If enhancement fails, return basic templates
+        console.error("Error enhancing templates with names:", enhanceError);
+        return templates;
+      }
+
     } catch (error) {
       console.error(
-        "Error fetching available form templates for student:",
+        "Error in getAvailableFormTemplatesForStudent:",
         error
       );
-      throw new Error("Failed to fetch available form templates.");
+
+      // Handle specific error cases
+      if (error instanceof Error) {
+        if (error.message.includes("User authentication required")) {
+          throw new Error("Please log in to view available forms");
+        }
+        if (error.message.includes("Student access required")) {
+          throw new Error("Only students can view these forms");
+        }
+      }
+
+      // For other errors, throw a generic message
+      throw new Error("Failed to fetch available form templates. Please try again later.");
     }
   }
 

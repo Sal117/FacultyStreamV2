@@ -54,6 +54,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
     end: new Date(`${appointment.date.toDateString()} ${appointment.endTime}`),
     backgroundColor: getStatusColor(appointment.status),
     extendedProps: {
+      appointment,
       meetingType: appointment.meetingType,
       status: appointment.status,
       notes: appointment.notes,
@@ -74,6 +75,24 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         return '#ffc107';
     }
   }
+
+  const renderEventContent = (eventInfo: any) => {
+    const appointment = eventInfo.event.extendedProps.appointment;
+    return (
+      <div className={`calendar-event status-${appointment.status}`}>
+        <div className="event-time">
+          {appointment.startTime} - {appointment.endTime}
+        </div>
+        <div className="event-title">
+          {appointment.meetingType === 'online' ? '🌐' : '🏢'} 
+          {appointment.createdByName}
+        </div>
+        <div className="event-status">
+          Status: {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+        </div>
+      </div>
+    );
+  };
 
   const handleEventClick = (info: any) => {
     const event = info.event;
@@ -100,6 +119,8 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
         events={calendarEvents}
+        eventContent={renderEventContent}
+        eventClassNames="calendar-event"
         selectable={true}
         selectMirror={true}
         dayMaxEvents={true}

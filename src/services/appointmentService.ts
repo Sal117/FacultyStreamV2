@@ -5,11 +5,9 @@ import { notificationService } from './notificationService';
 import { facilityService } from './facilityService';
 import type { Notification } from '../types/notification';
 
-export type { Appointment };
+type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
-type NotificationType = Notification['type'];
-
-class AppointmentService {
+export class AppointmentService {
   private appointmentsRef = collection(db, 'appointments');
 
   // Convert Firestore data to Appointment type
@@ -46,6 +44,17 @@ class AppointmentService {
       createdAt: now,
       updatedAt: now
     };
+  }
+
+  private async notifyUsers(recipientIds: string[], message: string, appointmentId: string) {
+    for (const recipientId of recipientIds) {
+      await notificationService.notify({
+        recipientId,
+        message,
+        type: 'info',
+        relatedAppointmentId: appointmentId
+      });
+    }
   }
 
   async isTimeSlotAvailable(
@@ -133,29 +142,25 @@ class AppointmentService {
         }
       }
 
-      const firestoreData = this.convertToFirestore(appointmentData);
-      const docRef = await addDoc(this.appointmentsRef, firestoreData);
-
-      // Notify users about new appointment
-      const notificationData = {
-        message: `New appointment scheduled for ${appointmentData.date.toLocaleDateString()} at ${appointmentData.startTime}`,
-        type: 'info' as NotificationType,
-        relatedAppointmentId: docRef.id
+      const now = Timestamp.now();
+      const firestoreData = {
+        ...appointmentData,
+        date: Timestamp.fromDate(appointmentData.date),
+        meetingLink: appointmentData.meetingLink || null,
+        facilityId: appointmentData.facilityId || null,
+        createdAt: now,
+        updatedAt: now
       };
 
-      // Notify faculty
-      await notificationService.notify({
-        ...notificationData,
-        recipientId: appointmentData.facultyId
-      });
+      const docRef = await addDoc(this.appointmentsRef, firestoreData);
 
-      // Notify students
-      for (const studentId of appointmentData.studentIds) {
-        await notificationService.notify({
-          ...notificationData,
-          recipientId: studentId
-        });
-      }
+      // Notify about new appointment
+      const message = `New appointment scheduled for ${appointmentData.date.toLocaleDateString()} at ${appointmentData.startTime}`;
+      await this.notifyUsers(
+        [appointmentData.facultyId, ...appointmentData.studentIds],
+        message,
+        docRef.id
+      );
 
       return docRef.id;
     } catch (error) {
@@ -325,50 +330,91 @@ class AppointmentService {
     }
   }
 
+  async getAppointmentById(appointmentId: string): Promise<Appointment | null> {
+    try {
+      const appointmentDoc = await getDoc(doc(this.appointmentsRef, appointmentId));
+      if (!appointmentDoc.exists()) return null;
+      
+      return this.convertFromFirestore(appointmentDoc.data(), appointmentDoc.id);
+    } catch (error) {
+      console.error('Error getting appointment by id:', error);
+      throw error;
+    }
+  }
+
   async updateAppointmentStatus(
     appointmentId: string,
-    status: Appointment['status'],
-    updatedBy: string
+    newStatus: AppointmentStatus,
+    updatedBy?: string
   ): Promise<void> {
     try {
-      const docRef = doc(this.appointmentsRef, appointmentId);
-      const docSnap = await getDoc(docRef);
-      
-      if (!docSnap.exists()) {
+      const appointment = await this.getAppointmentById(appointmentId);
+      if (!appointment) {
         throw new Error('Appointment not found');
       }
 
-      const appointment = this.convertFromFirestore(docSnap.data(), appointmentId);
-      const now = Timestamp.now();
-
+      const docRef = doc(this.appointmentsRef, appointmentId);
       await updateDoc(docRef, {
-        status,
-        updatedAt: now,
-        updatedBy
+        status: newStatus,
+        updatedAt: Timestamp.now(),
+        ...(updatedBy && { updatedBy })
       });
 
-      // Notify users about status update
-      const notificationData = {
-        message: `Appointment for ${appointment.date.toLocaleDateString()} has been ${status}`,
-        type: 'info' as NotificationType,
-        relatedAppointmentId: appointmentId
-      };
-
-      // Notify faculty
-      await notificationService.notify({
-        ...notificationData,
-        recipientId: appointment.facultyId
-      });
-
-      // Notify students
-      for (const studentId of appointment.studentIds) {
-        await notificationService.notify({
-          ...notificationData,
-          recipientId: studentId
-        });
-      }
+      // Notify about status update
+      const message = `Appointment for ${appointment.date.toLocaleDateString()} has been ${newStatus}`;
+      await this.notifyUsers(
+        [appointment.facultyId, ...appointment.studentIds],
+        message,
+        appointmentId
+      );
     } catch (error) {
       console.error('Error updating appointment status:', error);
+      throw error;
+    }
+  }
+
+  async rescheduleAppointment(
+    appointmentId: string,
+    newDate: Date,
+    newStartTime: string,
+    newEndTime: string
+  ): Promise<void> {
+    try {
+      const appointment = await this.getAppointmentById(appointmentId);
+      
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Check if the new time slot is available
+      const isAvailable = await this.isTimeSlotAvailable(
+        appointment.facultyId,
+        newDate,
+        newStartTime,
+        newEndTime
+      );
+
+      if (!isAvailable) {
+        throw new Error('The selected time slot is not available');
+      }
+
+      const docRef = doc(this.appointmentsRef, appointmentId);
+      await updateDoc(docRef, {
+        date: Timestamp.fromDate(newDate),
+        startTime: newStartTime,
+        endTime: newEndTime,
+        updatedAt: Timestamp.now()
+      });
+
+      // Notify about rescheduling
+      const message = `Appointment has been rescheduled to ${newDate.toLocaleDateString()} at ${newStartTime}`;
+      await this.notifyUsers(
+        [appointment.facultyId, ...appointment.studentIds],
+        message,
+        appointmentId
+      );
+    } catch (error) {
+      console.error('Error rescheduling appointment:', error);
       throw error;
     }
   }
@@ -397,7 +443,7 @@ class AppointmentService {
       // Notify users about deletion
       const notificationData = {
         message: `The appointment scheduled for ${appointment.date.toLocaleDateString()} has been deleted`,
-        type: 'alert' as NotificationType,
+        type: 'alert' as Notification['type'],
         relatedAppointmentId: appointmentId
       };
 

@@ -175,7 +175,7 @@ const Appointment: React.FC = () => {
 
       await appointmentService.createAppointment(appointmentData);
       toast.success('Appointment created successfully!');
-      navigate('/dashboard');
+      navigate('/student-dashboard');
     } catch (error) {
       console.error('Error creating appointment:', error);
       if (error instanceof Error) {
