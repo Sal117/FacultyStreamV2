@@ -71,7 +71,10 @@ const StudentDashboard: React.FC = () => {
           type: announcement.type === 'announcement' ? 'general' : 'event',
           imageUrl: announcement.imageUrl,
           attachments: announcement.attachments || [],
-          links: announcement.links || []
+          links: (announcement.links || []).map(link => ({
+            title: link.label, // Map 'label' to 'title'
+            url: link.url
+          }))
         }));
         setProcessedAnnouncements(processedAnnouncements);
       } catch (error) {
