@@ -97,6 +97,41 @@ class NotificationService {
     });
   }
 
+  // Subscribe to user notifications
+  subscribeToUserNotifications(userId: string, listener: (notifications: FirestoreNotification[]) => void): Function {
+    const notificationsRef = collection(this.db, "notifications");
+    const q = query(
+      notificationsRef,
+      where("recipientId", "==", userId),
+      orderBy("timestamp", "desc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const notifications = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as FirestoreNotification[];
+      listener(notifications);
+    });
+  }
+
+  // Subscribe to all notifications (admin only)
+  subscribeToAllNotifications(listener: (notifications: FirestoreNotification[]) => void): Function {
+    const notificationsRef = collection(this.db, "notifications");
+    const q = query(
+      notificationsRef,
+      orderBy("timestamp", "desc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const notifications = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as FirestoreNotification[];
+      listener(notifications);
+    });
+  }
+
   // Notify a user by adding a notification to Firestore
   async notify(notificationData: Omit<NotificationPayload, "timestamp">): Promise<string> {
     try {
@@ -168,6 +203,31 @@ class NotificationService {
     } catch (error) {
       console.error("Failed to send bulk notifications:", error);
       throw new Error("Failed to send bulk notifications");
+    }
+  }
+
+  // Notify new message
+  async notifyNewMessage(
+    recipientId: string,
+    message: string,
+    conversationId: string
+  ): Promise<void> {
+    await this.notify({
+      message,
+      type: 'info',
+      recipientId,
+      relatedConversationId: conversationId
+    });
+  }
+
+  // Mark notification as read
+  async markNotificationAsRead(notificationId: string): Promise<void> {
+    try {
+      const notificationRef = doc(this.db, "notifications", notificationId);
+      await setDoc(notificationRef, { read: true }, { merge: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      throw error;
     }
   }
 

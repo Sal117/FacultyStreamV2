@@ -1,14 +1,14 @@
 // src/pages/admin/AdminDashboard.tsx
 
 import React, { useEffect, useState } from "react";
-import "../../styles/Dashboard.css";
+import "../../styles/AdminDashboard.css";
 import {
   getAllStudents,
   getAllFaculties,
   getAllFacilities,
 } from "../../services/databaseService";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Announcement } from "../../components/types";
+import { Announcement } from "../../types";
 import NavigationBar from "../../components/NavigationBar";
 import Sidebar from "../../components/Sidebar";
 import UserManagement from "../../components/UserManagement";
@@ -23,258 +23,225 @@ import EditAnnouncementForm from "../../components/EditAnnouncementForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Modal from "../../components/Modal";
-
-interface Notification {
-  id: string;
-  type: "success" | "error" | "info" | "alert" | "update";
-  message: string;
-  timestamp: Date;
-  relatedFormId?: string;
-  relatedAppointmentId?: string;
-}
+import { FirestoreNotification } from "../../types/notification";
 
 const AdminDashboard: React.FC = () => {
   const [userData, setUserData] = useState<CustomUser | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [faculties, setFaculties] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-
-  const [editingAnnouncement, setEditingAnnouncement] =
-    useState<Announcement | null>(null);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-  const [announcementToDelete, setAnnouncementToDelete] = useState<
-    string | null
-  >(null);
-
-  const userRole = "admin"; // Setting the role explicitly for Sidebar
-
-  // Function to handle deletion
-  const handleDeleteAnnouncement = (id: string) => {
-    setAnnouncementToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  const confirmDeleteAnnouncement = async () => {
-    if (announcementToDelete) {
-      try {
-        await announcementService.deleteAnnouncement(announcementToDelete);
-        // Remove the announcement from state
-        setAnnouncements((prevAnnouncements) =>
-          prevAnnouncements.filter(
-            (announcement) =>
-              announcement.announcementId !== announcementToDelete
-          )
-        );
-        toast.success("Announcement deleted successfully.");
-      } catch (error) {
-        console.error("Error deleting announcement:", error);
-        toast.error("Failed to delete announcement. Please try again.");
-      } finally {
-        setIsDeleteModalOpen(false);
-        setAnnouncementToDelete(null);
-      }
-    }
-  };
-
-  // Function to handle editing
-  const handleEditAnnouncement = (announcement: Announcement) => {
-    setEditingAnnouncement(announcement);
-  };
-
-  // Function to handle update after editing
-  const handleUpdateAnnouncement = (updatedAnnouncement: Announcement) => {
-    setAnnouncements((prevAnnouncements) =>
-      prevAnnouncements.map((announcement) =>
-        announcement.announcementId === updatedAnnouncement.announcementId
-          ? updatedAnnouncement
-          : announcement
-      )
-    );
-    setEditingAnnouncement(null); // Close the edit form
-    toast.success("Announcement updated successfully.");
-  };
+  const [notifications, setNotifications] = useState<FirestoreNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch the current authenticated user
         const user = await authService.getCurrentUser();
         if (!user) {
           throw new Error("User not authenticated");
         }
 
-        // Ensure the user has the 'admin' role
         if (user.role !== "admin") {
           throw new Error("Access denied: Admins only");
         }
 
         setUserData(user);
 
-        // Fetch related data concurrently
-        const [studentsData, facultiesData, facilitiesData, announcementsData] =
-          await Promise.all([
-            getAllStudents(),
-            getAllFaculties(),
-            getAllFacilities(),
-            announcementService.getAllAnnouncements(),
-          ]);
+        // Subscribe to all notifications for admin
+        const unsubscribeNotifications = notificationService.subscribeToAllNotifications(
+          (newNotifications) => {
+            setNotifications(newNotifications);
+          }
+        );
+
+        // Subscribe to announcements
+        const unsubscribeAnnouncements = announcementService.subscribeToAnnouncements(
+          (newAnnouncements) => {
+            setAnnouncements(newAnnouncements);
+          }
+        );
+
+        // Fetch other data
+        const [studentsData, facultiesData, facilitiesData] = await Promise.all([
+          getAllStudents(),
+          getAllFaculties(),
+          getAllFacilities(),
+        ]);
 
         setStudents(studentsData);
         setFaculties(facultiesData);
         setFacilities(facilitiesData);
-        setAnnouncements(announcementsData);
+
+        return () => {
+          unsubscribeNotifications();
+          unsubscribeAnnouncements();
+        };
       } catch (error: any) {
-        console.error("Error fetching data:", error);
-        setError(error.message || "An unexpected error occurred.");
+        console.error("Error loading dashboard data:", error);
+        setError(error.message || "An unexpected error occurred");
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
-
-    // Subscribe to announcements for real-time updates
-    const unsubscribeAnnouncements =
-      announcementService.subscribeToAnnouncements((data) => {
-        setAnnouncements(data);
-      });
-
-    // Subscribe to notifications
-    const unsubscribeNotifications = notificationService.subscribe(
-      (newNotifications: any[]) => {
-        setNotifications(
-          newNotifications.map((n) => {
-            return { ...n };
-          })
-        );
-      }
-    );
-
-    return () => {
-      unsubscribeAnnouncements();
-      unsubscribeNotifications();
     };
+
+    loadData();
   }, []);
 
+  const handleDeleteAnnouncement = (id: string) => {
+    setSelectedAnnouncementId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteAnnouncement = async () => {
+    if (selectedAnnouncementId) {
+      try {
+        await announcementService.deleteAnnouncement(selectedAnnouncementId);
+        toast.success("Announcement deleted successfully");
+      } catch (error) {
+        console.error("Error deleting announcement:", error);
+        toast.error("Failed to delete announcement");
+      } finally {
+        setIsDeleteModalOpen(false);
+        setSelectedAnnouncementId(null);
+      }
+    }
+  };
+
+  const handleUpdateAnnouncement = async (id: string, updateData: Partial<Announcement>) => {
+    try {
+      await announcementService.updateAnnouncement(id, updateData);
+      toast.success("Announcement updated successfully");
+      setEditingAnnouncement(null);
+    } catch (error) {
+      console.error("Error updating announcement:", error);
+      toast.error("Failed to update announcement");
+    }
+  };
+
+  const handleDismissNotification = async (notificationId: string) => {
+    try {
+      await notificationService.markNotificationAsRead(notificationId);
+    } catch (error) {
+      console.error("Error dismissing notification:", error);
+      toast.error("Failed to dismiss notification");
+    }
+  };
+
   return (
-    <div className="dashboard">
-      {/* Include ToastContainer for toast notifications */}
+    <div className="admin-dashboard">
       <ToastContainer />
-      <main className="dashboard-main">
+      <Sidebar userRole="admin" />
+      
+      <div className="dashboard-main">
         {loading ? (
           <LoadingSpinner />
+        ) : error ? (
+          <div className="error-message">{error}</div>
         ) : (
           <>
-            {/* Display Error Message */}
-            {error && (
-              <div className="error-message">
-                <NotificationBanner
-                  notification={{
-                    id: `error-${Date.now()}`,
-                    type: "error",
-                    message: error,
-                    timestamp: new Date(),
-                  }}
-                  onClose={() => setError(null)}
-                />
-              </div>
-            )}
-
             <div className="dashboard-header">
-              <h1>Welcome, {userData?.name}!</h1>
-              <p className="dashboard-subtitle">Admin Dashboard Overview</p>
+              <h1>Admin Dashboard</h1>
+              <div className="user-welcome">
+                Welcome back, {userData?.name}
+              </div>
             </div>
 
-            <section className="stats-overview">
-              <div className="stat-card">Total Students: {students.length}</div>
-              <div className="stat-card">
-                Total Faculty Members: {faculties.length}
+            <div className="dashboard-grid">
+              <div className="dashboard-stats">
+                <div className="stat-card">
+                  <h3>Students</h3>
+                  <p>{students.length}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>Faculty</h3>
+                  <p>{faculties.length}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>Facilities</h3>
+                  <p>{facilities.length}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>Notifications</h3>
+                  <p>{notifications.filter(n => !n.read).length}</p>
+                </div>
               </div>
-              <div className="stat-card">
-                Available Facilities: {facilities.length}
-              </div>
-            </section>
 
-            {/* Notifications Section */}
-            <div className="dashboard-section">
-              <h2>Notifications</h2>
-              {notifications.map((notification) => (
-                <NotificationBanner
-                  key={notification.id}
-                  notification={notification}
-                  onClose={() =>
-                    notificationService.clearNotification(notification.id)
-                  }
-                />
-              ))}
+              <div className="dashboard-notifications">
+                <h2>System Notifications</h2>
+                <div className="notifications-list">
+                  {notifications.map((notification) => (
+                    <NotificationBanner
+                      key={notification.id}
+                      notification={{
+                        ...notification,
+                        timestamp: notification.timestamp.toDate(),
+                      }}
+                      onClose={handleDismissNotification}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="dashboard-announcements">
+                <h2>Announcements</h2>
+                <CreateAnnouncementForm />
+                <div className="announcements-list">
+                  {announcements.map((announcement) => (
+                    <AnnouncementCard
+                      key={announcement.id}
+                      announcement={announcement}
+                      onDelete={() => handleDeleteAnnouncement(announcement.id)}
+                      onUpdate={(updateData) => handleUpdateAnnouncement(announcement.id, updateData)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="dashboard-users">
+                <h2>User Management</h2>
+                <AddUserForm />
+                <UserManagement />
+              </div>
             </div>
 
-            {/* Announcements Section */}
-            <section className="dashboard-section">
-              <h2>Announcements</h2>
-              {/* Create Announcement Form */}
-              <CreateAnnouncementForm />
-              {/* Display Announcements */}
-              {announcements.length > 0 ? (
-                announcements.map((announcement) => (
-                  <AnnouncementCard
-                    key={announcement.announcementId}
-                    announcement={announcement}
-                    onDelete={handleDeleteAnnouncement}
-                    onEdit={handleEditAnnouncement}
-                  />
-                ))
-              ) : (
-                <p>No announcements available.</p>
-              )}
-            </section>
-
-            {/* Edit Announcement Modal */}
-            {editingAnnouncement && (
-              <Modal
-                title="Edit Announcement"
-                isOpen={true}
-                onClose={() => setEditingAnnouncement(null)}
-                size="large"
-              >
-                <EditAnnouncementForm
-                  announcement={editingAnnouncement}
-                  onUpdate={handleUpdateAnnouncement}
-                  onCancel={() => setEditingAnnouncement(null)}
-                />
-              </Modal>
-            )}
-
-            {/* Delete Confirmation Modal */}
+            {/* Modals */}
             <Modal
-              title="Confirm Deletion"
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
+              title="Confirm Deletion"
               onConfirm={confirmDeleteAnnouncement}
-              onCancel={() => setIsDeleteModalOpen(false)}
+              showActions={true}
               confirmText="Delete"
               cancelText="Cancel"
-              showActions={true}
             >
               <p>Are you sure you want to delete this announcement?</p>
             </Modal>
 
-            <section className="dashboard-section">
-              <h2>User Management</h2>
-              <AddUserForm />
-              <UserManagement />
-            </section>
+            {editingAnnouncement && (
+              <Modal
+                isOpen={true}
+                onClose={() => setEditingAnnouncement(null)}
+                title="Edit Announcement"
+                size="large"
+              >
+                <EditAnnouncementForm
+                  announcement={editingAnnouncement}
+                  onUpdate={(updateData) => handleUpdateAnnouncement(editingAnnouncement.id, updateData)}
+                  onCancel={() => setEditingAnnouncement(null)}
+                />
+              </Modal>
+            )}
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 };

@@ -7,6 +7,9 @@ import type { Notification } from '../types/notification';
 
 type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
 
+// Re-export the Appointment type
+export type { Appointment } from '../types/appointment';
+
 export class AppointmentService {
   private appointmentsRef = collection(db, 'appointments');
 
@@ -291,7 +294,7 @@ export class AppointmentService {
         }
       }
 
-      const status = appointmentData.createdByRole === 'faculty' ? 'accepted' : 'pending';
+      const status: AppointmentStatus = appointmentData.createdByRole === 'faculty' ? 'accepted' : 'pending';
       const appointmentToCreate = {
         ...appointmentData,
         status,
@@ -575,6 +578,33 @@ export class AppointmentService {
       }
     } catch (error) {
       console.error('Error rejecting appointment:', error);
+      throw error;
+    }
+  }
+
+  async addAppointment(appointmentData: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    return this.createAppointment(appointmentData);
+  }
+
+  async getAllAppointments(): Promise<Appointment[]> {
+    try {
+      const querySnapshot = await getDocs(query(this.appointmentsRef, orderBy('createdAt', 'desc')));
+      return querySnapshot.docs.map(doc => this.convertFromFirestore(doc.data(), doc.id));
+    } catch (error) {
+      console.error('Error getting all appointments:', error);
+      throw error;
+    }
+  }
+
+  async updateAppointment(appointmentId: string, updateData: Partial<Appointment>): Promise<void> {
+    try {
+      const appointmentRef = doc(this.appointmentsRef, appointmentId);
+      await updateDoc(appointmentRef, {
+        ...updateData,
+        updatedAt: Timestamp.now()
+      });
+    } catch (error) {
+      console.error('Error updating appointment:', error);
       throw error;
     }
   }

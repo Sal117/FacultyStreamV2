@@ -1,20 +1,27 @@
 import { Timestamp } from 'firebase/firestore';
 
+export type AnnouncementType = 'announcement' | 'event' | 'general';
+
 export interface Announcement {
   id: string;
   title: string;
   content: string;
+  type: AnnouncementType;
+  date: Date;
+  createdAt: Date;
   createdBy: string;
   createdByName: string;
-  createdAt: Date;
-  type: 'general' | 'event';
-  date?: Date;
   imageUrl?: string;
-  attachments?: string[];
-  links?: { label: string; url: string }[];
+  attachments: string[];
+  links: {
+    title: string;
+    url: string;
+  }[];
 }
 
-export interface FirestoreAnnouncement extends Omit<Announcement, 'createdAt' | 'date'> {
+export interface FirestoreAnnouncement extends Omit<Announcement, 'date' | 'createdAt'> {
+  date: Timestamp;
   createdAt: Timestamp;
-  date?: Timestamp;
 }
+
+export type AnnouncementPayload = Omit<Announcement, 'id' | 'createdAt' | 'createdBy'>;

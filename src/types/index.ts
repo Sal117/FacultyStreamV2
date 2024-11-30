@@ -1,18 +1,24 @@
 import { Timestamp } from 'firebase/firestore';
 
+export type AnnouncementType = 'announcement' | 'event' | 'general';
+
 export interface Announcement {
   id: string;
+  announcementId?: string;
   title: string;
   content: string;
+  type: AnnouncementType;
+  date: Date;
   createdAt: Date;
   createdBy: string;
+  createdByUid?: string;
   createdByName: string;
-  type: 'general' | 'event';
-  date?: Date;
   imageUrl?: string;
-  attachments?: string[];
-  links?: { label: string; url: string; }[];
-  updatedAt?: Date;
+  attachments: string[];
+  links: {
+    title: string;
+    url: string;
+  }[];
 }
 
 export interface User {
@@ -69,13 +75,14 @@ export interface Facility {
   updatedAt?: Date;
 }
 
-export interface Notification {
+export interface NotificationPayload {
   id: string;
-  userId: string;
-  title: string;
-  message: string;
   type: 'info' | 'alert' | 'update' | 'success' | 'error';
-  read: boolean;
-  relatedId?: string;
-  createdAt: Date;
+  message: string;
+  timestamp: Date;
+  recipientId?: string;
+  read?: boolean;
+  relatedFormId?: string;
+  relatedAppointmentId?: string;
+  relatedConversationId?: string;
 }

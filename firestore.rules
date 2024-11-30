@@ -27,5 +27,47 @@ service cloud.firestore {
     match /announcements/{announcementId} {
       allow read, write: if true;
     }
+    
+    // Allow access to documents collection
+    match /documents/{documentId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow access to form templates collection
+    match /FormTemplates/{templateId} {
+      allow read: if true;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty';
+    }
+    
+    // Allow access to submitted forms collection
+    match /submittedForms/{formId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow access to system settings
+    match /systemSettings/{settingId} {
+      allow read: if true;  // Everyone can read system settings
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';  // Only admin can modify
+    }
+    
+    // Allow access to facilities settings
+    match /facilitiesSettings/{settingId} {
+      allow read: if true;  // Everyone can read facilities settings
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';  // Only admin can modify
+    }
+    
+    // Allow access to events
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow access to facility bookings
+    match /facilityBookings/{bookingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
   }
 }

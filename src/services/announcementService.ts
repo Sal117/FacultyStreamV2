@@ -62,13 +62,23 @@ class AnnouncementService {
     }
   }
 
-  async updateAnnouncement(id: string, data: Partial<Announcement>): Promise<void> {
+  async addAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt'>): Promise<string> {
     try {
-      const docRef = doc(this.announcementsRef, id);
-      await updateDoc(docRef, {
-        ...data,
-        updatedAt: new Date()
+      const docRef = await addDoc(this.announcementsRef, {
+        ...announcementData,
+        createdAt: Timestamp.now()
       });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding announcement:', error);
+      throw error;
+    }
+  }
+
+  async updateAnnouncement(id: string, updateData: Partial<Omit<Announcement, 'id' | 'createdAt'>>): Promise<void> {
+    try {
+      const announcementRef = doc(this.announcementsRef, id);
+      await updateDoc(announcementRef, updateData);
     } catch (error) {
       console.error('Error updating announcement:', error);
       throw error;

@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 export interface Notification {
   id: string;
   message: string;
-  type: "info" | "alert" | "update" | "success" | "error";
+  type: NotificationType;
   timestamp: Date;
   recipientId: string;
   read: boolean;
@@ -16,4 +16,8 @@ export interface FirestoreNotification extends Omit<Notification, 'timestamp'> {
   timestamp: Timestamp;
 }
 
-export type NotificationPayload = Omit<Notification, "id" | "read">;
+export interface NotificationPayload extends Omit<Notification, 'id' | 'read'> {
+  timestamp: Date;
+}
+
+export type NotificationType = "info" | "alert" | "update" | "success" | "error";

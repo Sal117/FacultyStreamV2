@@ -1,5 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 
+export type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+
 export interface Appointment {
   id: string;
   facultyId: string;
@@ -11,7 +13,7 @@ export interface Appointment {
   meetingLink: string | null;
   facilityId: string | null;
   notes?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  status: AppointmentStatus;
   createdBy: string;
   createdByRole: 'student' | 'faculty';
   createdByName: string;

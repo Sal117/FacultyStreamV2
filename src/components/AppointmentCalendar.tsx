@@ -49,7 +49,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
 
   const calendarEvents = appointments.map(appointment => ({
     id: appointment.id,
-    title: `${appointment.meetingType === 'online' ? '🌐' : '🏢'} ${appointment.createdByName}`,
+    title: `${appointment.createdByName} - ${appointment.meetingType}`,
     start: new Date(`${appointment.date.toDateString()} ${appointment.startTime}`),
     end: new Date(`${appointment.date.toDateString()} ${appointment.endTime}`),
     backgroundColor: getStatusColor(appointment.status),
@@ -58,7 +58,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       meetingType: appointment.meetingType,
       status: appointment.status,
       notes: appointment.notes,
-      location: appointment.meetingType === 'physical' ? appointment.location : appointment.meetingLink,
+      location: appointment.meetingType === 'physical' ? appointment.facilityId : appointment.meetingLink,
       createdByName: appointment.createdByName
     }
   }));
