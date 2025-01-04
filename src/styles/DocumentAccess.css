@@ -1,66 +1,264 @@
-.document-access {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  background: var(--card-bg);
-  color: var(--foreground);
+/* src/styles/DocumentAccess.css */
+
+/* Reset default styles */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.upload-section, .documents-list {
-  margin-top: 20px;
-  padding: 20px;
-  border-top: 2px solid var(--input-border);
+/* Page Background */
+.document-access-page {
+  min-height: 100vh;
+  background: var(--page-background);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
 }
 
-h2, h3 {
-  color: var(--foreground);
-}
-
-input[type="text"], textarea, input[type="file"] {
+/* Overall Container Styling */
+.document-access-container {
   width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-  background: var(--input-bg);
-  color: var(--foreground);
+  max-width: 1000px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  transition: background-color var(--transition-duration) var(--transition-easing);
 }
 
-button {
-  padding: 10px 20px;
-  margin-top: 10px;
-  background-color: var(--button-primary-bg);
-  color: var(--button-text);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: var(--button-primary-hover);
-}
-
-button[disabled] {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.document-item {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 4px;
-  background: var(--muted);
-  color: var(--foreground);
-}
-
-a {
+/* Header Styling */
+.document-access-container h2 {
+  font-size: 2.5rem;
   color: var(--primary);
-  text-decoration: none;
+  text-align: center;
+  font-family: var(--font-family-base);
+  animation: fadeInDown 1s ease-out;
 }
 
-a:hover {
+/* Documents List Section */
+.documents-list {
+  width: 100%;
+}
+
+.documents-list h3 {
+  font-size: 2rem;
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+  font-family: var(--font-family-base);
+  position: relative;
+  display: inline-block;
+}
+
+.documents-list h3::after {
+  content: '';
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary);
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  border-radius: var(--border-radius-small);
+  transition: width var(--transition-duration) var(--transition-easing);
+}
+
+.documents-list h3:hover::after {
+  width: 100px;
+}
+
+/* Individual Document Item */
+.document-item {
+  background-color: var(--muted);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-medium);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: transform var(--transition-duration) var(--transition-easing), box-shadow var(--transition-duration) var(--transition-easing);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.document-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-hover);
+}
+
+/* Document Title */
+.document-item h4 {
+  font-size: 1.8rem;
+  color: var(--primary);
+  font-family: var(--font-family-base);
+  animation: slideInLeft 0.5s ease-out;
+}
+
+/* Document Description */
+.document-item p {
+  font-size: 1.2rem;
+  color: var(--secondary);
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-base);
+}
+
+/* Download Link */
+.document-item a {
+  font-size: 1rem;
+  color: var(--button-link-text);
+  text-decoration: none;
+  font-weight: 900;
+  align-self: flex-start;
+  transition: color var(--transition-duration) var(--transition-easing);
+}
+
+.document-item a:hover {
+  color: var(--button-link-hover);
   text-decoration: underline;
+
+}
+
+/* Document Actions */
+.document-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.document-actions .btn {
+  flex: 1;
+  max-width: 150px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-index-modal);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: var(--modal-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius-large);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--modal-shadow);
+  text-align: center;
+  animation: slideInUp 0.5s ease-out;
+  position: relative;
+}
+
+/* Modal Header */
+.modal-content h2 {
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-family: var(--font-family-base);
+}
+
+/* Modal Description */
+.modal-content p {
+  font-size: 1rem;
+  color: var(--modal-text);
+  margin-bottom: 2rem;
+  font-family: var(--font-family-base);
+  line-height: var(--line-height-base);
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.modal-actions .btn {
+  width: 120px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .documents-list h3 {
+    font-size: 1.8rem;
+  }
+
+  .document-item h4 {
+    font-size: 1.5rem;
+  }
+
+  .document-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .document-actions .btn {
+    max-width: 100%;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
 }

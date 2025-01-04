@@ -14,7 +14,19 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { firebaseApp } from "./firebase";
-import { Notification, NotificationPayload, FirestoreNotification } from '../types/notification';
+
+// Define Notification type with Firestore Timestamp
+export type Notification = {
+  id: string;
+  message: string;
+  type: "info" | "alert" | "update" | "success" | "error";
+   timestamp:  Timestamp; // Firestore Timestamp
+  recipientId: string; 
+  relatedFormId?: string; 
+  relatedAppointmentId?: string; 
+  relatedConversationId?: string; 
+  read?: boolean
+};
 
 class NotificationService {
   private listeners: Function[] = [];
@@ -25,30 +37,20 @@ class NotificationService {
     return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
   }
 
-  // Convert Firestore timestamp to Date
-  private convertTimestampToDate(timestamp: Timestamp): Date {
-    return timestamp.toDate();
-  }
-
   // Subscribe to notifications collection
   subscribe(listener: (notifications: Notification[]) => void): Function {
     const unsubscribe = onSnapshot(
       collection(this.db, "notifications"),
       (snapshot) => {
-        const notifications = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            message: data.message,
-            type: data.type,
-            timestamp: this.convertTimestampToDate(data.timestamp || Timestamp.now()),
-            recipientId: data.recipientId || "",
-            read: data.read ?? false,
-            relatedFormId: data.relatedFormId,
-            relatedAppointmentId: data.relatedAppointmentId,
-            relatedConversationId: data.relatedConversationId,
-          } as Notification;
-        });
+        const notifications = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          message: doc.data().message,
+          type: doc.data().type,
+          timestamp: doc.data().timestamp || Timestamp.now(),
+          recipientId: doc.data().recipientId || "",
+          relatedFormId: doc.data().relatedFormId || "",
+          relatedAppointmentId: doc.data().relatedAppointmentId || "",
+        })) as Notification[];
 
         if (!this.listeners.includes(listener)) {
           this.listeners.push(listener);
@@ -69,80 +71,15 @@ class NotificationService {
     this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
-  // Subscribe to user's notifications
-  listenToNotifications(userId: string, callback: (notifications: FirestoreNotification[]) => void) {
-    const q = query(
-      collection(this.db, "notifications"),
-      where("recipientId", "==", userId),
-      orderBy("timestamp", "desc")
-    );
-
-    return onSnapshot(q, (snapshot) => {
-      const notifications = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          message: data.message,
-          type: data.type,
-          timestamp: data.timestamp,
-          recipientId: data.recipientId,
-          read: data.read ?? false,
-          relatedFormId: data.relatedFormId,
-          relatedAppointmentId: data.relatedAppointmentId,
-          relatedConversationId: data.relatedConversationId,
-        } as FirestoreNotification;
-      });
-      
-      callback(notifications);
-    });
-  }
-
-  // Subscribe to user notifications
-  subscribeToUserNotifications(userId: string, listener: (notifications: FirestoreNotification[]) => void): Function {
-    const notificationsRef = collection(this.db, "notifications");
-    const q = query(
-      notificationsRef,
-      where("recipientId", "==", userId),
-      orderBy("timestamp", "desc")
-    );
-
-    return onSnapshot(q, (snapshot) => {
-      const notifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as FirestoreNotification[];
-      listener(notifications);
-    });
-  }
-
-  // Subscribe to all notifications (admin only)
-  subscribeToAllNotifications(listener: (notifications: FirestoreNotification[]) => void): Function {
-    const notificationsRef = collection(this.db, "notifications");
-    const q = query(
-      notificationsRef,
-      orderBy("timestamp", "desc")
-    );
-
-    return onSnapshot(q, (snapshot) => {
-      const notifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as FirestoreNotification[];
-      listener(notifications);
-    });
-  }
-
   // Notify a user by adding a notification to Firestore
-  async notify(notificationData: Omit<NotificationPayload, "timestamp">): Promise<string> {
+  async notify(notification: Omit<Notification, "id">): Promise<void> {
     try {
-      const docRef = doc(collection(this.db, "notifications"));
-      const dataToSet = {
-        ...notificationData,
-        read: false,
-        timestamp: Timestamp.now()
-      };
+      const docRef = doc(collection(this.db, "notifications")); // Auto-generate ID
+      const dataToSet = this.removeUndefinedFields({
+        ...notification,
+        timestamp: Timestamp.now(), // Use Firestore Timestamp
+      });
       await setDoc(docRef, dataToSet);
-      return docRef.id;
     } catch (error) {
       console.error("Failed to add notification:", error);
       throw new Error("Failed to add notification");
@@ -151,18 +88,50 @@ class NotificationService {
 
   // Notify users about appointment updates
   async notifyAppointmentUpdate(
-    recipientId: string,
+    recipientId: string, // Changed from userId to recipientId
     appointmentId: string,
     message: string,
-    type: Notification["type"]
-  ): Promise<string> {
-    const notificationData = {
-      recipientId,
-      message,
-      type,
-      relatedAppointmentId: appointmentId
-    };
-    return this.notify(notificationData);
+    type: "info" | "alert" | "update" | "success" | "error"
+  ): Promise<void> {
+    try {
+      await this.notify({
+        recipientId,
+        message,
+        type,
+        relatedAppointmentId: appointmentId,
+        timestamp: Timestamp.now(),  
+      });
+      console.log("Appointment update notification sent.");
+    } catch (error) {
+      console.error("Failed to send appointment update notification:", error);
+      throw new Error("Failed to send appointment update notification");
+    }
+  }
+
+  // Fetch notifications for a specific user
+  async getNotifications(recipientId: string): Promise<Notification[]> {
+    const notificationsQuery = query(
+      collection(this.db, "notifications"),
+      where("recipientId", "==", recipientId)
+    );
+
+    try {
+      const snapshot = await getDocs(notificationsQuery);
+      return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        message: doc.data().message,
+        type: doc.data().type,
+        timestamp: doc.data().timestamp
+      ? doc.data().timestamp.toDate()
+      : new Date(),
+        recipientId: doc.data().recipientId || "",
+        relatedFormId: doc.data().relatedFormId || "",
+        relatedAppointmentId: doc.data().relatedAppointmentId || "",
+      })) as Notification[];
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+      throw new Error("Failed to fetch notifications");
+    }
   }
 
   // Notify users about form updates
@@ -170,71 +139,47 @@ class NotificationService {
     recipientId: string,
     formId: string,
     message: string,
-    type: Notification["type"]
-  ): Promise<string> {
-    const notificationData = {
-      recipientId,
+    type: "info" | "alert" | "update" | "success" | "error"
+  ): Promise<void> {
+    const notification: Omit<Notification, "id"> = {
       message,
       type,
-      relatedFormId: formId
+      timestamp: Timestamp.now(),
+      recipientId,
+      relatedFormId: formId,
     };
-    return this.notify(notificationData);
+
+    await this.notify(notification);
   }
 
   // Notify a list of users (bulk notification)
   async notifyUsers(
-    recipientIds: string[], 
+    recipientIds: string[],
     message: string,
-    type: Notification["type"],
+    type: "info" | "alert" | "update" | "success" | "error",
     relatedFormId?: string,
     relatedAppointmentId?: string
   ): Promise<void> {
     try {
-      const promises = recipientIds.map(recipientId => 
-        this.notify(this.removeUndefinedFields({
+      for (const recipientId of recipientIds) {
+        await this.notify(this.removeUndefinedFields({
           recipientId,
           message,
           type,
           relatedFormId,
-          relatedAppointmentId
-        }))
-      );
-      await Promise.all(promises);
+          relatedAppointmentId,
+        }));
+      }
     } catch (error) {
       console.error("Failed to send bulk notifications:", error);
       throw new Error("Failed to send bulk notifications");
     }
   }
 
-  // Notify new message
-  async notifyNewMessage(
-    recipientId: string,
-    message: string,
-    conversationId: string
-  ): Promise<void> {
-    await this.notify({
-      message,
-      type: 'info',
-      recipientId,
-      relatedConversationId: conversationId
-    });
-  }
-
-  // Mark notification as read
-  async markNotificationAsRead(notificationId: string): Promise<void> {
-    try {
-      const notificationRef = doc(this.db, "notifications", notificationId);
-      await setDoc(notificationRef, { read: true }, { merge: true });
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      throw error;
-    }
-  }
-
   // Clear (delete) a notification
   async clearNotification(notificationId: string): Promise<void> {
     try {
-      await deleteDoc(doc(this.db, "notifications", notificationId));
+      await deleteDoc(doc(this.db, "notifications", notificationId)); // Delete notification
     } catch (error) {
       console.error("Failed to delete notification:", error);
       throw new Error("Failed to delete notification");
@@ -250,11 +195,63 @@ class NotificationService {
       );
 
       const snapshot = await getDocs(notificationsQuery);
-      await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+
+      const deletePromises = snapshot.docs.map((doc) =>
+        deleteDoc(doc.ref)
+      );
+
+      await Promise.all(deletePromises);
     } catch (error) {
       console.error("Failed to clear user notifications:", error);
       throw new Error("Failed to clear user notifications");
     }
+  }
+
+  // Notify users about new chat messages
+  async notifyNewMessage(
+    recipientId: string,
+    conversationId: string,
+    messageContent: string
+  ): Promise<void> {
+    const notification: Omit<Notification, "id"> = {
+      message: `New message: ${messageContent}`,
+      type: "info",
+      timestamp: Timestamp.now(),
+      recipientId,
+      relatedConversationId: conversationId,
+    };
+
+    await this.notify(notification);
+  }
+
+
+
+
+  // Subscribe to notifications for a specific user
+  subscribeToUserNotifications(
+    recipientId: string,
+    callback: (notifications: Notification[]) => void
+  ): () => void {
+    const q = query(
+      collection(this.db, "notifications"),
+      where("recipientId", "==", recipientId),
+      orderBy("timestamp", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifications: Notification[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        message: doc.data().message,
+        type: doc.data().type,
+        timestamp: doc.data().timestamp || Timestamp.now(),
+        relatedFormId: doc.data().relatedFormId,
+        relatedAppointmentId: doc.data().relatedAppointmentId,
+        recipientId:doc.data().recipientId,
+      }));
+      callback(notifications);
+    });
+
+    return unsubscribe;
   }
 }
 

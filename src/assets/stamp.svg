@@ -30,7 +30,7 @@
     <path id="topCurve" d="M15,75 a60,60 0 0,1 120,0" fill="none" />
   </defs>
   <text width="100%">
-    <textPath xlink:href="#topCurve" startOffset="50%" text-anchor="middle" font-size="14" fill="#000" font-family="Arial, sans-serif">
+    <textPath href="#topCurve" startOffset="50%" text-anchor="middle" font-size="14" fill="#000" font-family="Arial, sans-serif">
       ICSDI Faculty
     </textPath>
   </text>
@@ -40,7 +40,7 @@
     <path id="bottomCurve" d="M135,75 a60,60 0 0,0 -120,0" fill="none" />
   </defs>
   <text width="100%">
-    <textPath xlink:href="#bottomCurve" startOffset="50%" text-anchor="middle" font-size="12" fill="#000" font-family="Arial, sans-serif">
+    <textPath href="#bottomCurve" startOffset="50%" text-anchor="middle" font-size="12" fill="#000" font-family="Arial, sans-serif">
       UCSI University
     </textPath>
   </text>

@@ -16,9 +16,11 @@
   --sidebar-bg: linear-gradient(135deg, #007bff, #0056b3);
   --sidebar-text: #343a40;
   --modal-bg: #ffffff;
-  --notification-bg: #007bff;
+  --notification-bg:#007bff;
   --footer-bg: linear-gradient(135deg, #007bff, #0056b3);
   --footer-text: #ffffff;
+  --notify-text:#ffffff;
+  --text-color: #000000;
 
   /* Buttons */
   --button-primary-bg: #007bff;
@@ -62,38 +64,38 @@
 
   --sidebar-logo: url('src/assets/images/sidebarLogo_light.png'); 
   
-   /* Chatbot Header */
-   --chatbot-header-bg: var(--primary);
-   --chatbot-header-text: #ffffff;
+  /* Chatbot Header */
+  --chatbot-header-bg: var(--primary);
+  --chatbot-header-text: #ffffff;
 
-   /* Chat Messages */
-   --chatbot-message-user-bg:  #0066cc; /* Light green */
-   --chatbot-message-user-text: #f1e7e7;
-   --chatbot-message-bot-bg: #f1f0f0; /* Light gray */
-   --chatbot-message-bot-text: #000000;
+  /* Chat Messages */
+  --chatbot-message-user-bg:  #0066cc; /* Light blue */
+  --chatbot-message-user-text: #f1e7e7;
+  --chatbot-message-bot-bg: #f1f0f0; /* Light gray */
+  --chatbot-message-bot-text: #000000;
 
-   /* Message Timestamps */
-   --message-timestamp-color: #888888;
+  /* Message Timestamps */
+  --message-timestamp-color: #888888;
 
-   /* Chat Input Field */
-   --chatbot-input-bg: #ffffff;
-   --chatbot-input-text: #000000;
-   --chatbot-input-border: #cccccc;
+  /* Chat Input Field */
+  --chatbot-input-bg: #ffffff;
+  --chatbot-input-text: #000000;
+  --chatbot-input-border: #cccccc;
 
-   /* Send Button */
-   --chatbot-send-btn-bg: var(--button-primary-bg);
-   --chatbot-send-btn-hover-bg: var(--button-primary-hover);
-   --chatbot-send-btn-text: var(--button-text);
+  /* Send Button */
+  --chatbot-send-btn-bg: var(--button-primary-bg);
+  --chatbot-send-btn-hover-bg: var(--button-primary-hover);
+  --chatbot-send-btn-text: var(--button-text);
 
-   /* Chatbot Container */
-   --chatbot-container-bg: var(--background);
-   --chatbot-scrollbar-bg: #f1f1f1;
-   --chatbot-scrollbar-thumb: #888888;
+  /* Chatbot Container */
+  --chatbot-container-bg: var(--background);
+  --chatbot-scrollbar-bg: #f1f1f1;
+  --chatbot-scrollbar-thumb: #888888;
 
-   /* Loading Indicator */
-   --chatbot-typing-indicator: #555555;
+  /* Loading Indicator */
+  --chatbot-typing-indicator: #555555;
 
-   /* Chat Page Specific Variables */
+  /* Chat Page Specific Variables */
   --chat-bg: var(--muted);
   --chat-message-bg: #ffffff;
   --chat-message-text: var(--foreground);
@@ -105,30 +107,80 @@
   --chat-send-btn-bg: var(--button-primary-bg);
   --chat-send-btn-hover-bg: var(--button-primary-hover);
   --chat-send-btn-text: var(--button-text);
-/* Modal var*/
 
---modal-overlay-bg: rgba(0, 0, 0, 0.5);
---modal-bg: #fff;
---modal-text: #333;
---modal-border-color: #ddd;
---modal-close-button-color: #999;
---modal-close-button-hover-color: #333;
---modal-button-text-color: #fff;
---modal-button-cancel-bg: #6c757d;
---modal-button-cancel-hover-bg: #5a6268;
---modal-button-confirm-bg: #dc3545;
---modal-button-confirm-hover-bg: #c82333;
---modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  /* Modal Variables */
+  --modal-overlay-bg: rgba(0, 0, 0, 0.5);
+  --modal-bg: #fff;
+  --modal-text: #333;
+  --modal-border-color: #ddd;
+  --modal-close-button-color: #999;
+  --modal-close-button-hover-color: #333;
+  --modal-button-text-color: #fff;
+  --modal-button-cancel-bg: #6c757d;
+  --modal-button-cancel-hover-bg: #5a6268;
+  --modal-button-confirm-bg: #dc3545;
+  --modal-button-confirm-hover-bg: #c82333;
+  --modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 
+  /* Border Radius */
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+
+  /* Box Shadows */
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --box-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
+
+  /* Transition and Animation */
+  --transition-duration: 0.3s;
+  --transition-easing: ease-in-out;
+  --animation-duration-fast: 0.2s;
+  --animation-duration-medium: 0.5s;
+  --animation-duration-slow: 1s;
+
+  /* Z-Index */
+  --z-index-modal: 1000;
+  --z-index-dropdown: 900;
+  --z-index-navbar: 800;
+
+  /* Typography */
+  --font-family-base: 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 16px;
+  --font-size-small: 14px;
+  --font-size-large: 18px;
+  --line-height-base: 1.5;
+
+  /* Breakpoints */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+
+  /* Additional Colors */
+  --info-bg: #17a2b8;
+  --info-hover: #138496;
+  --warning-bg: #ffc107;
+  --warning-hover: #e0a800;
+  --light-bg: #f8f9fa;
+  --dark-bg: #343a40;
+  --input-border: #ccc;
+  --search-hover: #0066cc;
+  --day-background: #f0f0f0;
 }
 
 /* Global Dark Mode Variables */
 .dark {
   --sidebar-logo: url('src/assets/images/SidebarLogo_dark.png');
   --overlayL: rgba(0, 0, 0, 0.5);
+  --text-color: #f8f9fa;
+  --search-hover: #bb86fc;
+  --day-background: #1e1e1e;
+
 
   --background: #121212;
-  --foreground: #f8f9fa;
+  --foreground: #ffffff;
+  --foregrounda: #69b2fa;
+
   --primary: #bb86fc;
   --secondary: #374151;
   --muted: #1e293b;
@@ -137,9 +189,11 @@
   --sidebar-bg: linear-gradient(135deg, #374151, #1e293b);
   --sidebar-text: #cbd5e0;
   --modal-bg: #2d3748;
-  --notification-bg: #3b82f6;
+  --notification-bg: #bb86fc;
+  --notify-text:#374151;
   --footer-bg: linear-gradient(135deg, #374151, #1e293b);
   --footer-text: #cbd5e0;
+  --input-border: #bb86fc;
 
   /* Buttons */
   --button-primary-bg: #bb86fc;
@@ -148,8 +202,8 @@
   --button-secondary-hover: #2d3748;
   --button-text: #ffffff;
   --button-secondary-text: #ffffff;
-  --button-link-text: #3498db;
-  --button-link-hover: #2980b9;
+  --button-link-text: #80bfff;
+  --button-link-hover: #66a3ff;
   --button-danger-bg: #dc3545;
   --button-danger-hover: #c82333;
   --button-success-bg: #28a745;
@@ -162,7 +216,7 @@
   --button-disabled-text: #95a5a6;
 
   /* Focus Ring */
-  --button-focus-ring: #3498db;
+  --button-focus-ring: #80bfff;
 
   /* Alerts/Status Colors */
   --success-bg: #28a745;
@@ -187,7 +241,7 @@
   --chatbot-header-text: #E4E6EB;
 
   /* Chat Messages */
-  --chatbot-message-user-bg: #bb86fc; /* Dark teal */
+  --chatbot-message-user-bg: #bb86fc; /* Purple */
   --chatbot-message-user-text: #E4E6EB;
   --chatbot-message-bot-bg: #3A3B3C; /* Dark gray */
   --chatbot-message-bot-text: #E4E6EB;
@@ -213,21 +267,20 @@
   /* Loading Indicator */
   --chatbot-typing-indicator: #E4E6EB;
 
+  /* Chat Page Specific Variables */
+  --chat-bg: #1a1a1a;
+  --chat-message-bg: #2a2a2a;
+  --chat-message-text: #eaeaea;
+  --chat-message-own-bg: #054740; /* Dark teal for own messages */
+  --chat-message-own-text: #eaeaea;
+  --chat-timestamp-color: #777777;
+  --chat-input-bg: #1e1e1e;
+  --chat-input-border: #333333;
+  --chat-send-btn-bg: var(--button-primary-bg);
+  --chat-send-btn-hover-bg: var(--button-primary-hover);
+  --chat-send-btn-text: var(--button-text);
 
-   /* Chat Page Specific Variables */
-   --chat-bg: #1a1a1a;
-   --chat-message-bg: #2a2a2a;
-   --chat-message-text: #eaeaea;
-   --chat-message-own-bg: #054740; /* Dark teal for own messages */
-   --chat-message-own-text: #eaeaea;
-   --chat-timestamp-color: #777777;
-   --chat-input-bg: #1e1e1e;
-   --chat-input-border: #333333;
-   --chat-send-btn-bg: var(--button-primary-bg);
-   --chat-send-btn-hover-bg: var(--button-primary-hover);
-   --chat-send-btn-text: var(--button-text);
-  /* Modal dark theme*/
-
+  /* Modal Variables */
   --modal-overlay-bg: rgba(0, 0, 0, 0.8);
   --modal-bg: #1e1e1e;
   --modal-text: #f0f0f0;
@@ -241,110 +294,45 @@
   --modal-button-confirm-hover-bg: #c9302c;
   --modal-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 
-  
-}
+  /* Border Radius */
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
 
+  /* Box Shadows */
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --box-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.7);
 
+  /* Transition and Animation */
+  --transition-duration: 0.3s;
+  --transition-easing: ease-in-out;
+  --animation-duration-fast: 0.2s;
+  --animation-duration-medium: 0.5s;
+  --animation-duration-slow: 1s;
 
+  /* Z-Index */
+  --z-index-modal: 1000;
+  --z-index-dropdown: 900;
+  --z-index-navbar: 800;
 
+  /* Typography */
+  --font-family-base: 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 16px;
+  --font-size-small: 14px;
+  --font-size-large: 18px;
+  --line-height-base: 1.5;
 
+  /* Breakpoints */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
 
-
-
-
-
-
-
-
-/* Global Styles */
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-/* Navigation Bar */
-.navbar {
-  background: var(--navbar-bg);
-  color: var(--foreground);
-}
-
-/* Sidebar */
-.sidebar {
-  background: var(--navbar-bg);
-  
-}
-
-/* Footer */
-.footer {
-  background: var(--footer-bg);
-  color: var(--footer-text);
-}
-
-/* Card */
-.card {
-  background-color: var(--card-bg);
-  color: var(--foreground);
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Buttons */
-.button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 6px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.button-primary {
-  background-color: var(--button-primary-bg);
-  color: #fff;
-}
-
-.button-primary:hover {
-  background-color: var(--button-primary-hover);
-}
-
-.button-secondary {
-  background-color: var(--button-secondary-bg);
-  color: #fff;
-}
-
-.button-secondary:hover {
-  background-color: var(--button-secondary-hover);
-}
-
-/* Input Fields */
-.input {
-  background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  padding: 8px 12px;
-  border-radius: 4px;
-  color: var(--foreground);
-}
-
-/* Notification Banner */
-.notification-banner {
-  background-color: var(--notification-bg);
-  color: #fff;
-}
-
-/* Modal */
-.modal {
-  background-color: var(--modal-bg);
-  color: var(--foreground);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 80px;
-  }
-  .app-content {
-    margin-left: 80px;
-  }
+  /* Additional Colors */
+  --info-bg: #17a2b8;
+  --info-hover: #138496;
+  --warning-bg: #ffc107;
+  --warning-hover: #e0a800;
+  --light-bg: #f8f9fa;
+  --dark-bg: #343a40;
 }

@@ -4,8 +4,8 @@
   margin: 2rem auto;
   padding: 2rem;
   background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow);
   color: var(--foreground);
 }
 
@@ -13,10 +13,30 @@
 .appointment-management h2 {
   font-size: 2rem;
   font-family: 'Roboto', sans-serif;
-  color: var(--foreground);
+  color: var(--primary);
   text-align: center;
   margin-bottom: 1.5rem;
 }
+.appointment-details h3 {
+  font-size: 1.25rem;
+  color: var(--primary); /* Make the header more prominent */
+  margin-bottom: 1rem;
+}
+.appointment-details p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--foreground); /* Ensure text is clearly visible in dark mode */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.appointment-details strong {
+  font-weight: 600;
+  color: var(--primary); /* Highlight labels like "Student(s)" and "Time" */
+}
+
+
 
 /* Filters section */
 .filters-section {
@@ -42,16 +62,18 @@
 .status-filter select {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  border-radius: 5px;
+  border-radius: var(--border-radius-small);
   border: 1px solid var(--input-border);
   background-color: var(--input-bg);
-  transition: border 0.3s ease;
+  color: var(--foreground);
+  transition: border var(--transition-duration) var(--transition-easing), background-color var(--transition-duration) var(--transition-easing);
 }
 
 .status-filter select:hover,
 .status-filter select:focus {
   border-color: var(--primary);
   outline: none;
+  background-color: var(--hover-color);
 }
 
 /* Appointment list and cards */
@@ -64,15 +86,28 @@
 
 .appointment-card {
   background-color: var(--background);
-  border-radius: 12px;
+  border-radius: var(--border-radius-large);
   padding: 1.5rem;
   border: 1px solid var(--border-color);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow var(--transition-duration) var(--transition-easing), background-color var(--transition-duration) var(--transition-easing);
+  color: var(--foreground);
 }
 
 .appointment-card:hover {
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-hover);
 }
+.appointment-card h3 {
+  color: var(--primary); /* Make headers more prominent */
+}
+
+.appointment-card p {
+  color: var(--foreground); /* Details should contrast with the background */
+}
+
+.appointment-card strong {
+  color: var(--primary); /* Highlight labels like "Student(s)" */
+}
+
 
 .appointment-details {
   margin-bottom: 1.5rem;
@@ -87,7 +122,7 @@
 .appointment-details p {
   margin: 0.5rem 0;
   font-size: 1rem;
-  color: var(--secondary);
+  color: var(--foreground);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -95,7 +130,7 @@
 
 .appointment-details strong {
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--primary);
   min-width: 100px;
 }
 
@@ -106,6 +141,21 @@
 
 .appointment-details a:hover {
   text-decoration: underline;
+}
+.appointment-details .detail-row {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.appointment-details .label {
+  color: var(--primary); /* Use primary color for labels */
+}
+
+.appointment-details .value {
+  color: var(--foreground); /* Ensure readability for values */
 }
 
 /* Appointment actions */
@@ -118,37 +168,117 @@
 .appointment-actions button {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius-small);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  color: #ffffff;
+  transition: background-color var(--transition-duration) var(--transition-easing), transform var(--transition-duration) var(--transition-easing), opacity var(--transition-duration) var(--transition-easing);
+  color: var(--button-text);
 }
 
+/* Updated Buttons using CSS Variables */
 .accept-btn {
-  background-color: #4CAF50;  /* Green */
+  background-color: var(--button-success-bg);
 }
 
 .accept-btn:hover {
-  background-color: #45a049;
+  background-color: var(--button-success-hover);
 }
 
 .reject-btn {
-  background-color: #f44336;  /* Red */
+  background-color: var(--button-danger-bg);
 }
 
 .reject-btn:hover {
-  background-color: #da190b;
+  background-color: var(--button-danger-hover);
 }
 
 .delete-btn {
-  background-color: #dc3545;  /* Danger Red */
-  color: #ffffff;
+  background-color: var(--button-danger-bg);
+  color: var(--button-text);
   margin-left: auto;
 }
 
 .delete-btn:hover {
-  background-color: #c82333;
+  background-color: var(--button-danger-hover);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-index-modal);
+}
+
+.modal-content {
+  background-color: var(--modal-bg);
+  padding: 30px;
+  border-radius: var(--border-radius-medium);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: var(--modal-shadow);
+  color: var(--text-color);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--text-color);
+}
+.modal-content h2, .modal-content h3 {
+  color: var(--primary); /* Use primary color for the header */
+  font-weight: bold; /* Emphasize the header */
+  text-align: center; /* Center the header text, if needed */
+}
+
+.modal-content p {
+  color: var(--foreground);
+}
+.modal-content strong {
+  color: var(--primary); 
+}
+
+.modal-content .status {
+  font-weight: bold;
+  color: var(--warning-bg); 
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color var(--transition-duration) var(--transition-easing), color var(--transition-duration) var(--transition-easing);
+  color: var(--modal-button-text-color);
+}
+
+.cancel-button {
+  background-color: var(--modal-button-cancel-bg);
+}
+
+.cancel-button:hover {
+  background-color: var(--modal-button-cancel-hover-bg);
+}
+
+.delete-button {
+  background-color: var(--modal-button-confirm-bg);
+}
+
+.delete-button:hover {
+  background-color: var(--modal-button-confirm-hover-bg);
 }
 
 /* Reschedule form */
@@ -156,7 +286,7 @@
   margin-top: 1.5rem;
   padding: 1rem;
   background-color: var(--card-bg);
-  border-radius: 8px;
+  border-radius: var(--border-radius-medium);
   border: 1px solid var(--border-color);
 }
 
@@ -172,16 +302,18 @@
   padding: 0.75rem;
   margin-bottom: 1rem;
   border: 1px solid var(--input-border);
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   background-color: var(--input-bg);
   color: var(--foreground);
   font-size: 1rem;
+  transition: border var(--transition-duration) var(--transition-easing), background-color var(--transition-duration) var(--transition-easing);
 }
 
 .reschedule-form input[type="date"]:focus,
 .reschedule-form select:focus {
   outline: none;
   border-color: var(--primary);
+  background-color: var(--hover-color);
 }
 
 .reschedule-actions {
@@ -196,20 +328,28 @@
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   font-weight: 500;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.confirm-reschedule-btn {
-  background-color: var(--primary);
+  transition: background-color var(--transition-duration) var(--transition-easing), transform var(--transition-duration) var(--transition-easing), opacity var(--transition-duration) var(--transition-easing);
   color: var(--button-text);
 }
 
+.confirm-reschedule-btn {
+  background-color: var(--button-primary-bg);
+}
+
+.confirm-reschedule-btn:hover {
+  background-color: var(--button-primary-hover);
+}
+
 .cancel-reschedule-btn {
-  background-color: var(--secondary-bg);
-  color: var(--foreground);
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.cancel-reschedule-btn:hover {
+  background-color: var(--button-secondary-hover-bg);
 }
 
 /* Loading state */

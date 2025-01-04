@@ -11,10 +11,13 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { firebaseApp } from "../services/firebase";
 import { formService } from "../services/formService";
 import { FormTemplate } from "./types"; // Added centralized import
-
+import { Modal, Button, message } from "antd";
 interface User {
   id: string;
   name: string;
@@ -135,41 +138,59 @@ const UserManagement: React.FC = () => {
       setEditUserId(null);
       setEditUserRole("student");
       setEditUserPermissions([]);
+
+      // Toast success message
+      toast.success("User updated successfully!");
     } catch (err) {
       console.error("Error updating user:", err);
       setError("Failed to update user. Please try again.");
+      // Toast error message
+      toast.error("Failed to update user. Please try again.");
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (!confirmDelete) return;
+  const handleDeleteUser = (userId: string) => {
+    Modal.confirm({
+      title: "Confirm Deletion",
+      content: "Are you sure you want to delete this user?",
+      okText: "Yes, Delete",
+      cancelText: "Cancel",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          // Clear any previous errors
+          setError(null);
 
-    try {
-      setError(null);
-      const userRef = doc(db, "users", userId);
-      await deleteDoc(userRef);
+          // Delete the user document
+          const userRef = doc(db, "users", userId);
+          await deleteDoc(userRef);
 
-      // Refresh users list
-      const usersCollection = collection(db, "users");
-      const usersSnapshot = await getDocs(usersCollection);
-      const fetchedUsers: User[] = usersSnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name || "Unnamed User",
-          email: data.email || "No Email Provided",
-          role: data.role,
-          permissions: data.permissions || [],
-        };
-      });
-      setUsers(fetchedUsers);
-    } catch (err) {
-      console.error("Error deleting user:", err);
-      setError("Failed to delete user. Please try again.");
-    }
+          // Fetch and update the users list
+          const usersCollection = collection(db, "users");
+          const usersSnapshot = await getDocs(usersCollection);
+          const fetchedUsers = usersSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name || "Unnamed User",
+              email: data.email || "No Email Provided",
+              role: data.role,
+              permissions: data.permissions || [],
+            };
+          });
+
+          setUsers(fetchedUsers);
+          message.success("User deleted successfully!"); // Show a success message
+        } catch (err) {
+          console.error("Error deleting user:", err);
+          setError("Failed to delete user. Please try again.");
+          message.error("Failed to delete user.");
+        }
+      },
+      onCancel: () => {
+        console.log("User deletion canceled.");
+      },
+    });
   };
 
   const filteredUsers = users.filter((user) => {
@@ -187,6 +208,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="user-management">
+      <ToastContainer />
       <h2>User Management</h2>
 
       {error && <div className="error-message">{error}</div>}
@@ -316,12 +338,13 @@ const UserManagement: React.FC = () => {
                           >
                             Edit
                           </button>
-                          <button
+                          <Button
+                            type="primary"
+                            danger // This adds the danger style in Ant Design
                             onClick={() => handleDeleteUser(user.id)}
-                            className="delete-btn"
                           >
                             Delete
-                          </button>
+                          </Button>
                         </>
                       )}
                     </td>

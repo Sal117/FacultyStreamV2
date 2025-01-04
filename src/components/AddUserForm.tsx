@@ -1,75 +1,64 @@
-import React, { useState } from "react";
-import { addUser } from "../services/databaseService";
-import "./AddUserForm.css";
+// src/components/AddUserForm.tsx
 
-let facultyCounter = 200; // Starting ID for faculty
-let studentCounter = 100; // Starting ID for students
+import React, { useState } from "react";
+import { databaseService, UserData } from "../services/databaseService";
+import "./AddUserForm.css";
 
 const AddUserForm: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [faculty, setFaculty] = useState<string>("");
-  const [role, setRole] = useState<"student" | "faculty">("student");
-  const [password, setPassword] = useState<string>(""); // Store generated password
+  const [role, setRole] = useState<"student" | "faculty" | "admin">("student"); // Include "admin" role
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [address, setAddress] = useState<string>("");
   const [DOB, setDOB] = useState<string>(""); // Date of Birth
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string>(""); // Store generated userId
-
-  // Helper function to generate a userId based on the role
-  const generateUserId = (): string => {
-    if (role === "faculty") {
-      return `${facultyCounter++}`;
-    } else if (role === "student") {
-      return `${studentCounter++}`;
-    }
-    return ""; // Fallback (should never hit)
-  };
+  const [userId, setUserId] = useState<string>(""); // Store Firebase UID
+  const [generatedId, setGeneratedId] = useState<string>(""); // Store generated ascending ID
+  const [password, setPassword] = useState<string>("");
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
     setSuccess(null);
 
+    // Validate required fields
     if (!name || !email || !faculty || !DOB) {
-      setError("Please fill all required fields");
+      setError("Please fill all required fields.");
       return;
     }
-
-    const generatedId = generateUserId();
-    setUserId(generatedId);
-
-    const generatedPassword = `${name.split(" ")[0]}${generatedId}`; // First name + userId
-    setPassword(generatedPassword);
 
     setLoading(true);
 
     try {
-      const userData = {
-        userId: generatedId, // Include generated userId
-        name,
-        email,
-        faculty,
-        role,
-        password: generatedPassword,
-        phoneNumber,
-        address,
-        DOB,
-      }; // Include all fields in user data
+      // Fetch the next user ID based on the selected role
+      const nextId = await databaseService.getNextUserId(role);
+      setGeneratedId(nextId);
 
-      const createdUserId = await addUser(userData);
-      setSuccess(`User added with ID: ${createdUserId}`);
-      setName("");
-      setEmail("");
-      setFaculty("");
-      setRole("student");
-      setPhoneNumber("");
-      setAddress("");
-      setDOB("");
-    } catch (error) {
+      const firstName = name.trim().split(" ")[0];
+      const generatedPassword = `${firstName}${nextId}`;
+      setPassword(generatedPassword);
+
+      const userData: UserData = {
+        name: name.trim(),
+        email: email.trim(),
+        faculty: faculty.trim(),
+        role,
+        password: generatedPassword, // Consider handling password securely
+        phoneNumber: phoneNumber.trim(),
+        address: address.trim(),
+        DOB,
+        generatedId: nextId, // Include generatedId
+      };
+
+      // Add the user to Firebase Auth and Firestore
+      const createdUserUid = await databaseService.addUser(userData);
+      setUserId(createdUserUid);
+
+      setSuccess(`User added successfully!`);
+    } catch (error: any) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
@@ -86,31 +75,37 @@ const AddUserForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="add-user-form">
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Name *"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Email *"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
           type="text"
-          placeholder="Faculty"
-          value={faculty}
+          placeholder="Faculty *"
+          value={
+            faculty ||
+            "Institute of Computer Science & Digital Innovation (ICSDI)"
+          }
           onChange={(e) => setFaculty(e.target.value)}
           required
         />
         <select
           value={role}
-          onChange={(e) => setRole(e.target.value as "student" | "faculty")}
+          onChange={(e) =>
+            setRole(e.target.value as "student" | "faculty" | "admin")
+          }
         >
           <option value="student">Student</option>
           <option value="faculty">Faculty</option>
+          <option value="admin">Admin</option>
         </select>
         <input
           type="tel"
@@ -126,7 +121,7 @@ const AddUserForm: React.FC = () => {
         />
         <input
           type="date"
-          placeholder="Date of Birth"
+          placeholder="Date of Birth *"
           value={DOB}
           onChange={(e) => setDOB(e.target.value)}
           required
@@ -135,18 +130,20 @@ const AddUserForm: React.FC = () => {
           {loading ? "Adding..." : "Add User"}
         </button>
       </form>
-      {userId && (
-        <p>
-          Generated User ID: <strong>{userId}</strong>
-        </p>
+
+      {success && (
+        <div className="success-message">
+          <p>User added successfully!</p>
+          <p>
+            <strong>Generated ID:</strong> {generatedId}
+          </p>
+          <p>
+            <strong>Password:</strong> {password}
+          </p>
+        </div>
       )}
-      {password && (
-        <p>
-          Generated Password: <strong>{password}</strong>
-        </p>
-      )}
+
       {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
     </div>
   );
 };

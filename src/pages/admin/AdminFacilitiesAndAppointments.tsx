@@ -10,6 +10,10 @@ import { authService } from "../../services/authService";
 
 import Button from "../../components/Button";
 import { Timestamp } from "firebase/firestore";
+import type {
+  Appointment as AppointmentType,
+  AppointmentStatus,
+} from "../../types/appointment";
 
 interface Facility {
   id: string;
@@ -20,25 +24,27 @@ interface Facility {
   capacity?: number;
 }
 
-interface Appointment {
+interface AppointmentView {
   appointmentId: string;
   userId: string;
   date: Date;
   faculty: string;
   room: string;
-  status: "pending" | "confirmed" | "cancelled" | "rejected";
+  status: AppointmentStatus;
+  facultyName: string; // Added faculty name
+  facilityName: string;
 }
 
 const AdminFacilitiesAndAppointments: React.FC = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentView[]>([]);
   const [selectedFacility, setSelectedFacility] = useState<string>("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [bookingDate, setBookingDate] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filteredAppointments, setFilteredAppointments] = useState<
-    Appointment[]
+    AppointmentView[]
   >([]);
   const [newFacilityCapacity, setNewFacilityCapacity] = useState<number | "">(
     ""
@@ -60,25 +66,47 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
       try {
         setLoading(true);
 
-        // Fetch facilities
+        // Fetch facilities and create a mapping of facilityId -> facilityName
         const fetchedFacilities = await facilitiesService.getFacilities();
+        const facilityMap: { [key: string]: string } = {};
+        fetchedFacilities.forEach((facility) => {
+          facilityMap[facility.id] = facility.name;
+        });
+
+        // Fetch users and create a mapping of userId -> facultyName
+        const fetchedUsers = await authService.getAllUsers(); // Use getAllUsers from authService
+        const userMap: { [key: string]: string } = {};
+        fetchedUsers.forEach((user) => {
+          userMap[user.uid] = user.name ?? "Unknown User"; // Provide a default value if user.name is undefined
+        });
+
         setFacilities(fetchedFacilities);
 
         // Fetch appointments
         const fetchedAppointments =
-          await appointmentService.getAllAppointments(); // Fixed method name
+          await appointmentService.getAllAppointments();
+
         const formattedAppointments = fetchedAppointments.map(
-          (appointment: Appointment) => ({
-            ...appointment,
+          (appointment: AppointmentType): AppointmentView => ({
+            appointmentId: appointment.id,
+            userId: appointment.studentIds[0] || "",
             date:
               appointment.date instanceof Timestamp
-                ? appointment.date.toDate() // Convert Timestamp to Date
-                : new Date(appointment.date), // Handle cases where it's already a Date
+                ? appointment.date.toDate()
+                : new Date(appointment.date),
+            faculty: appointment.facultyId,
+            room: appointment.facilityId || "Online Meeting",
+            status: appointment.status,
+            facultyName: userMap[appointment.facultyId] || "Unknown Faculty", // Map faculty name
+            facilityName:
+              appointment.facilityId && facilityMap[appointment.facilityId]
+                ? facilityMap[appointment.facilityId]
+                : "Online Meeting",
           })
         );
+
         setAppointments(formattedAppointments);
         setFilteredAppointments(formattedAppointments);
-
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -102,7 +130,7 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
   };
 
   // Filter appointments based on status
-  const handleStatusFilterChange = (status: string) => {
+  const handleStatusFilterChange = (status: AppointmentStatus | "all") => {
     setFilterStatus(status);
     if (status === "all") {
       setFilteredAppointments(appointments);
@@ -246,13 +274,15 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
   // Update appointment status
   const handleAppointmentStatusChange = async (
     appointmentId: string,
-    newStatus: "confirmed" | "cancelled"
+    newStatus: AppointmentStatus
   ) => {
     try {
       setLoading(true);
-      await appointmentService.updateAppointment(appointmentId, {
-        status: newStatus,
-      });
+      await appointmentService.updateAppointmentStatus(
+        appointmentId,
+        newStatus
+      );
+
       const updatedAppointments = appointments.map((appointment) =>
         appointment.appointmentId === appointmentId
           ? { ...appointment, status: newStatus }
@@ -441,11 +471,17 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
             <label>Status Filter:</label>
             <select
               value={filterStatus}
-              onChange={(e) => handleStatusFilterChange(e.target.value)}
+              onChange={(e) =>
+                handleStatusFilterChange(
+                  e.target.value as AppointmentStatus | "all"
+                )
+              }
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
               <option value="confirmed">Confirmed</option>
+              <option value="rejected">Rejected</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -457,10 +493,10 @@ const AdminFacilitiesAndAppointments: React.FC = () => {
                   <strong>Date:</strong> {appointment.date.toLocaleDateString()}
                 </p>
                 <p>
-                  <strong>Room:</strong> {appointment.room}
+                  <strong>Room:</strong> {appointment.facilityName}
                 </p>
                 <p>
-                  <strong>Faculty:</strong> {appointment.faculty}
+                  <strong>Faculty:</strong> {appointment.facultyName}
                 </p>
                 <p>
                   <strong>Status:</strong> {appointment.status}

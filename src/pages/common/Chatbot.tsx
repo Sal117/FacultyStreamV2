@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../../styles/Chatbot.css";
 import { chatbotService } from "../../services/chatbotService";
 import Sidebar from "../../components/Sidebar";
-
+import LoadingSpinner from "../../components/LoadingSpinner";
 interface Message {
   sender: "user" | "bot";
   text: string;
@@ -74,7 +74,10 @@ const Chatbot: React.FC = () => {
           {isLoading && (
             <div className="chatbot-message bot">
               <div className="message-content">
-                <span>Typing...</span>
+                <span>
+                  Typing...
+                  <LoadingSpinner />
+                </span>
               </div>
             </div>
           )}

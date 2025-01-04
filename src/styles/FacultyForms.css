@@ -12,7 +12,6 @@
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Heading Styles */
 .faculty-forms-container h1 {
   text-align: center;
   font-size: 2.5rem; /* Larger font size for prominence */
@@ -24,13 +23,38 @@
   animation: fadeInDown 0.6s ease forwards; /* Smooth entrance animation */
 }
 
-/* Section Styling */
+/* Filter Section */
+.filter-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+  font-size: 1rem;
+  color: var(--foreground);
+  transition: color 0.3s ease;
+}
+
+.filter-section label {
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+.filter-section select {
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  background: var(--input-bg);
+  color: var(--foreground);
+  font-size: 1rem;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+/* Forms List Section */
 .forms-list-section {
   margin-bottom: 50px; /* Increased margin for better separation */
   animation: fadeInUp 0.5s ease forwards; /* Smooth entrance animation */
 }
 
-/* Section Headings */
 .forms-list-section h2 {
   font-size: 2rem;
   color: var(--secondary);
@@ -68,9 +92,9 @@
   transform: translateY(-5px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   background: var(--card-bg);
+  border-color: var(--primary);
 }
 
-/* Card Description Styling */
 .card .description {
   margin-top: 10px;
   color: var(--secondary);
@@ -139,7 +163,6 @@
   transition: background-color 0.3s ease;
 }
 
-/* Status Variants */
 .status-approved {
   background-color: var(--success-bg);
 }
@@ -402,14 +425,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Additional Enhancements */
-
-/* Hover Effects for Cards */
-.faculty-forms-container .forms-list .card:hover {
-  background: var(--card-bg);
-  border-color: var(--primary);
 }
 
 /* Smooth Scrollbar for Forms List */

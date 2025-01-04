@@ -1,13 +1,17 @@
+// src/pages/common/AppointmentManagement.tsx
+
 import React, { useState, useEffect } from "react";
 import { appointmentService } from "../../services/appointmentService";
 import { userService } from "../../services/userService";
 import { facilityService } from "../../services/facilityService";
 import AppointmentCalendar from "../../components/AppointmentCalendar";
-import AppointmentCard from "../../components/AppointmentCard"; // Import AppointmentCard component
+import AppointmentCard from "../../components/AppointmentCard";
 import "../../styles/AppointmentManagement.css";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useAuth } from "../../context/AuthContext";
 import type { Appointment } from "../../types/appointment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AppointmentManagement: React.FC = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -16,18 +20,22 @@ const AppointmentManagement: React.FC = () => {
   const [facilities, setFacilities] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [loading, setLoading] = useState<boolean>(true);
-  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<
+    Appointment[]
+  >([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [notification, setNotification] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch appointments and related data
+  // New state variables for delete confirmation dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] =
+    useState<Appointment | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading) return; // Wait for auth to initialize
-      
+      if (authLoading) return;
+
       if (!isAuthenticated || !user?.uid) {
-        console.log("No authenticated user:", { isAuthenticated, userId: user?.uid });
         setError("Please log in to view appointments");
         setLoading(false);
         return;
@@ -35,13 +43,12 @@ const AppointmentManagement: React.FC = () => {
 
       setLoading(true);
       try {
-        console.log("Fetching appointments for faculty:", user.uid);
-        const fetchedAppointments = await appointmentService.getFacultyAppointments(user.uid);
-        console.log("Fetched appointments:", fetchedAppointments);
+        const fetchedAppointments =
+          await appointmentService.getFacultyAppointments(user.uid);
 
         const [fetchedUsers, fetchedFacilities] = await Promise.all([
           userService.getAllUsers(),
-          facilityService.getAllFacilities()
+          facilityService.getAllFacilities(),
         ]);
 
         setAppointments(fetchedAppointments);
@@ -60,14 +67,12 @@ const AppointmentManagement: React.FC = () => {
     fetchData();
   }, [user, authLoading, isAuthenticated]);
 
-  // Filter appointments by status and date
   useEffect(() => {
     if (!selectedDate || !appointments.length) return;
 
     let filtered = appointments;
 
-    // Filter by date
-    filtered = filtered.filter(appointment => {
+    filtered = filtered.filter((appointment) => {
       const appointmentDate = appointment.date;
       return (
         appointmentDate.getFullYear() === selectedDate.getFullYear() &&
@@ -76,9 +81,10 @@ const AppointmentManagement: React.FC = () => {
       );
     });
 
-    // Filter by status
     if (filterStatus !== "all") {
-      filtered = filtered.filter(appointment => appointment.status === filterStatus);
+      filtered = filtered.filter(
+        (appointment) => appointment.status === filterStatus
+      );
     }
 
     setFilteredAppointments(filtered);
@@ -92,45 +98,54 @@ const AppointmentManagement: React.FC = () => {
     setFilterStatus(status);
   };
 
-  const handleStatusUpdate = async (appointmentId: string, newStatus: Appointment['status']) => {
+  const handleStatusUpdate = async (
+    appointmentId: string,
+    newStatus: Appointment["status"]
+  ) => {
     if (!user) return;
 
     try {
-      await appointmentService.updateAppointmentStatus(appointmentId, newStatus, user.uid);
-      
-      // Refresh appointments
-      const updatedAppointments = await appointmentService.getFacultyAppointments(user.uid);
+      await appointmentService.updateAppointmentStatus(
+        appointmentId,
+        newStatus,
+        user.uid
+      );
+
+      const updatedAppointments =
+        await appointmentService.getFacultyAppointments(user.uid);
       setAppointments(updatedAppointments);
-      
-      setNotification(`Appointment ${newStatus} successfully`);
-      setTimeout(() => setNotification(""), 3000);
+
+      toast.success(`Appointment ${newStatus} successfully`);
     } catch (error) {
       console.error("Error updating appointment status:", error);
-      setNotification("Failed to update appointment status");
-      setTimeout(() => setNotification(""), 3000);
+      toast.error("Failed to update appointment status");
     }
   };
 
-  const handleDeleteAppointment = async (appointmentId: string) => {
-    if (!user) return;
+  // Open the delete confirmation dialog
+  const handleDeleteClick = (appointment: Appointment) => {
+    setAppointmentToDelete(appointment);
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (!window.confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
-      return;
-    }
+  // Confirm and delete the appointment
+  const confirmDeleteAppointment = async () => {
+    if (!user || !appointmentToDelete) return;
 
     try {
-      await appointmentService.deleteAppointment(appointmentId);
-      
-      // Refresh appointments
-      const updatedAppointments = await appointmentService.getFacultyAppointments(user.uid);
+      await appointmentService.deleteAppointment(appointmentToDelete.id);
+
+      const updatedAppointments =
+        await appointmentService.getFacultyAppointments(user.uid);
       setAppointments(updatedAppointments);
-      
-      setNotification('Appointment deleted successfully');
-      setTimeout(() => setNotification(""), 3000);
+
+      toast.success("Appointment deleted successfully");
     } catch (error) {
       console.error("Error deleting appointment:", error);
-      setNotification("Failed to delete appointment");
-      setTimeout(() => setNotification(""), 3000);
+      toast.error("Failed to delete appointment");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setAppointmentToDelete(null);
     }
   };
 
@@ -139,7 +154,9 @@ const AppointmentManagement: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <div className="error-message">Please log in to view appointments</div>;
+    return (
+      <div className="error-message">Please log in to view appointments</div>
+    );
   }
 
   if (error) {
@@ -148,11 +165,9 @@ const AppointmentManagement: React.FC = () => {
 
   return (
     <div className="appointment-management">
+      <ToastContainer />
       <div className="header">
         <h1>Appointment Management</h1>
-        {notification && (
-          <div className="notification">{notification}</div>
-        )}
       </div>
 
       <div className="filters">
@@ -174,7 +189,7 @@ const AppointmentManagement: React.FC = () => {
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           appointments={appointments}
-          userId={user?.uid || ''}
+          userId={user?.uid || ""}
         />
       </div>
 
@@ -189,11 +204,38 @@ const AppointmentManagement: React.FC = () => {
               appointment={appointment}
               currentUserRole="faculty"
               onStatusChange={handleStatusUpdate}
-              onDelete={handleDeleteAppointment}
+              onDelete={() => handleDeleteClick(appointment)}
             />
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {isDeleteDialogOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirm Delete</h2>
+            <p>
+              Are you sure you want to delete this appointment? This action
+              cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="button cancel-button"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="button delete-button"
+                onClick={confirmDeleteAppointment}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

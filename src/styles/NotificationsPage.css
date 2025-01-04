@@ -63,18 +63,31 @@
   font-size: 1.1rem;
   color: var(--foreground);
 }
+.notifications-list button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.notifications-list button:hover {
+  background-color: darkred;
+}
 
 .notification button {
   background-color: transparent;
   border: none;
-  color: var(--primary);
+  color: var(--notify-text);
   cursor: pointer;
   font-size: 1.1rem;
   transition: color 0.3s;
 }
 
 .notification button:hover {
-  color: var(--button-primary-hover);
+  color: red;
 }
 
 /* Loading Spinner */

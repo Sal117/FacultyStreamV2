@@ -14,6 +14,19 @@
   margin-bottom: 20px;
   color: var(--primary);
 }
+.danger {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.danger:hover {
+  background-color: darkred;
+}
 
 /* Error Message */
 .error-message {

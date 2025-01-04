@@ -1,6 +1,7 @@
+//src/types/appointment.ts
 import { Timestamp } from 'firebase/firestore';
 
-export type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+export type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'confirmed';
 
 export interface Appointment {
   id: string;

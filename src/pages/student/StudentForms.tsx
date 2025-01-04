@@ -89,7 +89,10 @@ const StudentForms: React.FC = () => {
                 id: latestNotification.id,
                 type: latestNotification.type,
                 message: latestNotification.message,
-                timestamp: latestNotification.timestamp.toDate(),
+                timestamp:
+                  latestNotification.timestamp instanceof Timestamp
+                    ? latestNotification.timestamp.toDate()
+                    : latestNotification.timestamp,
                 recipientId: latestNotification.recipientId,
                 relatedFormId: latestNotification.relatedFormId,
                 relatedAppointmentId: latestNotification.relatedAppointmentId,
@@ -280,8 +283,11 @@ const StudentForms: React.FC = () => {
               );
 
               if (!template) {
+                console.warn(`No template found for form ID ${form.formID}`);
                 return null; // Skip if no template found
               }
+              console.log(`Rendering form ID ${form.formID}:`, form);
+              console.log(`Using template:`, template);
 
               return (
                 <div key={form.formID}>

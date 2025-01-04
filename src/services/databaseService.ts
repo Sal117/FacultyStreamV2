@@ -12,17 +12,51 @@ import {
   where,
   updateDoc, 
   deleteDoc,
-  Timestamp 
+  Timestamp,
+  runTransaction, 
 } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { 
+  initializeApp, 
+  getApps, 
+  getApp, 
+  FirebaseApp 
+} from 'firebase/app';
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  deleteUser 
+} from 'firebase/auth';
 import { Appointment } from "../components/types";
+import { firebaseApp as primaryApp, db as primaryDb, auth as primaryAuth } from './firebase'; 
+import { firebaseConfig } from '../config/firebase';
 
 // Initialize Firestore and Auth
-const db = getFirestore(firebaseApp);
-const auth = getAuth(firebaseApp);
+const db = getFirestore(primaryApp);
+const auth = getAuth(primaryApp);
 
-// TypeScript Interfaces
+
+// ---------------------------
+// Secondary Firebase App Setup
+// ---------------------------
+
+
+// Define a unique name for the secondary app to prevent conflicts
+const secondaryAppName = "SecondaryApp";
+
+// Initialize the secondary Firebase app only if it hasn't been initialized already
+let secondaryApp: FirebaseApp;
+
+if (!getApps().some(app => app.name === secondaryAppName)) {
+  secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+  console.log("Secondary Firebase app initialized.");
+} else {
+  secondaryApp = getApp(secondaryAppName);
+  console.log("Secondary Firebase app already initialized.");
+}
+
+// Initialize Firebase Auth for the secondary app
+const secondaryAuth = getAuth(secondaryApp);
+
 
 // User Interfaces
 export interface User {
@@ -36,7 +70,7 @@ export interface User {
 export interface UserData {
   name: string;
   email: string;
-  role: string;
+  role: "student" | "faculty" | "admin";
   faculty: string;
   password: string;
   phoneNumber: string;
@@ -45,6 +79,7 @@ export interface UserData {
   joinDate?: string;
   profilePicture?: string;
   isActive?: boolean;
+  generatedId: string;
 }
 
 // Facility Interface
@@ -101,25 +136,84 @@ export interface Notification {
   createdAt: Timestamp;
 }
 
+
+
+
 // ---------------------------
 // User Management
 // ---------------------------
+/**
+ * Fetches the next available user ID based on the role using Firestore transactions.
+ * Ensures that user IDs are sequential and unique.
+ * @param {("student" | "faculty" | "admin")} role - The role of the user.
+ * @returns {Promise<string>} - The next user ID as a string.
+ */
+export const getNextUserId = async (role: "student" | "faculty" | "admin"): Promise<string> => {
+  const countersRef = doc(primaryDb, "counters", "userIds");
+  try {
+    const nextId = await runTransaction(primaryDb, async (transaction) => {
+      const countersDoc = await transaction.get(countersRef);
+      if (!countersDoc.exists()) {
+        // Initialize counters if the document does not exist
+        const initialCounters = { studentCounter: 1000, facultyCounter: 2000, adminCounter: 3000 };
+        transaction.set(countersRef, initialCounters);
+        return role === "student" ? 1000 : role === "faculty" ? 2000 : 3000;
+      }
+
+      const countersData = countersDoc.data();
+      let currentCounter: number;
+
+      if (role === "student") {
+        currentCounter = countersData.studentCounter || 1000;
+        transaction.update(countersRef, { studentCounter: currentCounter + 1 });
+      } else if (role === "faculty") {
+        currentCounter = countersData.facultyCounter || 2000;
+        transaction.update(countersRef, { facultyCounter: currentCounter + 1 });
+      } else { // admin
+        currentCounter = countersData.adminCounter || 3000;
+        transaction.update(countersRef, { adminCounter: currentCounter + 1 });
+      }
+
+      return currentCounter + 1;
+    });
+
+    return nextId.toString();
+  } catch (error) {
+    console.error("Error getting next user ID:", error);
+    throw new Error("Failed to generate user ID.");
+  }
+};
 
 /**
- * Adds a new user to Firebase Authentication and Firestore.
- * @param {UserData} userData - Data of the user to add.
- * @returns {Promise<string>} The ID of the newly created user document.
+ * Adds a new user to Firebase Authentication and Firestore without affecting the primary auth state.
+ * Utilizes a secondary Firebase app instance to prevent authentication state changes.
+ * @param {UserData} userData - Data of the user to add, including generatedId.
+ * @returns {Promise<string>} The Firebase Auth UID of the newly created user.
  */
 export const addUser = async (userData: UserData): Promise<string> => {
   try {
-    // Create user in Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+    const validRoles = ["student", "faculty", "admin"];
+    if (!validRoles.includes(userData.role)) {
+      throw new Error(`Invalid role: ${userData.role}. Must be one of ${validRoles.join(", ")}`);
+    }
+
+    // Create user in Firebase Authentication using the secondary app
+    const userCredential = await createUserWithEmailAndPassword(
+      secondaryAuth,
+      userData.email,
+      userData.password
+    );
     const userId = userCredential.user.uid;
 
-    // Save user details in Firestore
-    const userDocRef = doc(db, "users", userId);
+    console.log(`User created in secondary auth with ID: ${userId}`);
+
+    
+
+    // Save user details in Firestore under the primary app's Firestore instance
+    const userDocRef = doc(primaryDb, "users", userId);
     await setDoc(userDocRef, {
-      userId: userId,
+      uid: userId, // Firebase Auth UID
+      generatedId: userData.generatedId, // Store the generated ascending ID
       name: userData.name,
       email: userData.email,
       role: userData.role,
@@ -133,13 +227,14 @@ export const addUser = async (userData: UserData): Promise<string> => {
       lastLogin: null,
     });
 
-    console.log("User added to both Auth and Firestore with ID:", userId);
+    console.log(`User data saved in Firestore with UID: ${userId}`);
     return userId;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error adding user:", error);
-    throw error;
+    throw new Error(error.message || "Failed to add user.");
   }
 };
+//rest of the code be
 
 /**
  * Fetches user data by user ID.
@@ -148,7 +243,7 @@ export const addUser = async (userData: UserData): Promise<string> => {
  */
 export const getUserData = async (userId: string): Promise<User | null> => {
   try {
-    const userDoc = await getDoc(doc(db, 'users', userId));
+    const userDoc = await getDoc(doc(primaryDb, 'users', userId));
     if (userDoc.exists()) {
       const userData = userDoc.data();
       return {
@@ -172,7 +267,7 @@ export const getUserData = async (userId: string): Promise<User | null> => {
  */
 export const getAllUsers = async (): Promise<User[]> => {
   try {
-    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const usersSnapshot = await getDocs(collection(primaryDb, 'users'));
     return usersSnapshot.docs.map(doc => ({
       userId: doc.id,
       name: doc.data().name || 'Unknown User',
@@ -194,7 +289,7 @@ export const getAllUsers = async (): Promise<User[]> => {
  */
 export const updateUser = async (userId: string, userData: Partial<User>): Promise<void> => {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(primaryDb, 'users', userId);
     await updateDoc(userRef, userData);
     console.log(`User ${userId} updated successfully.`);
   } catch (error) {
@@ -208,9 +303,9 @@ export const updateUser = async (userId: string, userData: Partial<User>): Promi
  * @param {string} userId - The ID of the user to delete.
  * @returns {Promise<void>}
  */
-export const deleteUser = async (userId: string): Promise<void> => {
+export const deleteUserById = async (userId: string): Promise<void> => {
   try {
-    await deleteDoc(doc(db, 'users', userId));
+    await deleteDoc(doc(primaryDb, 'users', userId));
     console.log(`User ${userId} deleted successfully.`);
   } catch (error) {
     console.error(`Error deleting user ${userId}:`, error);
@@ -328,8 +423,8 @@ export const getAllFacilities = async (): Promise<Facility[]> => {
     const facilitiesSnapshot = await getDocs(collection(db, 'facilities'));
     return facilitiesSnapshot.docs.map(doc => ({
       id: doc.id,
-      name: doc.data().name || 'Unnamed Facility',
-      location: doc.data().location || 'Unknown Location',
+      name: doc.data().name ||doc.data().FacilityName|| 'Unnamed Facility',
+      location: doc.data().location ||  'Unknown Location',
       status: doc.data().status || 'Available',
       availableSlots: doc.data().availableSlots || []
     })) as Facility[];
@@ -348,7 +443,7 @@ export const getFacilities = async (): Promise<Facility[]> => {
     const facilitiesSnapshot = await getDocs(collection(db, 'facilities'));
     return facilitiesSnapshot.docs.map(doc => ({
       id: doc.id,
-      name: doc.data().name || 'Unnamed Facility',
+      name: doc.data().name ||doc.data().FacilityName||  'General Facility',
       location: doc.data().location || 'Unknown Location',
       status: doc.data().status || 'Available',
       availableSlots: doc.data().availableSlots || [],
@@ -560,7 +655,11 @@ export const getFacilitiesSettings = async (): Promise<FacilitiesSettings> => {
         // Add other settings with defaults as necessary
       };
     } else {
-      throw new Error("No facilities settings found");
+      console.log("No facilities settings found, returning defaults.");
+      return {
+        maxBookingsPerFacility: 0,
+        enableFacilityBooking: false,
+      };
     }
   } catch (error) {
     console.error("Error fetching facilities settings:", error);
@@ -843,8 +942,9 @@ export const databaseService = {
   addUser,
   getUserData,
   getAllUsers,
-  updateUser,
+  updateUser: deleteUserById,
   deleteUser,
+  getNextUserId,
   
   // Appointments
   addAppointment,

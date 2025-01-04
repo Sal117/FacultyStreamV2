@@ -7,7 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const MODEL_NAME = 'deepset/roberta-base-squad2'; // QA model
+// Using 'google/flan-t5-base' as the model
+const MODEL_NAME = 'google/flan-t5-base';
 
 // Replace 'YOUR_HUGGINGFACE_API_TOKEN' with your actual Hugging Face access token
 const HUGGINGFACE_API_TOKEN = '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';
@@ -71,7 +72,6 @@ const servicesAndPortals = `
 
 - **IT Support:** Assists with technical issues related to university systems and services.
   - Email: ithelpdesk@ucsiuniversity.edu.my
-
 `;
 
 /* Events and Activities */
@@ -103,6 +103,7 @@ const faqs = `
 - **What scholarships are available?**
   - Merit-based scholarships are offered. Details can be found on the university website under the 'Scholarships' section.
 `;
+
 /* Institute of Computer Science and Digital Innovation (ICSDI) */
 const icsdiInfo = `
 **Institute of Computer Science and Digital Innovation (ICSDI):**
@@ -273,7 +274,6 @@ The ICSDI at UCSI University offers cutting-edge programs in the field of comput
     - Involvement in community projects and initiatives promoting digital literacy and technology education.
 `;
 
-
 /* Combine all contexts */
 const ucsiContext = `
 ${generalInfo}
@@ -283,16 +283,35 @@ ${eventsAndActivities}
 ${faqs}
 ${icsdiInfo}
 `;
+const greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings', 'hiya', 'howdy', 'what\'s up'];
 
 app.post('/api/chat', async (req, res) => {
   try {
     const { input } = req.body;
+    const lowerCaseInput = input.toLowerCase().trim();
+
+     // Check if the input is a greeting
+     if (greetings.includes(lowerCaseInput)) {
+      // Send a predefined response
+      const botReply = 'Hello! How can I assist you today?';
+      res.json({ text: botReply });
+      return;
+    }
 
     // Prepare the payload
     const payload = {
-      inputs: {
-        question: input,
-        context: ucsiContext,
+      inputs: `Answer the following question based on the context provided.
+    
+Context:
+${ucsiContext}
+
+Question:
+${input}
+
+Answer:`,
+      parameters: {
+        max_new_tokens: 200,
+        temperature: 0.7,
       },
     };
 
@@ -319,13 +338,15 @@ app.post('/api/chat', async (req, res) => {
     }
 
     // Extract the bot's reply
-    let botReply = data.answer || "I'm sorry, I couldn't find an answer to your question.";
+    let botReply = (Array.isArray(data) && data[0]?.generated_text)
+    ? data[0].generated_text
+    : "I'm sorry, I couldn't find an answer to your question.";
 
-    res.json({ text: botReply });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'An error occurred while processing your request.' });
-  }
+  res.json({ text: botReply.trim() });
+} catch (error) {
+  console.error('Error:', error);
+  res.status(500).json({ error: 'An error occurred while processing your request.' });
+}
 });
 
 const PORT = 5000;

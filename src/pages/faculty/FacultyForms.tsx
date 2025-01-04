@@ -32,6 +32,11 @@ const FacultyForms: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
   const [userCache, setUserCache] = useState<{ [key: string]: User }>({});
 
+  // Filter state: "all" | "pending" | "reviewed"
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "reviewed"
+  >("all");
+
   useEffect(() => {
     const fetchFacultyForms = async () => {
       try {
@@ -88,6 +93,7 @@ const FacultyForms: React.FC = () => {
     };
 
     fetchFacultyForms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle reviewing a form (open FormReview modal)
@@ -107,20 +113,20 @@ const FacultyForms: React.FC = () => {
 
       // Ensure responsible parties are cached
       const newUsers: { [key: string]: User } = { ...userCache };
-      template.responsibleParties.forEach(async (uid) => {
+      for (const uid of template.responsibleParties) {
         if (!newUsers[uid]) {
           const fetchedUser = await formService.getUserById(uid);
           if (fetchedUser) {
             newUsers[uid] = fetchedUser;
-            setUserCache({ ...newUsers });
           }
         }
-      });
+      }
+      setUserCache(newUsers);
 
       setSelectedForm({ form, template });
       setShowReviewModal(true);
     } catch (err) {
-      setError("Failed to fetch form template.");
+      setError("The form was already reviewd.");
       console.error("Error fetching form template:", err);
     } finally {
       setLoading(false);
@@ -154,8 +160,8 @@ const FacultyForms: React.FC = () => {
       id: selectedForm.form.formID, // Using formID as a unique identifier
       type: "success",
       message: `Form has been ${decision} successfully.`,
-      timestamp: new Date(), // Changed from Timestamp.now() to Date
-      recipientId: selectedForm.form.submittedBy, // Assuming 'submittedBy' is the recipient
+      timestamp: new Date(), // Using Date directly
+      recipientId: selectedForm.form.submittedBy,
       relatedFormId: selectedForm.form.formID,
     });
 
@@ -163,6 +169,15 @@ const FacultyForms: React.FC = () => {
     setShowReviewModal(false);
     setSelectedForm(null);
   };
+
+  // Filter the forms based on the selected filter status
+  const filteredForms = forms.filter((form) => {
+    if (filterStatus === "all") return true;
+    if (filterStatus === "pending") return form.status === "pending";
+    if (filterStatus === "reviewed")
+      return form.status === "approved" || form.status === "rejected";
+    return true;
+  });
 
   return (
     <div className="faculty-forms-container">
@@ -176,8 +191,8 @@ const FacultyForms: React.FC = () => {
             id: "error",
             type: "error",
             message: error,
-            timestamp: new Date(), // Changed to Date
-            recipientId: "faculty", // Set appropriately
+            timestamp: new Date(),
+            recipientId: "faculty",
             relatedFormId: undefined,
             relatedAppointmentId: undefined,
           }}
@@ -192,40 +207,70 @@ const FacultyForms: React.FC = () => {
         />
       )}
 
+      {/* Filter Section */}
+      {!loading && !error && (
+        <div className="filter-section">
+          <label htmlFor="filterStatus">Filter by status: </label>
+          <select
+            id="filterStatus"
+            value={filterStatus}
+            onChange={(e) =>
+              setFilterStatus(e.target.value as "all" | "pending" | "reviewed")
+            }
+          >
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="reviewed">Reviewed</option>
+          </select>
+        </div>
+      )}
+
       {!loading && !error && (
         <>
-          {forms.length > 0 ? (
+          {filteredForms.length > 0 ? (
             <div className="forms-list">
-              {forms.map((form) => (
-                <Card
-                  key={form.formID}
-                  title={form.formType}
-                  description={`Submitted by: ${
-                    userCache[form.submittedBy]
-                      ? userCache[form.submittedBy].name
-                      : form.submittedBy
-                  } on ${form.submittedAt.toLocaleDateString()}`}
-                  extra={
-                    <div className="form-actions">
-                      <Button
-                        text="Review"
-                        onClick={() => handleReview(form)}
-                        variant="primary"
-                        size="small"
-                      />
-                    </div>
-                  }
-                />
-              ))}
+              {filteredForms.map((form) => {
+                const submittedByName = userCache[form.submittedBy]
+                  ? userCache[form.submittedBy].name
+                  : form.submittedBy;
+                const submittedDate = form.submittedAt.toLocaleDateString();
+
+                // Determine reviewed status
+                const isReviewed =
+                  form.status === "approved" || form.status === "rejected";
+                const reviewedText = isReviewed
+                  ? ` (Reviewed: ${form.status})`
+                  : "";
+
+                return (
+                  <Card
+                    key={form.formID}
+                    title={`${form.formType}${reviewedText}`}
+                    description={`Submitted by: ${submittedByName} on ${submittedDate}`}
+                    extra={
+                      <div className="form-actions">
+                        {!isReviewed && (
+                          <Button
+                            text="Review"
+                            onClick={() => handleReview(form)}
+                            variant="primary"
+                            size="small"
+                          />
+                        )}
+                      </div>
+                    }
+                  />
+                );
+              })}
             </div>
           ) : (
             <NotificationBanner
               notification={{
                 id: "no-forms",
                 type: "info",
-                message: "No forms assigned to you.",
-                timestamp: new Date(), // Changed to Date
-                recipientId: "faculty", // Set appropriately
+                message: "No forms match the selected filter.",
+                timestamp: new Date(),
+                recipientId: "faculty",
                 relatedFormId: undefined,
                 relatedAppointmentId: undefined,
               }}

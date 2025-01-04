@@ -1,17 +1,25 @@
-// src/pages/admin/UserManagement.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   getAllUsers,
   updateUser,
-  deleteUser,
+  deleteUserById,
   getAppointments,
 } from "../../services/databaseService";
-import { User, Appointment } from "../../components/types"; // Importing both User and Appointment types
+import { User, Appointment } from "../../components/types";
 import "../../styles/UserManagement.css";
 import Sidebar from "../../components/Sidebar";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import Modal from "../../components/Modal"; // Assume you have a Modal component
+import Modal from "../../components/Modal";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -22,6 +30,10 @@ const UserManagement: React.FC = () => {
     user: User;
     appointments: Appointment[];
   } | null>(null);
+
+  // States for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,7 +58,6 @@ const UserManagement: React.FC = () => {
     };
     fetchUsers();
   }, []);
-
   /**
    * Handles toggling the active status of a user.
    * @param userId - The ID of the user.
@@ -62,43 +73,44 @@ const UserManagement: React.FC = () => {
           user.userId === userId ? { ...user, isActive } : user
         )
       );
+      // Toast success message
+      toast.success(
+        `User status updated successfully to ${
+          isActive ? "Active" : "Inactive"
+        }!`
+      );
     } catch (err) {
       setError("Error updating user status.");
       console.error("Error updating user status:", err);
+      // Toast error message
+      toast.error("Failed to update user status. Please try again.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  /**
-   * Handles deleting a user.
-   * @param userId - The ID of the user to delete.
-   */
-  const handleDeleteUser = async (userId: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user? This action cannot be undone."
-    );
-    if (!confirmDelete) return;
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
 
     setActionLoading(true);
     setError("");
     try {
-      await deleteUser(userId);
+      await deleteUserById(userToDelete.userId);
       setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.userId !== userId)
+        prevUsers.filter((user) => user.userId !== userToDelete.userId)
       );
+      toast.success(`User "${userToDelete.name}" deleted successfully!`);
     } catch (err) {
       setError("Error deleting user.");
+      toast.error(`Failed to delete user "${userToDelete.name}".`);
       console.error("Error deleting user:", err);
     } finally {
       setActionLoading(false);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
-  /**
-   * Fetches and displays appointments for a specific user.
-   * @param user - The user whose appointments are to be fetched.
-   */
   const handleViewAppointments = async (user: User) => {
     setActionLoading(true);
     setError("");
@@ -116,9 +128,6 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  /**
-   * Closes the appointments modal.
-   */
   const closeModal = () => {
     setSelectedUserAppointments(null);
   };
@@ -134,7 +143,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="user-management-page">
-      {/* Assuming Sidebar is managed globally or via routing */}
+      <ToastContainer /> {/* Toast notifications */}
       <div className="user-management-container">
         <h1 className="page-title">User Management</h1>
         {actionLoading && (
@@ -185,7 +194,10 @@ const UserManagement: React.FC = () => {
                     </button>
                     <button
                       className="action-button delete-btn"
-                      onClick={() => handleDeleteUser(user.userId)}
+                      onClick={() => {
+                        setUserToDelete(user);
+                        setDeleteDialogOpen(true);
+                      }}
                       disabled={actionLoading}
                     >
                       Delete
@@ -211,6 +223,41 @@ const UserManagement: React.FC = () => {
             )}
           </tbody>
         </table>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          aria-labelledby="delete-confirmation-dialog"
+          aria-describedby="delete-confirmation-description"
+        >
+          <DialogTitle id="delete-confirmation-dialog" style={{ color: "red" }}>
+            Delete User
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="delete-confirmation-description">
+              Are you sure you want to delete{" "}
+              <strong>{userToDelete?.name}</strong>? This action cannot be
+              undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              color="secondary"
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteUser}
+              color="primary"
+              disabled={actionLoading}
+            >
+              {actionLoading ? "Deleting..." : "Confirm"}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Appointments Modal */}
         {selectedUserAppointments && (

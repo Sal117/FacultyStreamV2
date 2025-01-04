@@ -34,7 +34,12 @@ export interface CustomUser extends User {
   phoneNumber: string; // User's phone number
   profilePicture?: string;
   isActive?: boolean; // Whether the user is active
+  Id?:string;
+  generatedId?:string;
+
 }
+
+// src/services/authService.ts
 
 const createCustomUser = (user: User, data: any): CustomUser => ({
   ...user, // Include all properties of the Auth user object
@@ -46,7 +51,10 @@ const createCustomUser = (user: User, data: any): CustomUser => ({
   address: data.address || "", // Default to an empty string if address is not provided
   DOB: data.DOB || "", // Default to an empty string if DOB is not provided
   isActive: data.isActive !== undefined ? data.isActive : true, // Default to `true` if not provided
+  Id: data.Id || "", // Include Id if available
+  generatedId: data.generatedId || "", // Include generatedId if available
 });
+
 
 export const authService = {
   // User login
@@ -222,20 +230,26 @@ export const authService = {
     }
   },
 
-  // Fetch all users
-  getAllUsers: async (): Promise<CustomUser[]> => {
-    try {
-      const usersCollection = collection(db, "users");
-      const querySnapshot = await getDocs(usersCollection);
-      return querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return createCustomUser(auth.currentUser!, data);
-      });
-    } catch (error) {
-      console.error("Error fetching all users:", error);
-      throw new Error("Failed to fetch all users.");
-    }
-  },
+ // Fetch all users
+getAllUsers: async (): Promise<CustomUser[]> => {
+  try {
+    const usersCollection = collection(db, "users");
+    const querySnapshot = await getDocs(usersCollection);
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      // Add uid (document ID) to the user object without altering existing logic
+      const customUser = createCustomUser(auth.currentUser!, data);
+      return {
+        ...customUser,
+        uid: doc.id, // Add document ID (uid) explicitly
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    throw new Error("Failed to fetch all users.");
+  }
+},
+
 };
 
 export const { getCurrentUser, updateUserProfile, changeUserPassword } = authService;

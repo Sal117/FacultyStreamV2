@@ -58,6 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     return () => unsubscribe();
   }, []);
+
   const login = async (email: string, password: string) => {
     try {
       const loggedInUser = await authService.login(email, password);

@@ -1,4 +1,5 @@
 // src/pages/admin/AdminForms.tsx
+
 import { Timestamp } from "firebase/firestore";
 import React, { useState, useEffect } from "react";
 import { formService } from "../../services/formService";
@@ -7,8 +8,8 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
 import FormReview from "../../components/FormReview";
-import FormCreate from "../../components/FormCreate"; // Reuse FormCreate component for editing
-import FormTemplateList from "../../components/FormTemplateList"; // Reuse FormTemplateList component
+import FormCreate from "../../components/FormCreate";
+import FormTemplateList from "../../components/FormTemplateList";
 import "../../styles/AdminForms.css";
 import {
   FormTemplate,
@@ -17,6 +18,7 @@ import {
   SubmittedForm,
   User,
 } from "../../components/types";
+import { toast } from "react-toastify";
 
 const AdminForms: React.FC = () => {
   const [forms, setForms] = useState<SubmittedForm[]>([]);
@@ -31,11 +33,11 @@ const AdminForms: React.FC = () => {
     null
   );
 
-  // State to trigger refresh of form templates after creation or update
+  // Trigger refresh of form templates after creation, update, or deletion
   const [refreshFormTemplates, setRefreshFormTemplates] =
     useState<boolean>(false);
 
-  // User cache to store user details and avoid redundant fetches
+  // Cache user details to avoid redundant fetches
   const [userCache, setUserCache] = useState<{ [key: string]: User }>({});
 
   useEffect(() => {
@@ -58,7 +60,7 @@ const AdminForms: React.FC = () => {
         const templates = await formService.getAllFormTemplates();
         setFormTemplates(templates);
 
-        // Extract unique user IDs for 'submittedBy' and 'responsibleParties'
+        // Extract unique user IDs
         const uniqueUserIds = new Set<string>();
         formattedForms.forEach((form) => {
           uniqueUserIds.add(form.submittedBy);
@@ -69,90 +71,182 @@ const AdminForms: React.FC = () => {
           template.responsibleParties.forEach((uid) => uniqueUserIds.add(uid));
         });
 
-        // Fetch user details and cache them
+        // Fetch user details for unique IDs
         const fetchedUsers: { [key: string]: User } = { ...userCache };
         for (const uid of uniqueUserIds) {
           if (!fetchedUsers[uid]) {
-            const user = await formService.getUserById(uid);
-            if (user) {
-              fetchedUsers[uid] = user;
+            try {
+              const user = await formService.getUserById(uid);
+              if (user) {
+                fetchedUsers[uid] = user;
+              } else {
+                // Optionally notify if user not found
+                toast.warn(`User with ID ${uid} not found.`, {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                });
+              }
+            } catch (userErr) {
+              console.error(`Error fetching user with ID ${uid}:`, userErr);
+              // Show error toast for individual user fetch failure
+              toast.error(`Failed to load user data for ID ${uid}.`, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              });
             }
           }
         }
         setUserCache(fetchedUsers);
       } catch (err) {
         setError("Failed to load forms or form templates. Please try again.");
-        console.error("Error fetching forms or templates:", err);
+        console.error("Error fetching forms/templates:", err);
+        // Show error toast
+        toast.error(
+          "Failed to load forms or form templates. Please try again.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchFormsAndTemplates();
-  }, [refreshFormTemplates]); // Re-fetch when refreshFormTemplates changes
+  }, [refreshFormTemplates]);
 
-  // Handle approving or rejecting a form
   const handleDecision = async (
     formID: string,
     decision: "approved" | "rejected",
     comments: string
   ) => {
+    const toastId = toast.loading(`Processing ${decision} form...`);
     try {
       await formService.updateFormStatus(formID, decision, comments);
 
-      // Find the form to get 'submittedBy'
+      // Find the form
       const form = forms.find((f) => f.formID === formID);
       if (!form) {
         setError("Form not found.");
+        toast.update(toastId, {
+          render: "Form not found.",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000,
+          closeButton: true,
+        });
         return;
       }
 
-      // Remove the form from the state
+      // Remove the form from state
       setForms((prevForms) =>
         prevForms.filter((form) => form.formID !== formID)
       );
 
-      // Set the notification with recipientId as the form submitter
+      // Notify user and show success toast
       setNotification({
-        id: formID, // Using formID as a unique identifier
+        id: formID,
         type: "success",
         message: `Form ${decision} successfully!`,
         timestamp: new Date(),
-        recipientId: form.submittedBy, // Assuming 'submittedBy' is the recipient
+        recipientId: form.submittedBy,
         relatedFormId: formID,
       });
 
-      // Optionally, refresh userCache if needed
+      toast.update(toastId, {
+        render: `Form ${decision} successfully!`,
+        type: "success",
+        isLoading: false,
+        autoClose: 5000,
+        closeButton: true,
+      });
     } catch (err) {
       setError(`Failed to ${decision} form. Please try again.`);
       console.error(`Error ${decision} form:`, err);
+      toast.update(toastId, {
+        render: `Failed to ${decision} form. Please try again.`,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+        closeButton: true,
+      });
     }
   };
 
-  // Handle selecting a form to review
   const handleSelectForm = async (form: SubmittedForm) => {
     try {
-      // Fetch the corresponding form template using formTemplateId
       const template = formTemplates.find((t) => t.id === form.formTemplateId);
       if (!template) {
         setError("Form template not found.");
+        // Show error toast
+        toast.error("Form template not found.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         return;
       }
       setSelectedForm({ form, template });
     } catch (err) {
       setError("Failed to fetch form template.");
       console.error("Error fetching form template:", err);
+      // Show error toast
+      toast.error("Failed to fetch form template.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
-  // Close the form review modal
   const handleCloseFormReview = () => {
     setSelectedForm(null);
   };
 
-  // Refresh form templates after creation or update
   const handleFormCreated = () => {
     setRefreshFormTemplates((prev) => !prev);
+    toast.success("Form template created successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+      pauseOnHover: true,
+    });
+  };
+
+  const handleFormTemplateUpdated = () => {
+    setRefreshFormTemplates((prev) => !prev);
+    toast.success("Form template updated successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+      pauseOnHover: true,
+    });
+  };
+
+  const handleFormTemplateDeleted = () => {
+    setRefreshFormTemplates((prev) => !prev);
+    toast.success("Form template deleted successfully!", {
+      position: "top-right",
+      autoClose: 5000,
+      pauseOnHover: true,
+    });
   };
 
   return (
@@ -163,21 +257,19 @@ const AdminForms: React.FC = () => {
         <LoadingSpinner />
       ) : (
         <>
-          {/* Display Error Notification */}
           {error && (
             <NotificationBanner
               notification={{
-                id: "error", // Assign a unique ID or generate one as needed
+                id: "error",
                 type: "error",
                 message: error,
                 timestamp: new Date(),
-                recipientId: "admin", // Set to admin's userId or a default identifier
+                recipientId: "admin",
               }}
               onClose={() => setError("")}
             />
           )}
 
-          {/* Display Success/Error Notifications */}
           {notification && (
             <NotificationBanner
               notification={notification}
@@ -185,7 +277,6 @@ const AdminForms: React.FC = () => {
             />
           )}
 
-          {/* Section: Manage Submitted Forms */}
           <section className="submitted-forms-section">
             <h2>Pending Submitted Forms</h2>
             {forms.length > 0 ? (
@@ -219,34 +310,34 @@ const AdminForms: React.FC = () => {
                   type: "info",
                   message: "No pending forms to review.",
                   timestamp: new Date(),
-                  recipientId: "admin", // Set to admin's userId or a default identifier
+                  recipientId: "admin",
                 }}
                 onClose={() => setNotification(null)}
               />
             )}
           </section>
 
-          {/* Divider */}
           <hr className="divider" />
 
-          {/* Section: Create New Form Template */}
           <section className="create-form-template-section">
             <h2>Create New Form Template</h2>
             <FormCreate onFormCreated={handleFormCreated} />
           </section>
 
-          {/* Divider */}
           <hr className="divider" />
 
-          {/* Section: Manage Existing Form Templates */}
           <section className="manage-form-templates-section">
             <h2>Manage Existing Form Templates</h2>
-            <FormTemplateList refresh={refreshFormTemplates} />
+            {/* Pass the update and delete callbacks to FormTemplateList */}
+            <FormTemplateList
+              refresh={refreshFormTemplates}
+              onTemplateUpdated={handleFormTemplateUpdated}
+              onTemplateDeleted={handleFormTemplateDeleted}
+            />
           </section>
         </>
       )}
 
-      {/* Modal: Review Form */}
       {selectedForm && (
         <FormReview
           formId={selectedForm.form.formID}

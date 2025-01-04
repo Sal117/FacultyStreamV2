@@ -1,3 +1,4 @@
+//src/types/index.ts
 import { Timestamp } from 'firebase/firestore';
 
 export type AnnouncementType = 'announcement' | 'event' | 'general';
@@ -77,8 +78,8 @@ export interface Facility {
 
 export interface NotificationPayload {
   id: string;
-  type: 'info' | 'alert' | 'update' | 'success' | 'error';
   message: string;
+  type: 'info' | 'alert' | 'update' | 'success' | 'error';
   timestamp: Date;
   recipientId?: string;
   read?: boolean;

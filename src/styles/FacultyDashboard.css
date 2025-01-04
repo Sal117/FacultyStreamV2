@@ -7,7 +7,7 @@
   box-sizing: border-box;
 }
 
-/* Global Styles */
+/* Base Styles */
 body {
   font-family: 'Roboto', sans-serif;
   color: var(--foreground);
@@ -18,354 +18,752 @@ body {
 .faculty-dashboard {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f7fb;
+  background-color: var(--page-background);
 }
 
+/* Sidebar styling */
 .sidebar {
   width: 250px;
-  background: linear-gradient(180deg, #3366cc 0%, #254EDB 100%);
-  color: white;
-  padding: 20px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  transition: width 0.3s ease;
+}
+
+.sidebar:hover {
+  width: 260px;
+}
+
+@media (max-width: 992px) {
+  .sidebar {
+    width: 60px;
+  }
+}
+
+/* Main Content */
+.dashboard-main {
+  flex: 1;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 30px;
+  animation: fadeIn 0.5s ease;
+  max-width: 1600px;
+  margin: 0 auto;
+  transition: padding 0.3s ease;
 }
 
-.logo-container {
-  padding: 20px 0;
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 20px;
+  }
+}
+
+/* Dashboard Header Enhancements */
+.dashboard-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--button-text);
+  padding: 60px 20px;
+  border-radius: var(--border-radius-medium);
   text-align: center;
-}
-
-.logo-container img {
-  max-width: 120px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  transition: background-color 0.3s;
-  gap: 10px;
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.nav-item i {
-  width: 20px;
-  text-align: center;
-}
-
-.dashboard-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.top-bar {
-  background: white;
-  padding: 15px 30px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.top-bar-right {
-  display: flex;
-  gap: 20px;
-}
-
-.top-bar-right a {
-  color: #666;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.main-content {
-  padding: 30px;
-  flex: 1;
-}
-
-.calendar-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.calendar-title {
-  font-size: 1.5rem;
-  color: #333;
-  margin: 0;
-}
-
-.calendar-nav {
-  display: flex;
-  gap: 10px;
-}
-
-.calendar-nav button {
-  background: #f5f7fb;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #666;
-  transition: background-color 0.3s;
-}
-
-.calendar-nav button:hover {
-  background: #e9ecf5;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.calendar-weekday {
-  text-align: center;
-  font-weight: 600;
-  color: #666;
-  padding: 8px;
-  font-size: 0.9rem;
-}
-
-.calendar-day {
-  aspect-ratio: 1;
-  padding: 8px;
-  border-radius: 8px;
-  background: #f5f7fb;
-  cursor: pointer;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 40px;
   position: relative;
-  transition: background-color 0.3s;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease;
 }
 
-.calendar-day:hover {
-  background: #e9ecf5;
-}
-
-.calendar-day.empty {
-  background: none;
-  cursor: default;
-}
-
-.calendar-day.today {
-  background: #3366cc;
-  color: white;
-}
-
-.calendar-day.has-appointments {
-  font-weight: 600;
-}
-
-.calendar-day-number {
-  font-size: 1rem;
-}
-
-.appointment-dot {
+.dashboard-header::before {
+  content: '';
   position: absolute;
-  bottom: 8px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+  z-index: 1;
+}
+
+/* Header Content Positioning */
+.dashboard-header > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Enhanced Main Title */
+.dashboard-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--button-text);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Stylish Welcome Text */
+.welcome-text.faculty-welcome {
+  font-size: 1.5rem;
+  color: var(--button-text);
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Optional: Icon Next to Welcome Text */
+.welcome-text.faculty-welcome::before {
+  content: '🎓'; /* Graduation Cap Emoji as an example */
+  font-size: 1.5rem;
+}
+
+/* Decorative Divider Below Header */
+.dashboard-header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background-color: var(--button-text);
+  margin: 20px auto 0 auto;
+  border-radius: var(--border-radius-small);
+}
+
+/* Dashboard Content Sections */
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* General Dashboard Section */
+.dashboard-section {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Section Headings */
+.dashboard-section h2 {
+  font-size: 1.75rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.dashboard-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background: #3366cc;
-  border-radius: 50%;
+  width: 80px;
+  height: 4px;
+  background-color: var(--primary);
+  border-radius: var(--border-radius-small);
 }
 
-.today .appointment-dot {
-  background: white;
+/* System Overview Cards */
+.system-overview .overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  justify-items: center;
 }
 
-.appointment-list {
-  margin-top: 24px;
-  border-top: 1px solid #eee;
-  padding-top: 24px;
-}
-
-.appointment-list h3 {
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.appointment-item {
+.overview-card {
+  background: var(--card-bg);
+  padding: 30px 20px;
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+  cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 16px;
-  background: #f5f7fb;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  gap: 16px;
+  text-align: center;
 }
 
-.appointment-time {
-  font-weight: 600;
-  color: #3366cc;
-  min-width: 80px;
+.overview-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: var(--box-shadow-hover);
+  background: var(--muted);
+}
+
+.overview-card .icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  color: var(--primary);
+  transition: color 0.3s ease;
+}
+
+.overview-card:hover .icon {
+  color: var(--button-text);
+}
+
+.overview-card h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: var(--foreground);
+}
+
+.overview-card .total {
+  font-size: 1.2em;
+  color: var(--secondary);
+  margin-bottom: 15px;
+}
+
+.overview-card .total span {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.overview-card .badge {
+  position: absolute;
+  top: -10px;
+  right: -50px;
+  background: var(--primary);
+  color: var(--button-text);
+  padding: 10px 60px;
+  transform: rotate(45deg);
+  box-shadow: var(--box-shadow);
+  font-size: 0.9em;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.badge.student {
+  background: var(--success-bg);
+}
+
+.badge.faculty {
+  background: var(--info-bg);
+}
+
+.badge.facility {
+  background: var(--warning-bg);
+}
+
+.badge:hover {
+  background: var(--hover-color);
+  color: var(--button-text);
+}
+
+/* Icon Integration for Overview Cards */
+.overview-card .icon {
+  /* Example using Font Awesome icons */
+  /* Ensure you have Font Awesome included in your project */
+}
+
+@media (max-width: 992px) {
+  .system-overview .overview-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .system-overview .overview-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Appointments Section Styling */
+.appointments-section {
+  margin-top: -10px;
+}
+
+.appointments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.appointment-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.appointment-card .title {
+  font-weight: bold;
+  color: var(--foreground);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.appointment-card .description {
+  color: var(--secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .appointment-info {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.appointment-title {
-  font-weight: 500;
-  margin-bottom: 4px;
+.info-label {
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 60px;
 }
 
-.appointment-purpose {
-  color: #666;
-  font-size: 0.9rem;
+.info-value {
+  color: var(--foreground);
 }
 
-.appointment-status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
   font-weight: 500;
   text-transform: capitalize;
 }
 
 .status-pending {
-  background: #fff3cd;
-  color: #856404;
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
 }
 
 .status-accepted {
-  background: #d4edda;
-  color: #155724;
+  background-color: var(--success-bg);
+  color: var(--success-text);
 }
 
 .status-rejected {
-  background: #f8d7da;
-  color: #721c24;
+  background-color: red;
+  color: var(--error-text);
 }
 
-.appointment-actions {
+.meeting-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.meeting-link:hover {
+  color: var(--hover-color);
+  text-decoration: underline;
+}
+
+.appointments-list .appointment-actions {
+  margin-top: 10px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
-.btn {
-  padding: 8px 16px;
+.appointments-list .appointment-actions button {
+  padding: 8px 12px;
+  background-color: var(--button-danger-bg);
+  color: var(--button-danger-text);
   border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
-  transition: opacity 0.3s;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.btn:hover {
-  opacity: 0.9;
+.appointments-list .appointment-actions button:hover {
+  background-color: var(--button-danger-hover);
+  transform: translateY(-2px);
 }
 
-.btn-accept {
-  background: #28a745;
-  color: white;
+.appointments-list .appointment-actions button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
+}
+/* Accept Button Styling */
+.appointments-list .appointment-actions .accept-button {
+  padding: 8px 12px;
+  background-color: var(--button-success-bg);
+  color: black;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.btn-reject {
-  background: #dc3545;
-  color: white;
+.appointments-list .appointment-actions .accept-button:hover {
+  background-color: var(--button-success-hover);
+  transform: translateY(-2px);
 }
 
-.appointments-section {
-  background: white;
-  border-radius: 8px;
+.appointments-list .appointment-actions .accept-button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Reject Button Styling */
+.appointments-list .appointment-actions .reject-button {
+  padding: 8px 12px;
+  background-color: var(--button-danger-bg);
+  color: black;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.appointments-list .appointment-actions .reject-button:hover {
+  background-color: var(--button-danger-hover);
+  transform: translateY(-2px);
+}
+
+.appointments-list .appointment-actions .reject-button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Calendar Section Styling */
+.calendar-section {
+  margin-top: 30px;
+  padding: 30px;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Announcement Cards Styling */
+.announcements-section {
+  background: var(--page-background);
   padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.section-header {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
+.announcements-section:hover {
+  background: var(--muted);
+  box-shadow: var(--box-shadow-hover);
 }
 
-.appointments-list {
+.announcements-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
-.appointment-item {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 15px;
+.announcement-card {
+  background: var(--muted);
+  border-radius: var(--border-radius-small);
+  padding: 20px;
+  box-shadow: var(--box-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  position: relative;
 }
 
-.appointment-header {
-  font-weight: 600;
+.announcement-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-hover);
+  background: var(--card-bg);
+}
+
+.announcement-card h3 {
+  font-size: 1.5rem;
+  color: var(--primary);
   margin-bottom: 10px;
 }
 
-.appointment-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
+.announcement-card p {
+  color: var(--foreground);
   margin-bottom: 15px;
 }
 
-.appointment-detail {
+.announcement-card .announcement-meta {
+  font-size: 0.9rem;
+  color: var(--secondary);
+}
+
+/* Create Announcement Form Styling */
+.create-announcement-form {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-announcement-form:hover {
+  background: var(--muted);
+  box-shadow: var(--box-shadow-hover);
+}
+
+.create-announcement-form h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+
+.create-announcement-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+.create-announcement-form input,
+.create-announcement-form textarea,
+.create-announcement-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-small);
+  background: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.create-announcement-form input:focus,
+.create-announcement-form textarea:focus,
+.create-announcement-form select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+}
+
+.create-announcement-form button {
+  background: var(--button-primary-bg);
+  color: var(--button-text);
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.create-announcement-form button:hover {
+  background: var(--button-primary-hover);
+  transform: translateY(-2px);
+}
+
+.create-announcement-form button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+}
+
+/* Edit Announcement Form Styling */
+.edit-announcement-form {
+  padding: 20px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-announcement-form:hover {
+  background: var(--muted);
+  box-shadow: var(--box-shadow-hover);
+}
+
+.edit-announcement-form h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+
+.edit-announcement-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+.edit-announcement-form input,
+.edit-announcement-form textarea,
+.edit-announcement-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-small);
+  background: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.edit-announcement-form input:focus,
+.edit-announcement-form textarea:focus,
+.edit-announcement-form select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+}
+
+.edit-announcement-form button {
+  background: var(--button-primary-bg);
+  color: var(--button-text);
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.edit-announcement-form button:hover {
+  background: var(--button-primary-hover);
+  transform: translateY(-2px);
+}
+
+.edit-announcement-form button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+}
+
+/* Notification Banner Styling */
+.notification-banner {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  background-color: var(--notification-bg);
+  color: var(--button-text);
+  padding: 15px 20px;
+  border-radius: 5px;
+  box-shadow: var(--box-shadow);
+  animation: fadeIn 0.5s ease;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.detail-label {
-  font-size: 0.9em;
-  color: #666;
+.notification-banner.success {
+  background-color: var(--success-bg);
 }
 
-.detail-value {
-  font-weight: 500;
+.notification-banner.error {
+  background-color: var(--destructive-bg);
 }
 
-.appointment-actions {
+.notification-banner .message {
+  flex: 1;
+}
+
+.notification-banner .close-button {
+  background: none;
+  border: none;
+  color: var(--button-text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.notification-banner .close-button:hover {
+  color: var(--hover-color);
+}
+
+/* Loading Indicator Styling */
+.loading {
+  font-size: 1.5rem;
+  color: var(--secondary);
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-overlay-bg);
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  animation: fadeIn 0.3s ease;
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  font-weight: 500;
+.modal-content {
+  background: var(--modal-bg);
+  padding: 20px;
+  border-radius: var(--border-radius-medium);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--modal-shadow);
+  position: relative;
+  animation: slideUp 0.3s ease;
 }
 
-.status-pending {
-  background-color: #ffd700;
-  color: #856404;
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
 }
 
-.status-accepted {
-  background-color: #28a745;
-  color: white;
+.modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--modal-close-button-color);
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
-.status-rejected {
-  background-color: #dc3545;
-  color: white;
+.modal-close-button:hover {
+  color: var(--modal-close-button-hover-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .appointments-list {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
@@ -375,25 +773,88 @@ body {
 
   .sidebar {
     width: 100%;
-    padding: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
-  .calendar-grid {
-    gap: 4px;
+  .dashboard-main {
+    padding: 15px;
   }
 
-  .calendar-day {
-    padding: 4px;
+  .appointments-list {
+    grid-template-columns: 1fr;
   }
 
-  .appointment-item {
-    flex-direction: column;
-    align-items: flex-start;
+  /* Adjust Header for Smaller Screens */
+  .dashboard-header {
+    padding: 40px 20px;
   }
 
-  .appointment-actions {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 12px;
+  .dashboard-header h1 {
+    font-size: 2rem;
   }
+
+  .welcome-text.faculty-welcome {
+    font-size: 1rem;
+  }
+
+  .dashboard-section h2 {
+    font-size: 1.5rem;
+  }
+
+  /* System Overview Cards */
+  .system-overview .overview-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .overview-card {
+    padding: 20px;
+    max-width: 250px;
+  }
+
+  .overview-card h3 {
+    font-size: 1.25em;
+  }
+
+  .overview-card .total {
+    font-size: 1.1em;
+  }
+}
+
+/* Additional Polishing */
+
+/* Smooth transitions for all interactive elements */
+button,
+input,
+textarea,
+select,
+a,
+.overview-card {
+  transition: all 0.3s ease;
+}
+
+/* Cursor change on interactive elements */
+.overview-card {
+  cursor: pointer;
+}
+
+.overview-card:hover {
+  cursor: pointer;
+}
+
+/* Focus States for Accessibility */
+.overview-card:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+a:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+}
+
+/* Ensure icons are accessible */
+.overview-card .icon {
+  aria-hidden: true;
 }

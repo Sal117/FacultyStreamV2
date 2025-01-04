@@ -1,247 +1,277 @@
 // src/pages/admin/AdminDashboard.tsx
 
 import React, { useEffect, useState } from "react";
-import "../../styles/AdminDashboard.css";
+import { useAuth } from "../../context/AuthContext";
+import { notificationService } from "../../services/notificationService";
+import { announcementService } from "../../services/announcementService";
 import {
   getAllStudents,
   getAllFaculties,
   getAllFacilities,
 } from "../../services/databaseService";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Announcement } from "../../types";
-import NavigationBar from "../../components/NavigationBar";
 import Sidebar from "../../components/Sidebar";
-import UserManagement from "../../components/UserManagement";
-import AddUserForm from "../../components/AddUserForm";
+import Card from "../../components/Card";
 import NotificationBanner from "../../components/NotificationBanner";
-import { notificationService } from "../../services/notificationService";
-import { authService, CustomUser } from "../../services/authService";
-import { announcementService } from "../../services/announcementService";
 import AnnouncementCard from "../../components/AnnouncementCard";
 import CreateAnnouncementForm from "../../components/CreateAnnouncementForm";
 import EditAnnouncementForm from "../../components/EditAnnouncementForm";
+import UserManagement from "../../components/UserManagement";
+import AddUserForm from "../../components/AddUserForm";
+import Modal from "../../components/Modal";
+import { Notification } from "../../services/notificationService";
+import { Announcement } from "../../components/types";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Modal from "../../components/Modal";
-import { FirestoreNotification } from "../../types/notification";
+import "../../styles/AdminDashboard.css";
 
 const AdminDashboard: React.FC = () => {
-  const [userData, setUserData] = useState<CustomUser | null>(null);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [faculties, setFaculties] = useState<any[]>([]);
   const [facilities, setFacilities] = useState<any[]>([]);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [notifications, setNotifications] = useState<FirestoreNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] =
+    useState<Announcement | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    if (!user) return;
+
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        const user = await authService.getCurrentUser();
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-
-        if (user.role !== "admin") {
-          throw new Error("Access denied: Admins only");
-        }
-
-        setUserData(user);
-
-        // Subscribe to all notifications for admin
-        const unsubscribeNotifications = notificationService.subscribeToAllNotifications(
-          (newNotifications) => {
-            setNotifications(newNotifications);
-          }
-        );
-
-        // Subscribe to announcements
-        const unsubscribeAnnouncements = announcementService.subscribeToAnnouncements(
-          (newAnnouncements) => {
-            setAnnouncements(newAnnouncements);
-          }
-        );
-
-        // Fetch other data
-        const [studentsData, facultiesData, facilitiesData] = await Promise.all([
+        const [
+          studentsData,
+          facultiesData,
+          facilitiesData,
+          notificationsData,
+          announcementsData,
+        ] = await Promise.all([
           getAllStudents(),
           getAllFaculties(),
           getAllFacilities(),
+          notificationService.getNotifications(user.uid),
+          announcementService.getAllAnnouncements(),
         ]);
 
         setStudents(studentsData);
         setFaculties(facultiesData);
         setFacilities(facilitiesData);
-
-        return () => {
-          unsubscribeNotifications();
-          unsubscribeAnnouncements();
-        };
-      } catch (error: any) {
-        console.error("Error loading dashboard data:", error);
-        setError(error.message || "An unexpected error occurred");
+        setNotifications(notificationsData);
+        setAnnouncements(announcementsData);
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+        setError("Failed to load dashboard data. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, []);
+    fetchDashboardData();
+
+    // Set up real-time subscriptions
+    const unsubscribeAnnouncements =
+      announcementService.subscribeToAnnouncements(
+        (announcements: Announcement[]) => {
+          setAnnouncements(announcements);
+        }
+      );
+
+    const unsubscribeNotifications =
+      notificationService.subscribeToUserNotifications(
+        user?.uid || "",
+        (notifications: Notification[]) => {
+          setNotifications(notifications);
+        }
+      );
+
+    return () => {
+      if (unsubscribeAnnouncements) unsubscribeAnnouncements();
+      if (unsubscribeNotifications) unsubscribeNotifications();
+    };
+  }, [user]);
 
   const handleDeleteAnnouncement = (id: string) => {
-    setSelectedAnnouncementId(id);
+    setAnnouncementToDelete(id);
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDeleteAnnouncement = async () => {
-    if (selectedAnnouncementId) {
-      try {
-        await announcementService.deleteAnnouncement(selectedAnnouncementId);
-        toast.success("Announcement deleted successfully");
-      } catch (error) {
-        console.error("Error deleting announcement:", error);
-        toast.error("Failed to delete announcement");
-      } finally {
-        setIsDeleteModalOpen(false);
-        setSelectedAnnouncementId(null);
-      }
+  const handleConfirmDelete = async () => {
+    if (!announcementToDelete) return;
+    try {
+      await announcementService.deleteAnnouncement(announcementToDelete);
+      setAnnouncements(
+        announcements.filter((a) => a.announcementId !== announcementToDelete)
+      );
+      setIsDeleteModalOpen(false);
+      setAnnouncementToDelete(null);
+      toast.success("Announcement deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete announcement:", error);
+      toast.error("Failed to delete announcement");
     }
   };
 
-  const handleUpdateAnnouncement = async (id: string, updateData: Partial<Announcement>) => {
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setSelectedAnnouncement(announcement);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAnnouncement = async (
+    updatedData: Partial<Announcement>
+  ) => {
+    if (!selectedAnnouncement?.announcementId) return;
     try {
-      await announcementService.updateAnnouncement(id, updateData);
+      await announcementService.updateAnnouncement(
+        selectedAnnouncement.announcementId,
+        updatedData
+      );
+      setSelectedAnnouncement(null);
+      setShowEditModal(false);
       toast.success("Announcement updated successfully");
-      setEditingAnnouncement(null);
     } catch (error) {
-      console.error("Error updating announcement:", error);
+      console.error("Failed to update announcement:", error);
       toast.error("Failed to update announcement");
     }
   };
 
-  const handleDismissNotification = async (notificationId: string) => {
-    try {
-      await notificationService.markNotificationAsRead(notificationId);
-    } catch (error) {
-      console.error("Error dismissing notification:", error);
-      toast.error("Failed to dismiss notification");
-    }
-  };
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <div className="admin-dashboard">
-      <ToastContainer />
-      <Sidebar userRole="admin" />
-      
-      <div className="dashboard-main">
-        {loading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <div className="error-message">{error}</div>
-        ) : (
-          <>
-            <div className="dashboard-header">
-              <h1>Admin Dashboard</h1>
-              <div className="user-welcome">
-                Welcome back, {userData?.name}
-              </div>
+    <div className="dashboard-container">
+      <main className="dashboard-main">
+        <ToastContainer />
+
+        <div className="dashboard-header">
+          <h1>Admin Dashboard</h1>
+          {user && (
+            <div className="welcome-text admin-welcome">
+              Welcome back, {user.name || "Administrator"}. Monitor and manage
+              your institution's activities.
             </div>
+          )}
+        </div>
 
-            <div className="dashboard-grid">
-              <div className="dashboard-stats">
-                <div className="stat-card">
-                  <h3>Students</h3>
-                  <p>{students.length}</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Faculty</h3>
-                  <p>{faculties.length}</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Facilities</h3>
-                  <p>{facilities.length}</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Notifications</h3>
-                  <p>{notifications.filter(n => !n.read).length}</p>
-                </div>
-              </div>
-
-              <div className="dashboard-notifications">
-                <h2>System Notifications</h2>
-                <div className="notifications-list">
-                  {notifications.map((notification) => (
-                    <NotificationBanner
-                      key={notification.id}
-                      notification={{
-                        ...notification,
-                        timestamp: notification.timestamp.toDate(),
-                      }}
-                      onClose={handleDismissNotification}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="dashboard-announcements">
-                <h2>Announcements</h2>
-                <CreateAnnouncementForm />
-                <div className="announcements-list">
-                  {announcements.map((announcement) => (
-                    <AnnouncementCard
-                      key={announcement.id}
-                      announcement={announcement}
-                      onDelete={() => handleDeleteAnnouncement(announcement.id)}
-                      onUpdate={(updateData) => handleUpdateAnnouncement(announcement.id, updateData)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="dashboard-users">
-                <h2>User Management</h2>
-                <AddUserForm />
-                <UserManagement />
-              </div>
-            </div>
-
-            {/* Modals */}
-            <Modal
-              isOpen={isDeleteModalOpen}
-              onClose={() => setIsDeleteModalOpen(false)}
-              title="Confirm Deletion"
-              onConfirm={confirmDeleteAnnouncement}
-              showActions={true}
-              confirmText="Delete"
-              cancelText="Cancel"
-            >
-              <p>Are you sure you want to delete this announcement?</p>
-            </Modal>
-
-            {editingAnnouncement && (
-              <Modal
-                isOpen={true}
-                onClose={() => setEditingAnnouncement(null)}
-                title="Edit Announcement"
-                size="large"
-              >
-                <EditAnnouncementForm
-                  announcement={editingAnnouncement}
-                  onUpdate={(updateData) => handleUpdateAnnouncement(editingAnnouncement.id, updateData)}
-                  onCancel={() => setEditingAnnouncement(null)}
-                />
-              </Modal>
-            )}
-          </>
+        {error && (
+          <NotificationBanner
+            notification={{
+              id: "error",
+              type: "error",
+              message: error,
+              timestamp: new Date(),
+              read: false,
+            }}
+            onClose={() => setError(null)}
+          />
         )}
-      </div>
+
+        <section className="dashboard-section system-overview">
+          <h2>System Overview</h2>
+          <div className="overview-cards">
+            <div className="overview-card">
+              <h3>Students</h3>
+              <p className="total">
+                Total: <span>{students.length}</span>
+              </p>
+              <div className="badge student">Student</div>
+            </div>
+            <div className="overview-card">
+              <h3>Faculty</h3>
+              <p className="total">
+                Total: <span>{faculties.length}</span>
+              </p>
+              <div className="badge faculty">Faculty</div>
+            </div>
+            <div className="overview-card">
+              <h3>Facilities</h3>
+              <p className="total">
+                Total: <span>{facilities.length}</span>
+              </p>
+              <div className="badge facility">Facility</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="dashboard-section">
+          <h2>Notifications</h2>
+          <div className="notifications-list">
+            {notifications.map((notification) => (
+              <NotificationBanner
+                key={notification.id}
+                notification={{
+                  ...notification,
+                  timestamp: notification.timestamp.toDate(),
+                }}
+                onClose={() =>
+                  notificationService.clearNotification(notification.id)
+                }
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-section">
+          <h2>Announcements</h2>
+          <CreateAnnouncementForm />
+          <div className="announcements-list">
+            {announcements.map((announcement) => (
+              <AnnouncementCard
+                key={announcement.announcementId}
+                announcement={announcement}
+                onEdit={() => handleEditAnnouncement(announcement)}
+                onDelete={() =>
+                  handleDeleteAnnouncement(announcement.announcementId)
+                }
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-section">
+          <h2>User Management</h2>
+          <AddUserForm />
+          <UserManagement />
+        </section>
+
+        {/* Modals */}
+        {selectedAnnouncement && (
+          <Modal
+            title="Edit Announcement"
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            size="large"
+          >
+            <EditAnnouncementForm
+              announcement={selectedAnnouncement}
+              onUpdate={handleUpdateAnnouncement}
+              onCancel={() => setShowEditModal(false)}
+            />
+          </Modal>
+        )}
+
+        <Modal
+          title="Confirm Deletion"
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setIsDeleteModalOpen(false)}
+          confirmText="Delete"
+          cancelText="Cancel"
+          showActions={true}
+        >
+          <p>Are you sure you want to delete this announcement?</p>
+        </Modal>
+      </main>
     </div>
   );
 };

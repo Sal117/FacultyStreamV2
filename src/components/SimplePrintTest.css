@@ -19,8 +19,8 @@
   }
 
   /* Style the content to be printed */
-  .print-content {
-    position: absolute;
+  .printable-form-container {
+    position: static; /* Remove absolute positioning */
     left: 0;
     top: 0;
     width: 100%;
@@ -28,5 +28,10 @@
     margin: 0;
     background-color: white;
     border: none;
+  }
+
+  /* Ensure the printable-form itself is visible */
+  .printable-form {
+    display: block;
   }
 }

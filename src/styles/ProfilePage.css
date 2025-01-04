@@ -1,41 +1,49 @@
+/* Importing Roboto Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 /* Root container */
 .profile-page {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 40px; /* Increased padding */
   background: var(--background-gradient);
   min-height: 100vh;
+  font-family: 'Roboto', sans-serif; /* Set font family */
+  animation: fadeIn 0.6s ease-out;
+
 }
 
 /* Profile Card */
 .profile-card {
   background-color: var(--card-bg);
   color: var(--foreground); /* Ensures text is visible in both light and dark modes */
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  border-radius: 20px; /* Increased border radius for a softer look */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+  max-width: 700px; /* Increased max-width */
   width: 90%;
-  padding: 30px;
+  padding: 40px; /* Increased padding */
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
 }
 
 .profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); 
+  transform: translateY(-8px); /* Slightly increased lift on hover */
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
 }
 
 /* Header */
 .profile-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased margin */
+  
 }
 
 .profile-header h1 {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 2.5rem; /* Increased font size */
+  font-weight: 700; /* Bold weight */
   color: var(--foreground);
   margin: 0;
 }
@@ -43,108 +51,185 @@
 /* Profile Picture */
 .profile-picture-container {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased margin */
   display: flex;
   justify-content: center;
 }
 
 .profile-picture {
   border-radius: 50%;
-  width: 150px;
-  height: 150px;
+  width: 180px; /* Increased size */
+  height: 180px; /* Increased size */
   object-fit: cover;
-  border: 5px solid var(--primary);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 5px solid transparent;
+  background: linear-gradient(135deg, var(--primary), var(--secondary)); /* Gradient border */
+  padding: 3px; /* Space for the border */
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
+  transition: transform 0.3s ease;
+}
+
+.profile-picture:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
 }
 
 .upload-input {
   display: block;
-  margin: 10px auto;
+  margin: 15px auto; /* Increased margin */
   text-align: center;
-  font-size: 14px;
+  font-size: 16px; /* Increased font size */
   color: var(--muted-foreground);
+  cursor: pointer;
 }
 
 /* Profile details */
+.profile-details {
+  text-align: left; /* Changed to left for better readability */
+  font-size: 1.2rem; /* Increased font size */
+  font-weight: 900;
+}
+
 .profile-details p {
-  font-size: 16px;
-  color:  var(--foreground);
-  margin: 8px 0;
+  font-size: 18px; /* Increased font size */
+  color: var(--foreground);
+  margin: 12px 0; /* Increased margin */
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
 }
 
 .profile-details strong {
   color: var(--foreground);
+  font-weight: 500; /* Semi-bold for labels */
+  font-size: 1.2rem; /* Increased font size */
+  font-weight: 700;
+}
+
+/* Input Fields in Edit Mode */
+.profile-details input[type="text"],
+.profile-details input[type="email"],
+.profile-details input[type="tel"],
+.profile-details input[type="date"] {
+  width: 100%;
+  padding: 10px 15px;
+  margin-top: 5px;
+  margin-bottom: 15px; /* Increased margin */
+  border: 1px solid #ccc; /* Added border */
+  border-radius: 8px; /* Rounded corners */
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-details input[type="text"]:focus,
+.profile-details input[type="email"]:focus,
+.profile-details input[type="tel"]:focus,
+.profile-details input[type="date"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Focus shadow */
+  outline: none;
+}
+
+.uneditable-field {
+  background-color: #f9f9f9;
+  cursor: not-allowed;
+  opacity: 0.8; /* Slight transparency */
 }
 
 /* Buttons */
 .btn-edit,
 .btn-save,
 .btn-cancel {
-  width: 100%;
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 6px;
-  font-weight: bold;
+  width: 48%; /* Adjusted width for side-by-side placement if needed */
+  padding: 12px 20px; /* Increased padding */
+  font-size: 18px; /* Increased font size */
+  border-radius: 8px; /* Rounded corners */
+  font-weight: 500; /* Semi-bold */
   text-transform: uppercase;
   transition: all 0.3s ease;
   cursor: pointer;
   text-align: center;
+  border: none; /* Removed default border */
+  margin: 10px 1%; /* Added margin for spacing */
 }
 
+/* Specific Button Styles */
 .btn-edit {
   background-color: var(--button-primary-bg);
   color: var(--button-text);
-  border: none;
-  margin-top: 10px;
 }
 
 .btn-edit:hover {
   background-color: var(--button-primary-hover);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); /* Added shadow on hover */
 }
 
 .btn-save {
-  background-color: var(--success-bg);
+  background: linear-gradient(135deg, var(--success-bg), var(--success-hover));
   color: var(--button-text);
-  border: none;
-  margin-top: 10px;
 }
 
 .btn-save:hover {
-  background-color: var(--success-hover);
+  background: linear-gradient(135deg, var(--success-hover), var(--success-bg));
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); /* Added shadow on hover */
 }
 
 .btn-cancel {
   background-color: var(--destructive-bg);
   color: var(--button-text);
-  border: none;
-  margin-top: 10px;
 }
 
 .btn-cancel:hover {
   background-color: var(--destructive-hover);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); /* Added shadow on hover */
 }
 
 /* Responsive design */
 @media (max-width: 1400px) {
   .profile-card {
-    padding: 20px;
+    padding: 30px; /* Adjusted padding */
   }
 
   .profile-header h1 {
-    font-size: 1.5rem;
+    font-size: 2rem; /* Slightly reduced font size */
   }
 
   .profile-details p {
-    font-size: 14px;
+    font-size: 16px; /* Slightly reduced font size */
   }
 
   .btn-edit,
   .btn-save,
   .btn-cancel {
-    font-size: 14px;
+    font-size: 16px; /* Slightly reduced font size */
+    padding: 10px 18px; /* Adjusted padding */
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    max-width: 90%;
+    padding: 25px; /* Further reduced padding */
+  }
+
+  .profile-picture {
+    width: 150px; /* Reduced size */
+    height: 150px; /* Reduced size */
+  }
+
+  .profile-header h1 {
+    font-size: 1.8rem; /* Reduced font size */
+  }
+
+  .profile-details p {
+    flex-direction: column; /* Stack labels and values */
+    align-items: flex-start;
+  }
+
+  .btn-edit,
+  .btn-save,
+  .btn-cancel {
+    width: 100%; /* Full width on smaller screens */
+    margin: 10px 0; /* Adjusted margin */
   }
 }
 
@@ -152,7 +237,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px); /* Increased translate distance */
   }
   to {
     opacity: 1;
@@ -161,5 +246,5 @@
 }
 
 .profile-page {
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.8s ease-out; /* Slightly longer animation duration */
 }

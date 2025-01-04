@@ -51,6 +51,13 @@ const EditAnnouncementForm: React.FC<EditAnnouncementFormProps> = ({
       if (!currentUser) {
         throw new Error("User not authenticated");
       }
+      // Ensure the current user is the creator or an admin
+      if (
+        announcement.createdByUid !== currentUser.uid &&
+        currentUser.role !== "admin"
+      ) {
+        throw new Error("You do not have permission to edit this announcement");
+      }
 
       // Upload new image if present
       let imageUrl = announcement.imageUrl || "";
@@ -82,6 +89,7 @@ const EditAnnouncementForm: React.FC<EditAnnouncementFormProps> = ({
         imageUrl,
         attachments: attachmentUrls,
         links,
+        date: type === "event" && date ? new Date(date) : null,
       };
 
       // Only include the date if it's an event and date is provided

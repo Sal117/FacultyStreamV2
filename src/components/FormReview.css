@@ -1,24 +1,134 @@
 /* src/components/FormReview.css */
 
 .form-review {
-  background-color: var(--card-bg); /* Replaced #ffffff */
+  background-color: var(--card-bg);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Replace with a variable */
-  max-width: 600px;
-  margin: 20px auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%; /* Allow the form to take the full width */
+  width: 100%; /* Make the form span the entire modal */
+  margin: 0 auto; /* Center the form horizontally */
   transition: background 0.3s ease, color 0.3s ease;
+  max-height: 90vh; /* Set a maximum height for better usability */
+  overflow-y: auto; /* Enable scrolling when needed */
+  color: var(--foreground);
+}
+
+.modal-content {
+  padding: 0; /* Remove unnecessary padding */
+  margin: 0 auto; /* Center the content */
+  max-width: 900px; /* Restrict the modal content width */
+  width: 95%; /* Allow responsiveness */
+  background: var(--modal-bg);
+  border-radius: 10px;
+  overflow: hidden; /* Ensure proper overflow handling */
+}
+/*
+.modal-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh;
+  width: 1000vh; 
+  padding: 0;
+}
+*/
+
+.modal-wrapper {
+  display: flex;
+  justify-content: center; /* Center the modal horizontally */
+  align-items: center; /* Center the modal vertically */
+  width: 100%;
+  height: 100vh; /* Use the full viewport height */
+  padding: 0; /* Remove padding */
+  overflow: hidden; /* Prevent unintended scrollbars */
+}
+
+.text-dynamic {
+  color: var(--text-color);
 }
 
 h2 {
-  font-size: 1.8rem;
-  color: var(--foreground); /* Replaced #333 */
+  font-size: 2rem;
+  color: var(--foreground);
   text-align: center;
   margin-bottom: 20px;
+  font-weight: 700;
+}
+
+/* Remove direct styling of h3 globally, rely on targeted selectors below */
+
+/* Ensure 'Student's Data' and 'Faculty Feedback' headings stand out */
+.faculty-inputs h3,
+.form-details h3,
+.student-info h3 {
+  margin-bottom: 10px;
+  font-size: 1.8rem; /* Slightly larger for emphasis */
+  color: var(--primary); /* Use primary to stand out */
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.reviewed-badge {
+  background-color: var(--muted);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--foreground);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.success-message {
+  background-color: var(--success-bg);
+  color: var(--button-text);
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: 600;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.error-message {
+  background-color: var(--destructive-bg);
+  color: var(--button-text);
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: 600;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .form-details {
   margin-bottom: 20px;
+  color: var(--foreground);
+}
+
+.student-info,
+.faculty-inputs {
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  transition: background 0.3s ease, color 0.3s ease;
+  border: 1px solid var(--input-border);
+}
+
+.student-info p,
+.faculty-inputs p,
+.faculty-inputs label {
+  color: var(--foreground);
+  font-weight: 400;
+}
+
+.student-info strong,
+.faculty-inputs label {
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .form-field {
@@ -26,11 +136,12 @@ h2 {
   justify-content: space-between;
   margin-bottom: 10px;
   padding: 10px;
-  border-bottom: 1px solid var(--input-border); /* Replaced #f0f0f0 */
+  border-bottom: 1px solid var(--input-border);
 }
 
 .form-field strong {
-  color: var(--secondary); /* Replaced #555 */
+  color: var(--foreground) !important; 
+  font-weight: 600;
 }
 
 .form-group {
@@ -49,14 +160,14 @@ h2 {
 .comments {
   width: 100%;
   height: 80px;
-  border: 1px solid var(--input-border); /* Replaced #ddd */
+  border: 1px solid var(--input-border);
   border-radius: 5px;
   padding: 10px;
   margin-bottom: 20px;
   font-size: 1rem;
   resize: none;
-  background-color: var(--input-bg); /* Added for dark mode */
-  color: var(--foreground); /* Added for dark mode */
+  background-color: var(--input-bg);
+  color: var(--foreground);
   transition: border-color 0.3s ease, background 0.3s ease;
 }
 
@@ -64,22 +175,33 @@ h2 {
   border-color: var(--destructive-bg) !important;
 }
 
-.error-message {
-  color: var(--destructive-bg);
-  margin-bottom: 10px;
-  text-align: center;
-}
-
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px; /* Slightly larger gap */
+  margin-top: 20px;
 }
 
-@media (max-width: 480px) {
+.actions button {
+  transition: transform 0.2s ease;
+  padding: 12px 20px; /* Increase padding for a more substantial button */
+  font-size: 1rem; /* Slightly larger text */
+  font-weight: 600;
+  border-radius: 5px; /* Slightly rounder corners */
+  background-color:var(--button-primary-bg) ;
+}
+
+.actions button:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 680px) {
   .form-review {
     padding: 15px;
+    max-width: 100%; /* Ensure it works well on smaller screens */
+    max-height: 80vh; /* Adjust height for smaller devices */
   }
+
 
   .actions {
     flex-direction: column;

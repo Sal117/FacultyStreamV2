@@ -1,20 +1,21 @@
+//src/types/announcement.ts
 import { Timestamp } from 'firebase/firestore';
 
-export type AnnouncementType = 'announcement' | 'event' | 'general';
+export type AnnouncementType = 'announcement' | 'event' ;
 
 export interface Announcement {
-  id: string;
+  announcementId: string;
   title: string;
   content: string;
   type: AnnouncementType;
-  date: Date;
+  date?: Date | null;
   createdAt: Date;
-  createdBy: string;
+  createdByUid: string;
   createdByName: string;
   imageUrl?: string;
-  attachments: string[];
-  links: {
-    title: string;
+  attachments?: string[];
+  links?: {
+    label: string;
     url: string;
   }[];
 }

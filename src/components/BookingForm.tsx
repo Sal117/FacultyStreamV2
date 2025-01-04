@@ -1,6 +1,10 @@
+// src/components/BookingForm.tsx
+
 import React, { useState, useEffect } from "react";
 import "./BookingForm.css"; // Import the styles
 import { appointmentService } from "../services/appointmentService";
+import { useAuth } from "../context/AuthContext";
+import { Appointment, AppointmentStatus } from "../types/appointment";
 
 interface BookingFormProps {
   selectedDate: Date | null;
@@ -15,32 +19,70 @@ const BookingForm: React.FC<BookingFormProps> = ({
   onBookingSuccess,
   onBookingError,
 }) => {
+  const { user } = useAuth();
+
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [room, setRoom] = useState<string>("");
+  const [startTime, setStartTime] = useState<string>("09:00");
+  const [endTime, setEndTime] = useState<string>("10:00");
+  const [meetingType, setMeetingType] = useState<"online" | "physical">(
+    "physical"
+  );
+  const [meetingLink, setMeetingLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!selectedDate || !selectedUserId || !room) {
+    if (
+      !selectedDate ||
+      !selectedUserId ||
+      !room ||
+      !startTime ||
+      !endTime ||
+      !meetingType
+    ) {
       setErrorMessage("Please fill in all required fields.");
       return;
     }
 
+    if (meetingType === "online" && !meetingLink) {
+      setErrorMessage("Please provide a meeting link for online meetings.");
+      return;
+    }
+
     try {
-      // Call the appointmentService to add the appointment
-      await appointmentService.addAppointment({
-        userId: selectedUserId,
+      // Prepare appointment data
+      const appointmentData: Omit<
+        Appointment,
+        "id" | "createdAt" | "updatedAt"
+      > = {
+        studentIds: [selectedUserId],
         date: selectedDate,
-        faculty: "", // Placeholder for faculty
-        room,
-        status: "pending", // Default status
-      });
+        facultyId: user?.uid || "", // Use current user's UID as facultyId
+        facilityId: room,
+        startTime,
+        endTime,
+        meetingType,
+        meetingLink: meetingType === "online" ? meetingLink : null,
+        status: "pending" as AppointmentStatus,
+        createdBy: user?.uid || "",
+        createdByRole: user?.role as "student" | "faculty",
+        createdByName: user?.name || "",
+        notes: "", // Provide default value for optional properties if necessary
+      };
+
+      // Call the appointmentService to add the appointment
+      await appointmentService.addAppointment(appointmentData);
 
       onBookingSuccess("Appointment successfully booked!");
       setErrorMessage(null); // Clear any errors
       setSelectedUserId(""); // Reset selected user
       setRoom(""); // Reset room
+      setStartTime("09:00"); // Reset start time
+      setEndTime("10:00"); // Reset end time
+      setMeetingType("physical"); // Reset meeting type
+      setMeetingLink(null); // Reset meeting link
     } catch (error) {
       console.error("Error booking appointment:", error);
       onBookingError("Failed to book appointment. Please try again later.");
@@ -49,7 +91,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   useEffect(() => {
     setErrorMessage(null); // Clear errors when inputs change
-  }, [selectedDate, selectedUserId, room]);
+  }, [
+    selectedDate,
+    selectedUserId,
+    room,
+    startTime,
+    endTime,
+    meetingType,
+    meetingLink,
+  ]);
 
   return (
     <form onSubmit={handleSubmit} className="booking-form">
@@ -88,6 +138,51 @@ const BookingForm: React.FC<BookingFormProps> = ({
         onChange={(e) => setRoom(e.target.value)}
         placeholder="Enter room details"
       />
+
+      <label htmlFor="startTime">Start Time:</label>
+      <input
+        type="time"
+        id="startTime"
+        name="startTime"
+        value={startTime}
+        onChange={(e) => setStartTime(e.target.value)}
+      />
+
+      <label htmlFor="endTime">End Time:</label>
+      <input
+        type="time"
+        id="endTime"
+        name="endTime"
+        value={endTime}
+        onChange={(e) => setEndTime(e.target.value)}
+      />
+
+      <label htmlFor="meetingType">Meeting Type:</label>
+      <select
+        id="meetingType"
+        name="meetingType"
+        value={meetingType}
+        onChange={(e) =>
+          setMeetingType(e.target.value as "online" | "physical")
+        }
+      >
+        <option value="physical">Physical</option>
+        <option value="online">Online</option>
+      </select>
+
+      {meetingType === "online" && (
+        <>
+          <label htmlFor="meetingLink">Meeting Link:</label>
+          <input
+            type="url"
+            id="meetingLink"
+            name="meetingLink"
+            value={meetingLink || ""}
+            onChange={(e) => setMeetingLink(e.target.value)}
+            placeholder="Enter meeting link"
+          />
+        </>
+      )}
 
       {errorMessage && <p className="error-message">{errorMessage}</p>}
 

@@ -11,6 +11,9 @@ import { storageService } from "../../services/storageService";
 import { auth } from "../../services/firebase";
 import "../../styles/DocumentManagement.css";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 interface Document {
   documentId: string;
   title: string;
@@ -28,6 +31,10 @@ const DocumentManagement: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentTitle, setDocumentTitle] = useState<string>("");
   const [documentDescription, setDocumentDescription] = useState<string>("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchDocumentsData = async () => {
@@ -36,7 +43,7 @@ const DocumentManagement: React.FC = () => {
         setDocuments(fetchedDocuments);
       } catch (err) {
         console.error("Error fetching documents:", err);
-        // Optionally, set an error state here to inform the user
+        toast.error("Error fetching documents.");
       }
     };
     fetchDocumentsData();
@@ -55,9 +62,7 @@ const DocumentManagement: React.FC = () => {
       !documentDescription.trim() ||
       !auth.currentUser
     ) {
-      alert(
-        "Please fill out all fields, select a file, and ensure you're logged in before uploading."
-      );
+      toast.error("Please fill out all required fields.");
       return;
     }
 
@@ -91,10 +96,11 @@ const DocumentManagement: React.FC = () => {
       setDocuments([...documents, savedDocument]);
       setUploading(false);
       resetForm();
+      toast.success("Document uploaded successfully!");
     } catch (err) {
       console.error("Error uploading document:", err);
       setUploading(false);
-      // Optionally, set an error state here to inform the user
+      toast.error("Error uploading document.");
     }
   };
 
@@ -105,9 +111,32 @@ const DocumentManagement: React.FC = () => {
     setUploadProgress(0);
   };
 
+  const handleDeleteClick = (doc: Document) => {
+    setDocumentToDelete(doc);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteDocument = async () => {
+    if (!documentToDelete) return;
+    try {
+      await deleteDocument(documentToDelete.documentId);
+      setDocuments(
+        documents.filter((d) => d.documentId !== documentToDelete.documentId)
+      );
+      toast.success("Document deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting document:", err);
+      toast.error("Error deleting document.");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+    }
+  };
+
   return (
     <div className="document-management-page">
-      <div className="document-management-container">
+      <ToastContainer />
+      <div className="document-management">
         <h1>Faculty Document Management</h1>
         <div className="upload-section">
           <h3>Upload New Document</h3>
@@ -128,7 +157,11 @@ const DocumentManagement: React.FC = () => {
               {uploadProgress}%
             </progress>
           )}
-          <button onClick={handleUpload} disabled={uploading}>
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className={`btn ${uploading ? "btn-disabled" : "btn-primary"}`}
+          >
             {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
@@ -142,31 +175,10 @@ const DocumentManagement: React.FC = () => {
                 <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
                   View/Download
                 </a>
-                {/* Optionally, add buttons to update or delete documents */}
                 <div className="document-actions">
                   <button
-                    onClick={() => {
-                      // Implement update functionality if needed
-                    }}
-                    className="update-doc-btn"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await deleteDocument(doc.documentId);
-                        setDocuments(
-                          documents.filter(
-                            (d) => d.documentId !== doc.documentId
-                          )
-                        );
-                      } catch (err) {
-                        console.error("Error deleting document:", err);
-                        // Optionally, set an error state here to inform the user
-                      }
-                    }}
-                    className="delete-doc-btn"
+                    onClick={() => handleDeleteClick(doc)}
+                    className="btn btn-danger"
                   >
                     Delete
                   </button>
@@ -178,6 +190,33 @@ const DocumentManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteDialogOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirm Delete</h2>
+            <p>
+              Are you sure you want to delete this document? This action cannot
+              be undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={confirmDeleteDocument}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,472 +1,462 @@
-/* Appointment Page Container */
+/* src/styles/Appointment.css */
+
+/* Reset default styles */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Appointment Container */
 .appointment-container {
-  font-family: "Roboto", Arial, sans-serif;
-  color: var(--foreground);
-  background-color: var(--page-background);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: 1200px;
-  margin: 40px auto;
-  animation: fadeIn 0.8s ease-in-out;
   display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: var(--page-background);
 }
 
-/* Header */
-.appointment-container h2 {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--foreground);
-  border-bottom: 3px solid var(--primary);
-  padding-bottom: 10px;
-  margin-bottom: 25px;
+/* Sidebar Integration */
+.sidebar {
+  width: 250px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  transition: width var(--transition-duration) var(--transition-easing),
+              background var(--transition-duration) var(--transition-easing),
+              box-shadow var(--transition-duration) var(--transition-easing);
+  box-shadow: var(--box-shadow);
 }
 
-/* Notification */
-.notification {
-  background-color: var(--destructive-bg);
-  color: var(--button-text);
-  border: 1px solid var(--destructive-hover);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  animation: slideDown 0.6s ease-in-out;
+
+
+@media (max-width: var(--breakpoint-lg)) {
+  .sidebar {
+    width: 60px;
+    position: fixed;
+    left: -60px;
+    top: 0;
+    height: 100%;
+    z-index: var(--z-index-navbar);
+    transition: transform var(--transition-duration) var(--transition-easing),
+                width var(--transition-duration) var(--transition-easing);
+  }
+
+  .sidebar.active {
+    transform: translateX(310px); /* 250px + 60px */
+  }
+
+  .dashboard-main {
+    margin-left: 60px;
+    padding: 20px;
+    transition: margin-left var(--transition-duration) var(--transition-easing),
+                padding var(--transition-duration) var(--transition-easing);
+  }
 }
 
-/* Calendar Section */
-.calendar-section {
-  margin-bottom: 30px;
-}
-
-.react-calendar {
-  border: none;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-}
-
-.react-calendar__tile {
-  text-align: center;
-  padding: 12px;
-  border-radius: 8px;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.react-calendar__tile:hover {
-  background-color: var(--primary);
-  color: var(--button-text);
-  transform: scale(1.05);
-}
-
-.react-calendar__tile--active {
-  background-color: var(--foreground);
-  color: var(--button-text);
-}
-
-/* Form Section */
-.form-section {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 30px;
-}
-
-.form-section label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 5px;
-  color: var(--foreground);
-}
-
-.form-section select,
-.form-section textarea,
-.form-section input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid var(--input-border);
-  font-size: 1rem;
-  background-color: var(--input-bg);
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.form-section select:focus,
-.form-section textarea:focus,
-.form-section input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-  outline: none;
-}
-
-.appointment-content {
+/* Main Content */
+.dashboard-main {
   flex: 1;
-  padding: 2rem;
-  max-width: 800px;
+  padding: 40px 60px;
+  margin-left: 250px; /* Adjust if sidebar width changes */
+  background: var(--page-background);
+  transition: margin-left var(--transition-duration) var(--transition-easing),
+              padding var(--transition-duration) var(--transition-easing);
+  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
 }
 
+@media (max-width: var(--breakpoint-lg)) {
+  .dashboard-main {
+    margin-left: 0;
+    padding: 20px;
+  }
+}
+
+/* Appointment Form */
 .appointment-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow);
+  transition: background var(--transition-duration) var(--transition-easing),
+              box-shadow var(--transition-duration) var(--transition-easing);
 }
 
+.appointment-form:hover {
+  background: var(--muted);
+  box-shadow: var(--box-shadow-hover);
+}
+
+/* Form Groups */
 .form-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
+/* Labels */
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--foreground);
+  transition: color var(--transition-duration) var(--transition-easing);
 }
 
-.form-group select,
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: white;
+/* Ensure labels are visible in dark mode */
+@media (prefers-color-scheme: dark) {
+  .form-group label {
+    color: var(--light-text);
+  }
 }
 
-.form-group select.multiple-select {
-  height: 150px;
+/* Inputs, Textareas, Selects */
+.appointment-form input,
+.appointment-form textarea,
+.appointment-form select {
+  padding: 12px 15px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-small);
+  background: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color var(--transition-duration) var(--transition-easing),
+              background var(--transition-duration) var(--transition-easing),
+              color var(--transition-duration) var(--transition-easing),
+              box-shadow var(--transition-duration) var(--transition-easing);
+  font-size: var(--font-size-base);
 }
 
-.form-group textarea {
-  min-height: 100px;
-  resize: vertical;
+.appointment-form input:focus,
+.appointment-form textarea:focus,
+.appointment-form select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
 }
 
-.help-text {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: #666;
-}
-
+/* Submit Button */
 .submit-button {
-  width: 100%;
-  padding: 1rem;
-  background-color: #2563eb;
-  color: white;
+  background: var(--button-primary-bg);
+  color: var(--button-text);
+  padding: 12px 25px;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+  transition: background-color var(--transition-duration) var(--transition-easing),
+              transform var(--transition-duration) var(--transition-easing);
+  width: 100%;
 }
 
 .submit-button:hover {
-  background-color: #1d4ed8;
-}
-
-.submit-button:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-}
-
-/* Calendar styles */
-.calendar-container {
-  margin-bottom: 1.5rem;
-}
-
-/* Notification styles */
-.notification-banner {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.notification-banner.success {
-  background-color: #dcfce7;
-  color: #166534;
-  border: 1px solid #86efac;
-}
-
-.notification-banner.error {
-  background-color: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
-}
-
-button {
-  background-color: var(--button-primary-bg);
-  color: var(--button-text);
-  padding: 12px 25px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-button:hover {
-  background-color: var(--button-primary-hover);
+  background: var(--button-primary-hover);
   transform: translateY(-2px);
 }
 
-button:active {
-  background-color: var(--primary);
-  transform: translateY(1px);
+.submit-button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* Appointment List */
-.appointments-list {
-  margin-top: 30px;
+/* Select Container */
+.select-container {
+  position: relative;
 }
 
-.appointments-list h3 {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: var(--foreground);
-  border-bottom: 2px solid var(--input-border);
-  padding-bottom: 8px;
+/* React-Select Custom Styles */
+.react-select-container {
+  width: 100%;
 }
 
-.appointment-item {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.appointment-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-}
-
-.appointment-item p {
-  margin: 5px 0;
-  font-size: 1rem;
-  color: var(--secondary);
-}
-
-.appointment-item a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.appointment-item a:hover {
-  text-decoration: underline;
-}
-
-/* Appointment Actions */
-.appointment-actions button {
-  margin-right: 10px;
-}
-
-.appointment-actions button:nth-child(2) {
-  background-color: var(--destructive-bg);
-}
-
-.appointment-actions button:hover:nth-child(2) {
-  background-color: var(--destructive-hover);
-}
-
-/* Google Events Section */
-.google-events-list {
-  margin-top: 30px;
-  padding: 20px;
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-}
-
-.google-events-list h3 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: var(--foreground);
-}
-
-.google-event-item {
+.react-select__control {
+  min-height: 45px;
+  background: var(--input-bg);
   border: 1px solid var(--input-border);
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  background-color: var(--background);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--border-radius-small);
+  transition: border-color var(--transition-duration) var(--transition-easing),
+              box-shadow var(--transition-duration) var(--transition-easing),
+              background var(--transition-duration) var(--transition-easing);
 }
 
-.google-event-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+.react-select__control:hover {
+  border-color: var(--primary);
+  background: var(--input-bg); /* Ensure a contrasting background */
+  color: var(--foreground);    /* Ensure the text remains visible */
 }
 
-.google-event-item p {
-  margin: 8px 0;
+.react-select__control--is-focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
+  background: var(--react-select-focus-bg); /* Optional: Change background when focused */
+}
+.fc .fc-toolbar-title {
+  color: var(--foreground) !important;
+}
+.fc .fc-daygrid-day {
+  background-color: var(--day-background);
 }
 
-.google-event-item a {
+.fc .fc-daygrid-day-number {
+  color: var(--foreground);
+}
+
+
+.react-select__menu {
+  background: var(--background);
+  border: 1px solid var(--input-border);
+  box-shadow: var(--box-shadow);
+  z-index: 9999 !important; 
+  position: relative;
+}
+
+.react-select__option {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background var(--transition-duration) var(--transition-easing),
+              color var(--transition-duration) var(--transition-easing);
+}
+
+.react-select__option--is-focused {
+  background: var(--primary-light);
+  color: var(--button-text);
+  transition: background var(--transition-duration) var(--transition-easing),
+              color var(--transition-duration) var(--transition-easing);
+}
+
+.react-select__option--is-selected {
+  background: var(--primary);
+  color: var(--button-text);
+}
+
+.react-select__option:hover {
+  background: var(--primary-light); /* Ensure hover effect on options */
+  color: var(--button-text);
+}
+
+.react-select__multi-value {
+  background: var(--primary-light);
+}
+
+.react-select__multi-value__label {
   color: var(--primary);
-  text-decoration: none;
 }
 
-.google-event-item a:hover {
-  text-decoration: underline;
+.react-select__multi-value__remove {
+  color: var(--primary);
+  cursor: pointer;
+  transition: background var(--transition-duration) var(--transition-easing),
+              color var(--transition-duration) var(--transition-easing);
+}
+
+.react-select__multi-value__remove:hover {
+  background: var(--primary);
+  color: var(--button-text);
 }
 
 /* Meeting Link Input */
 .meeting-link-input {
-  background-color: #f3f4f6;
-  cursor: default;
-  font-family: monospace;
-  letter-spacing: 0.5px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-small);
+  padding: 12px 15px;
+  color: var(--foreground);
+  font-size: var(--font-size-base);
 }
 
-.meeting-link-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+/* Notification Banner */
+.notification-banner {
+  display: flex;
+  align-items: center;
+  background-color: var(--notification-bg);
+  color: var(--button-text);
+  padding: 15px 20px;
+  border-radius: var(--border-radius-small);
+  box-shadow: var(--box-shadow);
+  animation: fadeIn var(--animation-duration-fast) var(--transition-easing);
+  margin-bottom: 20px;
+  transition: background-color var(--transition-duration) var(--transition-easing),
+              color var(--transition-duration) var(--transition-easing),
+              box-shadow var(--transition-duration) var(--transition-easing);
+}
+
+.notification-banner.success {
+  background-color: var(--success-bg);
+}
+
+.notification-banner.error {
+  background-color: var(--destructive-bg);
+}
+
+.notification-banner .message {
+  flex: 1;
+}
+
+.notification-banner .close-button {
+  background: none;
+  border: none;
+  color: var(--button-text);
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: color var(--transition-duration) var(--transition-easing);
+}
+
+.notification-banner .close-button:hover {
+  color: var(--hover-color);
+}
+
+/* Loading Indicator */
+.loading {
+  font-size: 1.5em;
+  color: var(--secondary);
+  text-align: center;
+  margin-top: 50px;
 }
 
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
     transform: translateY(20px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  animation: fadeIn var(--animation-duration-fast) var(--transition-easing);
+}
+
+.modal-content {
+  background: var(--modal-bg);
+  padding: 25px;
+  border-radius: var(--border-radius-medium);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--modal-shadow);
+  position: relative;
+  animation: slideUp var(--animation-duration-medium) var(--transition-easing);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: var(--modal-text);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.5em;
+  color: var(--modal-close-button-color);
+  cursor: pointer;
+  transition: color var(--transition-duration) var(--transition-easing);
+}
+
+.modal-close-button:hover {
+  color: var(--modal-close-button-hover-color);
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .appointment-content {
-    padding: 1rem;
+@media (max-width: var(--breakpoint-md)) {
+  .dashboard-main {
+    padding: 20px;
   }
 
   .appointment-form {
-    padding: 1rem;
+    padding: 20px;
   }
 
-  .form-section {
-    padding: 15px;
+  .form-group label {
+    font-size: 1em;
   }
 
-  button {
-    width: 100%;
-    margin-bottom: 10px;
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 1em;
+  }
+
+  .submit-button {
+    padding: 10px 20px;
+    font-size: 1em;
+  }
+
+  /* Optimize Search Bar for Mobile */
+  .react-select__control {
+    min-height: 40px;
+  }
+
+  .react-select__option {
+    font-size: 0.95em;
+  }
+
+  .react-select__multi-value__label,
+  .react-select__multi-value__remove {
+    font-size: 0.9em;
+  }
+
+  .meeting-link-input {
+    font-size: 0.95em;
   }
 }
 
-/* New Select Component Styles */
 
-.select-container {
-  position: relative;
+
+/* Smooth transitions for all interactive elements */
+button,
+input,
+textarea,
+select {
+  transition: all var(--transition-duration) var(--transition-easing);
 }
 
-/* React Select Custom Styles */
-.react-select-container {
-  font-size: 1rem;
+/* Hover effects for form elements */
+.appointment-form input:hover,
+.appointment-form textarea:hover,
+.appointment-form select:hover {
+  border-color: var(--hover-color);
+  box-shadow: var(--hover-box-shadow); /* Optional: Add shadow on hover */
 }
 
-.react-select__control {
-  border-radius: 8px !important;
-  transition: all 0.2s ease !important;
+/* Subtle shadow on focus for better visibility */
+.appointment-form input:focus,
+.appointment-form textarea:focus,
+.appointment-form select:focus {
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
 }
 
-.react-select__control:hover {
-  border-color: var(--primary) !important;
+/* Navigation Transition Enhancements */
+.sidebar,
+.dashboard-main {
+  transition: all var(--transition-duration) var(--transition-easing);
 }
 
-.react-select__control--is-focused {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 1px var(--primary) !important;
-}
-
-.react-select__menu {
-  border-radius: 8px !important;
-  margin-top: 4px !important;
-  overflow: hidden;
-}
-
-.react-select__option {
-  padding: 10px 12px !important;
-  cursor: pointer !important;
-  font-size: 0.95rem !important;
-}
-
-.react-select__multi-value {
-  border-radius: 4px !important;
-  padding: 2px !important;
-}
-
-.react-select__multi-value__label {
-  padding: 2px 6px !important;
-  font-size: 0.85rem !important;
-}
-
-.react-select__multi-value__remove {
-  padding: 0 4px !important;
-  border-radius: 0 4px 4px 0 !important;
-}
-
-.react-select__placeholder {
-  color: var(--text-light) !important;
-}
-
-.react-select__input {
-  color: var(--text) !important;
-}
-
-.react-select__single-value {
-  color: var(--text) !important;
-}
-
-/* Dark mode support */
-[data-theme='dark'] .react-select__control {
-  background: var(--background-dark) !important;
-  border-color: var(--border-dark) !important;
-}
-
-[data-theme='dark'] .react-select__menu {
-  background: var(--background-dark) !important;
-  border-color: var(--border-dark) !important;
-}
-
-[data-theme='dark'] .react-select__option:hover {
-  background: var(--primary-dark) !important;
-}
-
-[data-theme='dark'] .react-select__option--is-focused {
-  background: var(--primary-dark) !important;
-}
-
-[data-theme='dark'] .react-select__multi-value {
-  background: var(--primary-dark) !important;
-}
-
-[data-theme='dark'] .react-select__multi-value__label {
-  color: var(--text) !important;
+/* Optional: Add transition to main content when sidebar toggles */
+.sidebar.active + .dashboard-main {
+  transition: margin-left var(--transition-duration) var(--transition-easing);
 }

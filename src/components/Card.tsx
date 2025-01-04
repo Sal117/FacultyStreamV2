@@ -10,8 +10,6 @@ interface CardProps {
   link?: string; // Optional link to more details
   extra?: React.ReactNode; // Optional extra text or component
   onClick?: () => void; // Optional click handler for the whole card
-  content?: React.ReactNode; // Added content property
-  footer?: React.ReactNode; // Added footer property
 }
 
 const Card: React.FC<CardProps> = ({
@@ -21,8 +19,6 @@ const Card: React.FC<CardProps> = ({
   link,
   extra,
   onClick,
-  content,
-  footer,
 }) => {
   return (
     <div
@@ -47,8 +43,6 @@ const Card: React.FC<CardProps> = ({
           More Info
         </a>
       )}
-      {content && <div className="content">{content}</div>}
-      {footer && <div className="footer">{footer}</div>}
     </div>
   );
 };

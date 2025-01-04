@@ -1,23 +1,22 @@
 [
     
-    {
-      "formId": "coopApproval",
-      "title": "Co-Op Job Approval Form",
-      "requiresApproval": true,
-      "fields": [
-        {
-          "name": "studentName",
-          "type": "text",
-          "label": "Student Name",
-          "required": true
-        },
-        {
-          "name": "companyName",
-          "type": "text",
-          "label": "Company Name",
-          "required": true
-        }
-      ]
-    }
-  ]
-  
+  {
+    "formId": "coopApproval",
+    "title": "Co-Op Job Approval Form",
+    "requiresApproval": true,
+    "fields": [
+      {
+        "name": "studentName",
+        "type": "text",
+        "label": "Student Name",
+        "required": true
+      },
+      {
+        "name": "companyName",
+        "type": "text",
+        "label": "Company Name",
+        "required": true
+      }
+    ]
+  }
+]

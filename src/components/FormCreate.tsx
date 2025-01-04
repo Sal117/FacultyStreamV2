@@ -3,8 +3,11 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "./FormCreate.css";
 import { formService } from "../services/formService";
-import { FormTemplate, FormField as TemplateFormField } from "./types";
-import { FormField } from "./types";
+import {
+  FormTemplate,
+  FormField as TemplateFormField,
+  FormField,
+} from "./types"; // UPDATED import
 import Button from "./Button";
 import {
   getFirestore,
@@ -14,23 +17,27 @@ import {
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { firebaseApp } from "../services/firebase";
-import { authService, CustomUser } from "../services/authService"; // Import CustomUser
+import { authService, CustomUser } from "../services/authService";
+
+// Import toast from react-toastify
+import { toast } from "react-toastify";
 
 interface FormCreateProps {
-  onFormCreated: () => void; // Callback to refresh form templates list after creation
-  initialData?: FormTemplate; // Initial data for editing
-  isEditMode?: boolean; // Flag to indicate edit mode
+  onFormCreated: () => void;
+  initialData?: FormTemplate;
+  isEditMode?: boolean;
 }
 
 interface FormFieldInput {
-  id: string; // Unique identifier for each field
+  id: string;
   label: string;
   type: string;
-  options?: string[]; // Options for select type fields
-  validation: string[]; // Validation rules
+  options?: string[];
+  validation: string[];
   required: boolean;
-  visibility: "student" | "faculty" | "both"; // Visibility of the field
-  description?: string; // Optional field description
+  visibility: "student" | "faculty" | "both";
+  description?: string;
+  accept?: string; //  - to specify allowed file types if type=file
 }
 
 const FormCreate: React.FC<FormCreateProps> = ({
@@ -46,14 +53,15 @@ const FormCreate: React.FC<FormCreateProps> = ({
     initialData
       ? Object.entries(initialData.studentFields || {}).map(([key, field]) => ({
           id: key,
-          label: field.label,
-          type: field.type,
-          options: field.options,
-          validation: field.validation || [], // Ensure validation is always an array
-          required: field.required ?? false,
+          label: (field as FormField).label,
+          type: (field as FormField).type,
+          options: (field as FormField).options,
+          validation: (field as FormField).validation || [],
+          required: (field as FormField).required ?? false,
           visibility: initialData.facultyFields?.[key] ? "both" : "student",
           description:
             (initialData.studentFields![key] as any).description || "",
+          accept: (field as FormField).accept, //  - carry over accept if editing
         }))
       : []
   );
@@ -66,33 +74,31 @@ const FormCreate: React.FC<FormCreateProps> = ({
   const [availableToStudents, setAvailableToStudents] = useState<boolean>(
     initialData?.availableToStudents || false
   );
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<CustomUser | null>(null);
 
   const db = getFirestore(firebaseApp);
 
-  // Fetch the currently authenticated admin user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         const user: CustomUser | null = await authService.getCurrentUser();
         if (!user || user.role !== "admin") {
-          setError("You are not authorized to create form templates.");
+          // Show error toast
+          toast.error("You are not authorized to create form templates.");
           return;
         }
         setCurrentUser(user);
       } catch (err) {
         console.error("Error fetching current user:", err);
-        setError("Failed to authenticate user. Please try again.");
+        // Show error toast
+        toast.error("Failed to authenticate user. Please try again.");
       }
     };
 
     fetchCurrentUser();
   }, []);
 
-  // Fetch available Faculty members for assigning as responsible parties
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
@@ -110,14 +116,14 @@ const FormCreate: React.FC<FormCreateProps> = ({
         setAvailableFaculty(facultyMembers);
       } catch (err) {
         console.error("Error fetching faculty members:", err);
-        setError("Failed to load faculty members. Please try again later.");
+        // Show error toast
+        toast.error("Failed to load faculty members. Please try again later.");
       }
     };
 
     fetchFaculty();
   }, [db]);
 
-  // Handler to add a new field
   const addField = () => {
     setFields([
       ...fields,
@@ -133,12 +139,10 @@ const FormCreate: React.FC<FormCreateProps> = ({
     ]);
   };
 
-  // Handler to remove a field
   const removeField = (id: string) => {
     setFields(fields.filter((field) => field.id !== id));
   };
 
-  // Handler to update field properties
   const updateField = (
     id: string,
     property: keyof FormFieldInput,
@@ -151,7 +155,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
     );
   };
 
-  // Handler to add options for select fields
   const addOption = (fieldId: string) => {
     setFields(
       fields.map((field) =>
@@ -165,7 +168,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
     );
   };
 
-  // Handler to update an option value
   const updateOption = (
     fieldId: string,
     optionIndex: number,
@@ -183,7 +185,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
     );
   };
 
-  // Handler to remove an option
   const removeOption = (fieldId: string, optionIndex: number) => {
     setFields(
       fields.map((field) => {
@@ -198,20 +199,21 @@ const FormCreate: React.FC<FormCreateProps> = ({
     );
   };
 
-  // Handler for form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccessMessage(null);
+    // Remove existing error and success state management
+    // setError(null);
+    // setSuccessMessage(null);
 
-    // Basic validation
     if (!formName.trim()) {
-      setError("Form name is required.");
+      // Show error toast
+      toast.error("Form name is required.");
       return;
     }
 
     if (fields.length === 0) {
-      setError("At least one form field is required.");
+      // Show error toast
+      toast.error("At least one form field is required.");
       return;
     }
 
@@ -219,11 +221,13 @@ const FormCreate: React.FC<FormCreateProps> = ({
 
     for (let field of fields) {
       if (!field.label.trim()) {
-        setError("All fields must have a label.");
+        // Show error toast
+        toast.error("All fields must have a label.");
         return;
       }
       if (fieldLabels.has(field.label.trim().toLowerCase())) {
-        setError(
+        // Show error toast
+        toast.error(
           `Duplicate field label found: "${field.label}". Labels must be unique.`
         );
         return;
@@ -231,32 +235,34 @@ const FormCreate: React.FC<FormCreateProps> = ({
       fieldLabels.add(field.label.trim().toLowerCase());
 
       if (!field.type) {
-        setError("All fields must have a type.");
+        // Show error toast
+        toast.error("All fields must have a type.");
         return;
       }
       if (
         field.type === "select" &&
         (!field.options || field.options.length === 0)
       ) {
-        setError(
+        // Show error toast
+        toast.error(
           `Select field "${field.label}" must have at least one option.`
         );
         return;
       }
-      // Additional validation can be added here (e.g., descriptions)
     }
 
     if (selectedResponsibleParties.length === 0) {
-      setError("At least one responsible party must be selected.");
+      // Show error toast
+      toast.error("At least one responsible party must be selected.");
       return;
     }
 
     if (!currentUser) {
-      setError("Authenticated user not found.");
+      // Show error toast
+      toast.error("Authenticated user not found.");
       return;
     }
 
-    // Separate fields based on visibility
     const studentFields: { [key: string]: FormField } = {};
     const facultyFields: { [key: string]: FormField } = {};
 
@@ -277,6 +283,11 @@ const FormCreate: React.FC<FormCreateProps> = ({
         fieldData.description = field.description;
       }
 
+      //  - If it's a file field and we have 'accept'
+      if (field.type === "file" && field.accept) {
+        fieldData.accept = field.accept;
+      }
+
       if (field.visibility === "student") {
         studentFields[key] = fieldData;
       } else if (field.visibility === "faculty") {
@@ -288,40 +299,40 @@ const FormCreate: React.FC<FormCreateProps> = ({
       }
     });
 
-    // Prepare form template data
     const templateData: Omit<FormTemplate, "id"> = {
       name: formName,
       description: formDescription,
-      fields: {}, // General fields if any
+      fields: {},
       studentFields: studentFields,
       facultyFields: facultyFields,
       createdAt: new Date(),
-      createdBy: currentUser.uid, // Set based on the authenticated Admin's ID
+      createdBy: currentUser.uid,
       responsibleParties: selectedResponsibleParties,
-      availableToStudents: availableToStudents, // Include availability
+      availableToStudents: availableToStudents,
     };
 
     try {
       setLoading(true);
       if (isEditMode && initialData) {
-        // Update existing form template
         await formService.updateFormTemplate(initialData.id, templateData);
-        setSuccessMessage("Form template updated successfully!");
+        // Show success toast
+        toast.success("Form template updated successfully!");
       } else {
-        // Create new form template
         await formService.createFormTemplate(templateData);
-        setSuccessMessage("Form template created successfully!");
+        // Show success toast
+        toast.success("Form template created successfully!");
       }
-      // Reset form
+      // Reset form fields
       setFormName("");
       setFormDescription("");
       setFields([]);
       setSelectedResponsibleParties([]);
       setAvailableToStudents(false);
-      onFormCreated(); // Refresh form templates list
+      onFormCreated();
     } catch (err) {
       console.error("Error creating/updating form template:", err);
-      setError(
+      // Show error toast
+      toast.error(
         isEditMode
           ? "Failed to update form template. Please try again."
           : "Failed to create form template. Please try again."
@@ -335,17 +346,7 @@ const FormCreate: React.FC<FormCreateProps> = ({
     <div className="form-create">
       <h2>{isEditMode ? "Edit Form Template" : "Create New Form Template"}</h2>
 
-      {error && (
-        <div className="error-message">
-          <p>{error}</p>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="success-message">
-          <p>{successMessage}</p>
-        </div>
-      )}
+      {/* Removed inline error and success messages */}
 
       <form onSubmit={handleSubmit} className="form-create-form">
         {/* Form Name */}
@@ -394,7 +395,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
           <h3>Form Fields</h3>
           {fields.map((field, index) => (
             <div key={field.id} className="form-field">
-              {/* Field Label */}
               <div className="form-group">
                 <label>
                   Label:<span className="required">*</span>
@@ -410,7 +410,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
                 />
               </div>
 
-              {/* Field Type */}
               <div className="form-group">
                 <label>
                   Type:<span className="required">*</span>
@@ -427,11 +426,28 @@ const FormCreate: React.FC<FormCreateProps> = ({
                   <option value="email">Email</option>
                   <option value="date">Date</option>
                   <option value="select">Select</option>
-                  {/* Add more input types as needed */}
+                  <option value="checkbox">Check Box</option>
+                  <option value="file">File</option> {/*  - Add file type */}
                 </select>
               </div>
 
-              {/* Field Description */}
+              {field.type === "file" && (
+                <div className="form-group">
+                  <label>Accepted File Types (optional):</label>
+                  <input
+                    type="text"
+                    value={field.accept || ""}
+                    onChange={(e) =>
+                      updateField(field.id, "accept", e.target.value)
+                    }
+                    placeholder='e.g. "image/*" or ".pdf"'
+                  />
+                  <small>
+                    Specify allowed file types (MIME types or file extensions).
+                  </small>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>Description:</label>
                 <input
@@ -447,7 +463,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
                 </small>
               </div>
 
-              {/* Field Options (if type is select) */}
               {field.type === "select" && (
                 <div className="form-group">
                   <label>
@@ -487,7 +502,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
                 </div>
               )}
 
-              {/* Validation Rules */}
               <div className="form-group">
                 <label>Validation Rules:</label>
                 <select
@@ -507,12 +521,10 @@ const FormCreate: React.FC<FormCreateProps> = ({
                   <option value="date">Date</option>
                   <option value="minLength">Minimum Length</option>
                   <option value="maxLength">Maximum Length</option>
-                  {/* Add more validation rules as needed */}
                 </select>
                 <small>Select applicable validation rules.</small>
               </div>
 
-              {/* Required Checkbox */}
               <div className="form-group checkbox-group">
                 <label>Required:</label>
                 <input
@@ -524,7 +536,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
                 />
               </div>
 
-              {/* Field Visibility */}
               <div className="form-group">
                 <label>
                   Visibility:<span className="required">*</span>
@@ -542,7 +553,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
                 </select>
               </div>
 
-              {/* Remove Field Button */}
               <Button
                 type="button"
                 text="Remove Field"
@@ -556,11 +566,9 @@ const FormCreate: React.FC<FormCreateProps> = ({
             </div>
           ))}
 
-          {/* Add Field Button */}
           <Button type="button" text="Add Field" onClick={addField} />
         </div>
 
-        {/* Responsible Parties */}
         <div className="form-group">
           <label htmlFor="responsibleParties">
             Assign Responsible Parties:<span className="required">*</span>
@@ -589,7 +597,6 @@ const FormCreate: React.FC<FormCreateProps> = ({
           </small>
         </div>
 
-        {/* Submit Button */}
         <Button
           type="submit"
           text={

@@ -33,7 +33,7 @@
     background-color: var(--card-bg);
     border: 1px solid var(--primary);
     border-radius: 5px;
-    color: var(--primary);
+    color:white;
     margin-bottom: 20px;
     animation: slideIn 0.5s ease-in-out;
 }
@@ -117,6 +117,33 @@
   outline: none;
   box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.4);
 }
+button.availability-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem; /* Adjust padding for better spacing */
+    font-size: 1rem; /* Set a readable font size */
+    font-weight: 600; /* Make the text bold */
+    color: var(--button-text); /* Ensure text contrasts well */
+    background-color: var(--primary); /* Use the primary color for the button */
+    border: none; /* Remove the default border */
+    border-radius: var(--border-radius-medium); /* Add rounded corners */
+    cursor: pointer; /* Show pointer cursor on hover */
+    transition: background-color var(--transition-duration) ease-in-out, transform var(--transition-duration) ease-in-out; /* Add smooth hover effect */
+  }
+  button.availability-btn:hover {
+    background-color: var(--button-primary-hover); /* Slightly darker shade on hover */
+    transform: translateY(-2px); /* Subtle lift effect */
+  }
+  
+  button.availability-btn:active {
+    transform: translateY(0); /* Return to original position when clicked */
+    background-color: var(--primary-hover); /* Maintain hover color */
+  }
+  
+  button.availability-btn:disabled {
+    background-color: var(--button-disabled-bg); /* Gray out when disabled */
+    color: var(--button-disabled-text); /* Subtle text color for disabled state */
+    cursor: not-allowed; /* Change cursor to indicate non-clickable state */
+  }
 
 
 /* Manage Facilities Section */

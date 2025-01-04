@@ -1,5 +1,6 @@
 // src/components/PrintableForm.tsx
-import React, { forwardRef } from "react";
+
+import React, { forwardRef, useEffect } from "react";
 import { SubmittedForm, FormTemplate } from "./types";
 import "./PrintableForm.css";
 import stampImage from "../assets/stamp.svg";
@@ -13,6 +14,16 @@ export interface PrintableFormProps {
 
 const PrintableForm = forwardRef<HTMLDivElement, PrintableFormProps>(
   ({ formData, formTemplate }, ref) => {
+    // Log the received props when they change
+    useEffect(() => {
+      console.log("PrintableForm Props Received:");
+      console.log("Form Data:", formData);
+      console.log("Form Template:", formTemplate);
+    }, [formData, formTemplate]);
+
+    // Log render occurrence
+    console.log("Rendering PrintableForm with formData and formTemplate");
+
     return (
       <div ref={ref} className="printable-form">
         <header className="printable-header">
@@ -32,27 +43,29 @@ const PrintableForm = forwardRef<HTMLDivElement, PrintableFormProps>(
             <h2>Student Information</h2>
             <table className="data-table">
               <tbody>
-                {Object.keys(formTemplate.studentFields).map((key) => (
-                  <tr key={key}>
-                    <th>{formTemplate.studentFields[key].label}</th>
-                    <td>{formData[key]}</td>
-                  </tr>
-                ))}
+                {formTemplate.studentFields &&
+                  Object.keys(formTemplate.studentFields).map((key) => (
+                    <tr key={key}>
+                      <th>{formTemplate.studentFields[key].label}</th>
+                      <td>{formData[key] || "N/A"}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </section>
-
+          <div className="section-separator"></div> {/* Separator */}
           {formData.status === "approved" && formData.facultyData && (
             <section className="faculty-feedback">
               <h2>Faculty Feedback</h2>
               <table className="data-table">
                 <tbody>
-                  {Object.keys(formTemplate.facultyFields).map((key) => (
-                    <tr key={key}>
-                      <th>{formTemplate.facultyFields[key].label}</th>
-                      <td>{formData.facultyData[key]}</td>
-                    </tr>
-                  ))}
+                  {formTemplate.facultyFields &&
+                    Object.keys(formTemplate.facultyFields).map((key) => (
+                      <tr key={key}>
+                        <th>{formTemplate.facultyFields[key].label}</th>
+                        <td>{formData.facultyData[key] || "N/A"}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </section>
@@ -75,4 +88,4 @@ const PrintableForm = forwardRef<HTMLDivElement, PrintableFormProps>(
   }
 );
 
-export default PrintableForm;
+export default React.memo(PrintableForm);

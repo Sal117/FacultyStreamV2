@@ -39,6 +39,7 @@ export interface User {
     required?: boolean;
     options?: string[];
     description?: string;
+    accept?: string;
     
   }
   
@@ -110,13 +111,13 @@ export interface SubmittedForm {
   export interface NotificationPayload {
     id: string;
     message: string;
-    type: "info" | "alert" | "update" | "success" | "error";
-    timestamp: Date;
+    type: 'info' | 'alert' | 'update' | 'success' | 'error';
+    timestamp: Timestamp|Date;
     recipientId?: string;
+    read?: boolean;
     relatedFormId?: string;
     relatedAppointmentId?: string;
     relatedConversationId?: string;
-    read?: boolean; // Added read property
   }
   
 
@@ -177,7 +178,7 @@ export interface SubmittedForm {
 
   //////////////////////////announcement AND Event interface///////////////////
 
-  export interface Announcement {
+ export interface Announcement {
     announcementId: string;
     title: string;
     content: string;

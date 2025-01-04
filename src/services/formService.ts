@@ -268,68 +268,36 @@ class FormService {
   // =====================
 
   // Student: Fetch available form templates for submission (based on availability)
-  async getAvailableFormTemplatesForStudent(): Promise<FormTemplate[]> {
+  async getAvailableFormTemplatesForStudent(
+    //remove/add based on testing later first argument Remove
+    
+  ): Promise<FormTemplate[]> {
     try {
-      // First ensure the user is authenticated and is a student
-      const user = await this.ensureStudent();
-      
-      if (!user || !user.uid) {
-        throw new Error("User authentication required");
-      }
-
-      // Get reference to form templates collection
+      await this.ensureStudent();
       const templatesCollection = collection(this.db, "FormTemplates");
-      
-      // Simple query for available templates
+      // Query where 'availableToStudents' is true
       const q = query(
         templatesCollection,
         where("availableToStudents", "==", true)
       );
-
-      // Execute query
       const snapshot = await getDocs(q);
-
-      // Map documents to FormTemplate objects
       const templates = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       })) as FormTemplate[];
 
-      // If no templates found, return empty array
-      if (templates.length === 0) {
-        return [];
-      }
-
-      try {
-        // Enhance templates with responsible party names
-        const enhancedTemplates = await this.getFormTemplatesWithResponsiblePartyNames(
-          templates
-        );
-        return enhancedTemplates;
-      } catch (enhanceError) {
-        // If enhancement fails, return basic templates
-        console.error("Error enhancing templates with names:", enhanceError);
-        return templates;
-      }
-
-    } catch (error) {
-      console.error(
-        "Error in getAvailableFormTemplatesForStudent:",
-        error
+      // Enhance templates with responsible parties' names
+      const enhancedTemplates = await this.getFormTemplatesWithResponsiblePartyNames(
+        templates
       );
 
-      // Handle specific error cases
-      if (error instanceof Error) {
-        if (error.message.includes("User authentication required")) {
-          throw new Error("Please log in to view available forms");
-        }
-        if (error.message.includes("Student access required")) {
-          throw new Error("Only students can view these forms");
-        }
-      }
-
-      // For other errors, throw a generic message
-      throw new Error("Failed to fetch available form templates. Please try again later.");
+      return enhancedTemplates;
+    } catch (error) {
+      console.error(
+        "Error fetching available form templates for student:",
+        error
+      );
+      throw new Error("Failed to fetch available form templates.");
     }
   }
 
@@ -607,6 +575,38 @@ class FormService {
     } catch (error) {
       console.error("Error reviewing and updating form:", error);
       throw new Error("Failed to review and update form.");
+    }
+  }
+  async deleteSubmittedForm(formID: string): Promise<void> {
+    try {
+      // Fetch the form to ensure it exists and for authorization checks
+      const formRef = doc(this.db, "submittedForms", formID);
+      const formSnapshot = await getDoc(formRef);
+  
+      if (!formSnapshot.exists()) {
+        throw new Error("Form does not exist.");
+      }
+  
+      const formData = formSnapshot.data() as SubmittedForm;
+  
+      // Ensure user is admin or authorized faculty
+      await this.ensureAdminOrFaculty(formData);
+  
+      // Delete the form
+      await deleteDoc(formRef);
+      console.log(`Submitted form ${formID} deleted successfully.`);
+  
+      // Optionally, notify the submitter that the form was deleted
+      // (If you choose to notify them)
+      await this.notifyUser(
+        formData.submittedBy,
+        `Your form (${formData.formType}) has been deleted by an administrator/faculty.`,
+        "alert",
+        formID
+      );
+    } catch (error) {
+      console.error(`Error deleting submitted form ${formID}:`, error);
+      throw new Error("Failed to delete submitted form.");
     }
   }
 

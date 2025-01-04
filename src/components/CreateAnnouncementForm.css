@@ -202,6 +202,79 @@
   .links-list button:hover {
     background-color: var(--destructive-hover, #c82333);
   }
+
+  /* Image Upload Preview */
+.image-preview {
+    margin-top: 15px;
+    text-align: center;
+  }
+  
+  .image-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius, 5px);
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease;
+  }
+  
+  .image-preview img:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Attachments List */
+  .attachments-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 10px;
+  }
+  
+  .attachments-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--muted, #f8f9fa);
+    padding: 10px 15px;
+    border-radius: var(--border-radius, 5px);
+    margin-bottom: 10px;
+    color: var(--foreground);
+  }
+  
+  .attachments-list li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .attachments-list button {
+    padding: 6px 12px;
+    background-color: var(--destructive-bg, #dc3545);
+    color: var(--button-text, #fff);
+    border: none;
+    border-radius: var(--border-radius, 5px);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .attachments-list button:hover {
+    background-color: var(--destructive-hover, #c82333);
+  }
+  
+  /* Styled File Input */
+  .file-input-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--button-secondary-bg, #6c757d);
+    color: var(--button-text, #fff);
+    border-radius: var(--border-radius, 5px);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .file-input-label:hover {
+    background-color: var(--button-secondary-hover, #5a6268);
+  }
+  
+  .file-input {
+    display: none;
+  }
   
   /* Submit Button */
   button[type="submit"] {

@@ -1,17 +1,29 @@
+// src/components/AppointmentCalendar.tsx
+
 import React, { useEffect, useState } from "react";
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import { appointmentService } from "../services/appointmentService";
 import type { Appointment } from "../types/appointment";
-import '../styles/AppointmentCalendar.css';
-
+import "../styles/AppointmentCalendar.css";
+import { getFacilities } from "../services/databaseService";
+import LoadingSpinner from "./LoadingSpinner";
 interface AppointmentCalendarProps {
   selectedDate: Date | null;
   onDateChange: (date: Date | null) => void;
   userId: string;
   appointments?: Appointment[];
+}
+
+interface Facility {
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  availableSlots: string[];
+  capacity?: number;
 }
 
 const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
@@ -21,58 +33,92 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
   appointments: propAppointments,
 }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [facilityMap, setFacilityMap] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch appointments
         if (propAppointments) {
           setAppointments(propAppointments);
         } else {
-          const fetchedAppointments = await appointmentService.getAppointmentsForUser(userId);
+          const fetchedAppointments =
+            await appointmentService.getAppointmentsForUser(userId);
           setAppointments(fetchedAppointments);
         }
+
+        // Fetch facilities
+        const fetchedFacilities = await getFacilities();
+        setFacilities(fetchedFacilities);
+
+        // Create a map of facility IDs to names for quick lookup
+        const facilityIdNameMap: { [key: string]: string } = {};
+        fetchedFacilities.forEach((facility) => {
+          facilityIdNameMap[facility.id] = facility.name;
+        });
+        setFacilityMap(facilityIdNameMap);
       } catch (error) {
-        console.error('Error fetching appointments:', error);
+        console.error("Error fetching appointments or facilities:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAppointments();
+    fetchData();
   }, [userId, propAppointments]);
 
   if (loading) {
-    return <div>Loading calendar...</div>;
+    return (
+      <div>
+        Loading calendar... <LoadingSpinner />
+      </div>
+    );
   }
 
-  const calendarEvents = appointments.map(appointment => ({
-    id: appointment.id,
-    title: `${appointment.createdByName} - ${appointment.meetingType}`,
-    start: new Date(`${appointment.date.toDateString()} ${appointment.startTime}`),
-    end: new Date(`${appointment.date.toDateString()} ${appointment.endTime}`),
-    backgroundColor: getStatusColor(appointment.status),
-    extendedProps: {
-      appointment,
-      meetingType: appointment.meetingType,
-      status: appointment.status,
-      notes: appointment.notes,
-      location: appointment.meetingType === 'physical' ? appointment.facilityId : appointment.meetingLink,
-      createdByName: appointment.createdByName
-    }
-  }));
+  const calendarEvents = appointments.map((appointment) => {
+    // Get facility name if the meeting is physical
+    const facilityName =
+      appointment.meetingType === "physical" && appointment.facilityId
+        ? facilityMap[appointment.facilityId] || appointment.facilityId
+        : null;
+
+    return {
+      id: appointment.id,
+      title: `${appointment.createdByName} - ${appointment.meetingType}`,
+      start: new Date(
+        `${appointment.date.toDateString()} ${appointment.startTime}`
+      ),
+      end: new Date(
+        `${appointment.date.toDateString()} ${appointment.endTime}`
+      ),
+      backgroundColor: getStatusColor(appointment.status),
+      extendedProps: {
+        appointment,
+        meetingType: appointment.meetingType,
+        status: appointment.status,
+        notes: appointment.notes,
+        location:
+          appointment.meetingType === "physical"
+            ? facilityName
+            : appointment.meetingLink,
+        createdByName: appointment.createdByName,
+      },
+    };
+  });
 
   function getStatusColor(status: string) {
     switch (status) {
-      case 'accepted':
-        return '#28a745';
-      case 'rejected':
-        return '#dc3545';
-      case 'cancelled':
-        return '#6c757d';
+      case "accepted":
+        return "#28a745";
+      case "rejected":
+        return "#dc3545";
+      case "cancelled":
+        return "#6c757d";
       default:
-        return '#ffc107';
+        return "#ffc107";
     }
   }
 
@@ -84,11 +130,13 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
           {appointment.startTime} - {appointment.endTime}
         </div>
         <div className="event-title">
-          {appointment.meetingType === 'online' ? '🌐' : '🏢'} 
+          {appointment.meetingType === "online" ? "🌐" : "🏢"}
           {appointment.createdByName}
         </div>
         <div className="event-status">
-          Status: {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+          Status:{" "}
+          {appointment.status.charAt(0).toUpperCase() +
+            appointment.status.slice(1)}
         </div>
       </div>
     );
@@ -104,7 +152,7 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       status: event.extendedProps.status,
       notes: event.extendedProps.notes,
       location: event.extendedProps.location,
-      createdByName: event.extendedProps.createdByName
+      createdByName: event.extendedProps.createdByName,
     });
   };
 
@@ -114,9 +162,9 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
         events={calendarEvents}
         eventContent={renderEventContent}
@@ -131,10 +179,10 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         eventClick={handleEventClick}
         height="auto"
         eventTimeFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
+          hour: "2-digit",
+          minute: "2-digit",
           meridiem: false,
-          hour12: false
+          hour12: false,
         }}
         slotMinTime="08:00:00"
         slotMaxTime="20:00:00"
@@ -145,24 +193,64 @@ const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
         nowIndicator={true}
       />
       {selectedEvent && (
-        <div className="appointment-details-modal" onClick={() => setSelectedEvent(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div
+          className="appointment-details-modal"
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>{selectedEvent.createdByName}'s Appointment</h3>
-            <p><strong>Date:</strong> {selectedEvent.date.toLocaleDateString()}</p>
-            <p><strong>Time:</strong> {selectedEvent.date.toLocaleTimeString()} - {selectedEvent.endTime.toLocaleTimeString()}</p>
-            <p><strong>Type:</strong> {selectedEvent.meetingType === 'online' ? '🌐 Online' : '🏢 In-Person'}</p>
-            <p><strong>Status:</strong> <span style={{ color: getStatusColor(selectedEvent.status) }}>{selectedEvent.status.toUpperCase()}</span></p>
+            <p>
+              <strong>Date:</strong> {selectedEvent.date.toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Time:</strong>{" "}
+              {selectedEvent.date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              -{" "}
+              {selectedEvent.endTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+            <p>
+              <strong>Type:</strong>{" "}
+              {selectedEvent.meetingType === "online"
+                ? "🌐 Online"
+                : "🏢 In-Person"}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              <span style={{ color: getStatusColor(selectedEvent.status) }}>
+                {selectedEvent.status.toUpperCase()}
+              </span>
+            </p>
             {selectedEvent.location && (
-              <p><strong>{selectedEvent.meetingType === 'physical' ? 'Location' : 'Meeting Link'}:</strong>{' '}
-                {selectedEvent.meetingType === 'online' ? (
-                  <a href={selectedEvent.location} target="_blank" rel="noopener noreferrer">Join Meeting</a>
+              <p>
+                <strong>
+                  {selectedEvent.meetingType === "physical"
+                    ? "Location"
+                    : "Meeting Link"}
+                  :
+                </strong>{" "}
+                {selectedEvent.meetingType === "online" ? (
+                  <a
+                    href={selectedEvent.location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Join Meeting
+                  </a>
                 ) : (
                   selectedEvent.location
                 )}
               </p>
             )}
             {selectedEvent.notes && (
-              <p><strong>Notes:</strong> {selectedEvent.notes}</p>
+              <p>
+                <strong>Notes:</strong> {selectedEvent.notes}
+              </p>
             )}
             <button onClick={() => setSelectedEvent(null)}>Close</button>
           </div>

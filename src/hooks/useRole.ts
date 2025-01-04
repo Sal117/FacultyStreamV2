@@ -10,4 +10,3 @@ export const useRole = () => {
 
   return context.role;  // Accessing 'role' property from the context
 }
-// Custom hook for accessing user role context, simplifying role-based rendering and logic.

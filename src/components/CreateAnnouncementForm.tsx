@@ -7,6 +7,8 @@ import { announcementService } from "../services/announcementService";
 import { storageService } from "../services/storageService";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../services/authService";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CreateAnnouncementForm: React.FC = () => {
   const navigate = useNavigate();
@@ -77,12 +79,10 @@ const CreateAnnouncementForm: React.FC = () => {
       // Add announcement to Firestore
       await announcementService.addAnnouncement(announcementData);
 
-      // Redirect or show success message
-      //navigate("/admin/dashboard");
+      // Show success message
+      toast.success("Announcement created successfully!");
 
-      // If you prefer to stay on the same page and reset the form:
-      alert("Announcement created successfully!");
-      //  Reset the form fields
+      // Reset the form fields
       setTitle("");
       setContent("");
       setType("announcement");
@@ -92,7 +92,7 @@ const CreateAnnouncementForm: React.FC = () => {
       setLinks([]);
     } catch (error) {
       console.error("Error creating announcement:", error);
-      alert("Failed to create announcement. Please try again.");
+      toast.error("Failed to create announcement. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -142,6 +142,7 @@ const CreateAnnouncementForm: React.FC = () => {
 
   return (
     <div className="create-announcement-form">
+      <ToastContainer />
       <h2>Create Announcement</h2>
       <form onSubmit={handleSubmit}>
         {/* Title */}

@@ -1,3 +1,5 @@
+// src/context/RoleContext.tsx
+
 import React, {
   createContext,
   useContext,
@@ -5,7 +7,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { useAuth } from "./AuthContext"; // Ensure this import is correct
+import { useAuth } from "./AuthContext";
 
 // Define available role types
 type UserRole = "student" | "faculty" | "admin" | "guest";
@@ -35,8 +37,10 @@ export const RoleProvider: React.FC<RoleProviderProps> = ({ children }) => {
   useEffect(() => {
     // If the user is authenticated, update the role based on user data
     if (user) {
+      console.log("RoleContext: Setting role based on user data:", user.role);
       setRole(user.role || "guest"); // Set role from user data or default to guest
     } else {
+      console.log("RoleContext: No user found, setting role to guest.");
       setRole("guest"); // If no user is logged in, set the role as guest
     }
   }, [user]);

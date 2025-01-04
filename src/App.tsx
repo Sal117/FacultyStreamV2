@@ -15,6 +15,7 @@ import { RoleProvider } from "./context/RoleContext";
 import { ThemeProvider } from "./components/theme-provider"; // Import ThemeProvider
 import "./styles/App.css";
 import "./index.css";
+import LoadingSpinner from "./components/LoadingSpinner";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -87,6 +88,15 @@ const AppContent: React.FC = () => {
 
   const hideSidebarRoutes = ["/", "/main", "/login"];
   const shouldHideSidebar = hideSidebarRoutes.includes(location.pathname);
+
+  // **Add this block to handle loading state**
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <LoadingSpinner /> {/* Ensure you have a LoadingSpinner component */}
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -195,11 +205,9 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <RoleProvider>
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  </RoleProvider>
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
 );
 
 export default function AppWrapper() {

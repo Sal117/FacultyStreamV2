@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import "./FormReview.css";
 import { formService } from "../services/formService";
-import { FormTemplate, SubmittedFormData, SubmittedForm, User } from "./types";
+import { FormTemplate, SubmittedFormData, User } from "./types";
 import Button from "./Button"; // Importing the custom Button component
 
 interface FormReviewProps {
@@ -27,6 +27,9 @@ const FormReview: React.FC<FormReviewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [student, setStudent] = useState<User | null>(null);
+
+  // : State for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   // Fetch student details to display user-friendly information
   useEffect(() => {
@@ -96,9 +99,52 @@ const FormReview: React.FC<FormReviewProps> = ({
     }
   };
 
+  // : Handle Delete Click
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  // : Confirm Delete
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+
+      // Call the form service delete method
+      await formService.deleteSubmittedForm(formId);
+
+      setSuccessMessage("Form has been deleted successfully.");
+      // Optionally, you might want to disable the form or redirect user
+      // For now, we just show successMessage and hide the confirm
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error("Failed to delete form:", error);
+      setErrorMessage(
+        "An error occurred while trying to delete the form. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // : Cancel Delete
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
   return (
     <div className="form-review">
       <h2>Form Review</h2>
+
+      {(formData.status === "approved" || formData.status === "rejected") && (
+        <div className="reviewed-badge">
+          <p>
+            This form has been reviewed and is currently{" "}
+            <strong>{formData.status}</strong>.
+          </p>
+        </div>
+      )}
 
       {/* Display Success Message */}
       {successMessage && (
@@ -116,16 +162,16 @@ const FormReview: React.FC<FormReviewProps> = ({
 
       {/* Student's Data */}
       <div className="form-details">
-        <h3>Student's Data</h3>
+        <h3 className="text-dynamic">Student's Data</h3>
         {student ? (
           <div className="student-info">
-            <p>
+            <p className="text-dynamic">
               <strong>Name:</strong> {student.name}
             </p>
             <p>
               <strong>Email:</strong> {student.email}
             </p>
-            {/* Add more user-friendly details as needed */}
+            {/* we can add details as needed */}
           </div>
         ) : (
           <p>Loading student details...</p>
@@ -185,8 +231,8 @@ const FormReview: React.FC<FormReviewProps> = ({
         })}
       </div>
 
-      {/* Comments Section (for rejection reasons) */}
-      {(formData.status === "rejected" || formData.status === "pending") && ( // Show comments for both pending and rejected
+      {/* Comments Section (for rejection reasons or additional comments) */}
+      {(formData.status === "rejected" || formData.status === "pending") && (
         <div className="form-group">
           <label htmlFor="comments">
             {formData.status === "rejected"
@@ -211,24 +257,68 @@ const FormReview: React.FC<FormReviewProps> = ({
       )}
 
       {/* Actions */}
-      <div className="actions">
+      {formData.status === "pending" && (
+        <div className="actions">
+          <Button
+            type="button"
+            text={loading ? "Approving..." : "Approve"}
+            onClick={() => handleDecision("approved")}
+            variant="success"
+            size="medium"
+            disabled={loading}
+          />
+          <Button
+            type="button"
+            text={loading ? "Rejecting..." : "Reject"}
+            onClick={() => handleDecision("rejected")}
+            variant="danger"
+            size="medium"
+            disabled={loading}
+          />
+        </div>
+      )}
+
+      {/* : Delete Form Button (always visible for admin/faculty?) */}
+      <div className="actions" style={{ marginTop: "20px" }}>
         <Button
           type="button"
-          text={loading ? "Approving..." : "Approve"}
-          onClick={() => handleDecision("approved")}
-          variant="success"
-          size="medium"
-          disabled={loading}
-        />
-        <Button
-          type="button"
-          text={loading ? "Rejecting..." : "Reject"}
-          onClick={() => handleDecision("rejected")}
+          text="Delete Form"
+          onClick={handleDeleteClick}
           variant="danger"
           size="medium"
           disabled={loading}
         />
       </div>
+
+      {/* : Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirm Delete</h2>
+            <p>
+              Are you sure you want to delete this form? This action cannot be
+              undone.
+            </p>
+            <div className="modal-actions">
+              <Button
+                type="button"
+                text="Cancel"
+                onClick={cancelDelete}
+                variant="secondary"
+                size="medium"
+              />
+              <Button
+                type="button"
+                text={loading ? "Deleting..." : "Yes, Delete"}
+                onClick={confirmDelete}
+                variant="danger"
+                size="medium"
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

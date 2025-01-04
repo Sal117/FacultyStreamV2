@@ -1,3 +1,4 @@
+//src/services/appointmentService.ts
 import { db } from '../config/firebase';
 import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, onSnapshot } from 'firebase/firestore';
 import type { Appointment, FirestoreAppointment } from '../types/appointment';
@@ -5,7 +6,9 @@ import { notificationService } from './notificationService';
 import { facilityService } from './facilityService';
 import type { Notification } from '../types/notification';
 
-type AppointmentStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled';
+import { AppointmentStatus } from '../types/appointment';
+
+
 
 // Re-export the Appointment type
 export type { Appointment } from '../types/appointment';
@@ -55,6 +58,7 @@ export class AppointmentService {
         recipientId,
         message,
         type: 'info',
+        timestamp: Timestamp.now(),
         relatedAppointmentId: appointmentId
       });
     }
@@ -315,6 +319,7 @@ export class AppointmentService {
         message: `Your appointment request has been ${status}`,
         type: status === 'accepted' ? 'success' : 'error',
         recipientId: appointment.createdBy,
+       timestamp: Timestamp.now(),
         relatedAppointmentId: appointmentId
       });
 
@@ -324,6 +329,7 @@ export class AppointmentService {
           message: `A student has requested an appointment for ${appointment.date}`,
           type: 'alert',
           recipientId: appointment.facultyId,
+         timestamp: Timestamp.now(),
           relatedAppointmentId: appointmentId
         });
       }
@@ -346,6 +352,19 @@ export class AppointmentService {
       throw error;
     }
   }
+  async getFacilityById(facilityId: string): Promise<{ FacilityName: string } | null> {
+    try {
+      const facilityDoc = await getDoc(doc(db, "facilities", facilityId));
+      if (!facilityDoc.exists()) return null; // Return null if the document doesn't exist
+  
+      const data = facilityDoc.data();
+      return { FacilityName: data.FacilityName }; // Only return the FacilityName field
+    } catch (error) {
+      console.error("Error fetching facility details:", error);
+      throw error; // Rethrow error for higher-level handling
+    }
+  }
+  
 
   async updateAppointmentStatus(
     appointmentId: string,
@@ -455,6 +474,7 @@ export class AppointmentService {
       // Notify faculty
       await notificationService.notify({
         ...notificationData,
+       timestamp: Timestamp.now(),
         recipientId: appointment.facultyId
       });
 
@@ -462,6 +482,7 @@ export class AppointmentService {
       for (const studentId of appointment.studentIds) {
         await notificationService.notify({
           ...notificationData,
+         timestamp: Timestamp.now(),
           recipientId: studentId
         });
       }
@@ -549,6 +570,7 @@ export class AppointmentService {
           message: 'Your appointment has been accepted',
           type: 'success',
           recipientId: appointment.createdBy,
+         timestamp: Timestamp.now(),
           relatedAppointmentId: appointmentId
         });
       }
@@ -573,6 +595,7 @@ export class AppointmentService {
           message: 'Your appointment has been rejected',
           type: 'error',
           recipientId: appointment.createdBy,
+         timestamp: Timestamp.now(),
           relatedAppointmentId: appointmentId
         });
       }

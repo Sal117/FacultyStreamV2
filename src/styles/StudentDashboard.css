@@ -1,3 +1,5 @@
+/* src/styles/StudentDashboard.css */
+
 /* Global Reset and Body Styling */
 *,
 *::before,
@@ -13,7 +15,7 @@ body {
   background-color: var(--background);
 }
 
-/* Main Dashboard Styling */
+/* Student Dashboard Container */
 .student-dashboard {
   display: flex;
   min-height: 100vh;
@@ -32,151 +34,380 @@ body {
   width: 280px;
 }
 
-/* Content Section Styling */
-.dashboard-content {
+/* Main Content Area */
+.dashboard-main {
   flex: 1;
-  padding: 40px;
+  padding: 40px 60px;
+  margin-left: 250px; /* Adjust if sidebar width changes */
+  background: var(--page-background);
+  transition: margin-left 0.3s ease, padding 0.3s ease;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: var(--breakpoint-lg)) {
+  .dashboard-main {
+    margin-left: 0;
+    padding: 20px;
+  }
+}
+
+/* Dashboard Header Enhancements */
+.dashboard-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: var(--button-text);
+  padding: 60px 20px;
+  border-radius: var(--border-radius-medium);
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease;
+}
+
+/* Decorative Overlay for Readability */
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+  z-index: 1;
+}
+
+/* Header Content Positioning */
+.dashboard-header > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Enhanced Main Title */
+.dashboard-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--button-text);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Stylish Welcome Text */
+.welcome-text.student-welcome {
+  font-size: 1.5rem;
+  color: var(--button-text);
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Optional: Icon Next to Welcome Text */
+.welcome-text.student-welcome::before {
+  content: '🎓'; /* Graduation Cap Emoji as an example */
+  font-size: 1.5rem;
+}
+
+/* Decorative Divider Below Header */
+.dashboard-header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background-color: var(--button-text);
+  margin: 20px auto 0 auto;
+  border-radius: 2px;
+}
+
+/* Dashboard Content Sections */
+.dashboard-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  animation: fadeIn 0.5s ease;
+  gap: 30px;
 }
 
-.dashboard-content h1 {
-  font-size: 2rem;
-  color: var(--foreground);
-  margin-bottom: 20px;
-}
-
-/* Dashboard Section Styling */
+/* General Dashboard Section */
 .dashboard-section {
   background-color: var(--card-bg);
   border-radius: 10px;
-  padding: 20px;
+  padding: 25px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
 .dashboard-section:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
 }
 
 .dashboard-section h2 {
   font-size: 1.5rem;
   color: var(--primary);
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 10px;
+}
+
+/* Calendar Section Styling */
+.calendar-section {
+  margin-top: 30px;
+  padding: 30px;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Appointments Section Styling */
+.appointments-section {
+  margin-top: -10px;
 }
 
 /* Appointment Cards Styling */
 .appointments-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
 }
 
 .appointment-card {
-  background: var(--muted);
+  background: var(--card-bg);
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid var(--input-border);
-  transition: box-shadow 0.3s ease;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
 }
 
 .appointment-card:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
 }
 
 .appointment-card .title {
   font-weight: bold;
   color: var(--foreground);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
 }
 
 .appointment-card .description {
-  margin-top: 10px;
   color: var(--secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.appointment-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 60px;
+}
+
+.info-value {
+  color: var(--foreground);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.status-accepted {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+.status-rejected {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+}
+
+.status-cancelled {
+  background-color: var(--muted);
+  color: var(--muted-text);
+}
+
+.meeting-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-duration) var(--transition-easing);
+}
+
+.meeting-link:hover {
+  color: var(--hover-color);
+  text-decoration: underline;
+}
+
+.appointments-list .appointment-actions {
+  margin-top: 10px;
+}
+
+.appointments-list .appointment-actions button {
+  padding: 8px 12px;
+  background-color: var(--button-danger-bg);
+  color: var(--button-danger-text);
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  font-size: var(--font-size-small);
+  transition: background-color var(--transition-duration) var(--transition-easing),
+              transform var(--transition-duration) var(--transition-easing);
+}
+
+.appointments-list .appointment-actions button:hover {
+  background-color: var(--button-danger-hover);
+  transform: translateY(-2px);
+}
+
+.appointments-list .appointment-actions button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Card Component Styling */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 15px;
+}
+
+.card-description {
+  color: var(--secondary);
+}
+
+/* Notification Styling */
+.notification-banner {
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--notification-bg);
+  border-left: 4px solid var(--notification-border);
+}
+
+/* Announcement Cards */
+.announcement-card {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.announcement-card:hover {
+  transform: translateY(-2px);
 }
 
 /* Buttons Styling */
 button {
   background-color: var(--button-primary-bg);
-  color: var(--button-text);
+  color: var(--button-primary-text);
+  border: none;
   padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: var(--button-primary-hover);
-}
-
-/* Notification Banner Styling */
-.notification-banner {
-  padding: 15px;
-  border-radius: 5px;
-  margin: 10px 0;
-  font-size: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--button-text);
-  transition: transform 0.3s ease;
-}
-
-.notification-banner.info {
-  background-color: var(--notification-bg);
-}
-
-.notification-banner.alert {
-  background-color: var(--destructive-bg);
-}
-
-.notification-banner.update {
-  background-color: var(--success-bg);
-}
-
-.notification-banner button {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: var(--button-text);
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.notification-banner button:hover {
-  color: var(--muted);
-}
-
-/* Calendar Styling */
-.calendar-container {
-  margin-top: 20px;
-}
-
-.custom-calendar {
-  border: none;
   border-radius: 8px;
-  background: var(--muted);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-/* Responsive Design Adjustments */
-@media (max-width: 768px) {
-  .dashboard-content {
-    padding: 20px;
-  }
+button:hover:not(:disabled) {
+  background-color: var(--button-primary-hover);
+  transform: translateY(-1px);
+}
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .appointments-list {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
   .appointments-list {
     grid-template-columns: 1fr;
   }
-
-  .sidebar {
-    width: 100px;
+  
+  .appointment-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
+  
+  .info-label {
+    min-width: auto;
+  }
+}
 
-  .sidebar:hover {
-    width: 120px;
+@media (max-width: 1200px) {
+  .dashboard-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-dashboard {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .dashboard-main {
+    padding: 15px;
+  }
+  
+  .appointments-list {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -190,4 +421,29 @@ button:hover {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Additional Polishing */
+
+/* Smooth transitions for all interactive elements */
+button,
+input,
+textarea,
+select,
+a {
+  transition: all var(--transition-duration) var(--transition-easing);
+}
+
+/* Hover effects for form elements */
+.dashboard-section input:hover,
+.dashboard-section textarea:hover,
+.dashboard-section select:hover {
+  border-color: var(--hover-color);
+}
+
+/* Subtle shadow on focus for better visibility */
+.dashboard-section input:focus,
+.dashboard-section textarea:focus,
+.dashboard-section select:focus {
+  box-shadow: 0 0 0 2px var(--button-focus-ring);
 }

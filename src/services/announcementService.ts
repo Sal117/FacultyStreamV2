@@ -1,110 +1,150 @@
 // src/services/announcementService.ts
 
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  deleteDoc, 
-  doc, 
-  updateDoc, 
-  Timestamp, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  getDoc 
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  getDoc,
+  Timestamp,
+  query,
+  orderBy,
+  onSnapshot,
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
-import type { Announcement } from '../components/types';
+import { firebaseApp } from './firebase';
+import { Announcement } from '../components/types';
+
+const db = getFirestore(firebaseApp);
 
 class AnnouncementService {
-  private announcementsRef = collection(db, 'announcements');
-
-  // Convert Firestore data to Announcement type
-  private convertToAnnouncement(data: any, id: string): Announcement {
-    return {
-      announcementId: id,
-      title: data.title,
-      content: data.content,
-      createdByUid: data.createdByUid,
-      createdByName: data.createdByName,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      type: data.type || 'announcement',
-      date: data.date?.toDate() || null,
-      imageUrl: data.imageUrl,
-      attachments: data.attachments || [],
-      links: data.links || []
-    };
-  }
-
-  async getAllAnnouncements(): Promise<Announcement[]> {
+  // Add a new announcement
+  async addAnnouncement(
+    announcementData: Omit<Announcement, 'announcementId' | 'createdAt'>
+  ): Promise<string> {
     try {
-      const q = query(this.announcementsRef, orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => 
-        this.convertToAnnouncement(doc.data(), doc.id)
-      );
-    } catch (error) {
-      console.error('Error getting announcements:', error);
-      throw error;
-    }
-  }
-
-  async createAnnouncement(announcementData: Omit<Announcement, 'announcementId' | 'createdAt'>): Promise<string> {
-    try {
-      const docRef = await addDoc(this.announcementsRef, {
+      const dataWithTimestamp = {
         ...announcementData,
-        createdAt: new Date()
-      });
-      return docRef.id;
-    } catch (error) {
-      console.error('Error creating announcement:', error);
-      throw error;
-    }
-  }
-
-  async addAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt'>): Promise<string> {
-    try {
-      const docRef = await addDoc(this.announcementsRef, {
-        ...announcementData,
-        createdAt: Timestamp.now()
-      });
+        createdAt: Timestamp.now(),
+        ...(announcementData.date && { date: Timestamp.fromDate(announcementData.date) }),
+      };
+      const docRef = await addDoc(collection(db, 'announcements'), dataWithTimestamp);
+      console.log('Announcement added successfully with ID:', docRef.id);
       return docRef.id;
     } catch (error) {
       console.error('Error adding announcement:', error);
-      throw error;
+      throw new Error('Failed to add announcement.');
     }
   }
 
-  async updateAnnouncement(id: string, updateData: Partial<Omit<Announcement, 'id' | 'createdAt'>>): Promise<void> {
+  // Get all announcements
+  async getAllAnnouncements(): Promise<Announcement[]> {
     try {
-      const announcementRef = doc(this.announcementsRef, id);
-      await updateDoc(announcementRef, updateData);
+      const announcementsQuery = query(
+        collection(db, 'announcements'),
+        orderBy('createdAt', 'desc')
+      );
+      const announcementsSnapshot = await getDocs(announcementsQuery);
+      return announcementsSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          announcementId: doc.id,
+          ...data,
+          createdAt: (data.createdAt as Timestamp).toDate(),
+          date: data.date ? (data.date as Timestamp).toDate() : undefined,
+        } as Announcement;
+      });
     } catch (error) {
-      console.error('Error updating announcement:', error);
-      throw error;
+      console.error('Error fetching announcements:', error);
+      throw new Error('Failed to fetch announcements.');
     }
   }
 
-  async deleteAnnouncement(id: string): Promise<void> {
+  // Update an announcement by ID
+  async updateAnnouncement(
+      announcementId: string,
+      updateData: Partial<Announcement>
+    ): Promise<void> {
+      try {
+        const announcementRef = doc(db, 'announcements', announcementId);
+        const dataToUpdate: any = {
+          ...updateData,
+          ...(updateData.date && { date: Timestamp.fromDate(updateData.date) }),
+        };
+    
+        // Handle null date
+        if (updateData.date === null) {
+          dataToUpdate.date = null;
+        }
+    
+        await updateDoc(announcementRef, dataToUpdate);
+        console.log('Announcement updated successfully:', announcementId);
+      } catch (error) {
+        console.error('Error updating announcement:', error);
+        throw new Error('Failed to update announcement.');
+      }
+    }
+
+  // Delete an announcement by ID
+  async deleteAnnouncement(announcementId: string): Promise<void> {
     try {
-      await deleteDoc(doc(this.announcementsRef, id));
+      await deleteDoc(doc(db, 'announcements', announcementId));
+      console.log('Announcement deleted successfully:', announcementId);
     } catch (error) {
       console.error('Error deleting announcement:', error);
-      throw error;
+      throw new Error('Failed to delete announcement.');
     }
   }
 
+  // Subscribe to announcements with real-time updates
   subscribeToAnnouncements(callback: (announcements: Announcement[]) => void): () => void {
-    const q = query(this.announcementsRef, orderBy('createdAt', 'desc'));
-    return onSnapshot(q, (snapshot) => {
-      const announcements = snapshot.docs.map(doc => 
-        this.convertToAnnouncement(doc.data(), doc.id)
-      );
+    const announcementsQuery = query(
+      collection(db, 'announcements'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(announcementsQuery, (snapshot) => {
+      const announcements = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          announcementId: doc.id,
+          ...data,
+          createdAt: (data.createdAt as Timestamp).toDate(),
+          date: data.date ? (data.date as Timestamp).toDate() : undefined,
+        } as Announcement;
+      });
       callback(announcements);
-    }, (error) => {
-      console.error('Error in announcements subscription:', error);
     });
+
+    return unsubscribe;
+  }
+
+  // Get a single announcement by ID
+  async getAnnouncementById(announcementId: string): Promise<Announcement | null> {
+    try {
+      const docRef = doc(db, 'announcements', announcementId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+          announcementId: docSnap.id,
+          ...data,
+          createdAt: (data.createdAt as Timestamp).toDate(),
+          date: data.date ? (data.date as Timestamp).toDate() : undefined,
+        } as Announcement;
+      } else {
+        console.log('No such announcement!');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error getting announcement:', error);
+      throw new Error('Failed to get announcement.');
+    }
   }
 }
 
 export const announcementService = new AnnouncementService();
+
+export type { Announcement };

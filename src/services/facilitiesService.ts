@@ -35,7 +35,7 @@ export const getFacilities = async (): Promise<Facility[]> => {
 
     const facilitiesList: Facility[] = snapshot.docs.map((doc) => ({
       id: doc.id,
-      name: doc.data().FacilityName || doc.data().name||doc.data().facilityName,
+      name: doc.data().name ||doc.data().FacilityName||  'General Facility',
       location: doc.data().location || 'Unknown Location',
       status: doc.data().status || 'active',
       availableSlots: doc.data().availableSlots || [],

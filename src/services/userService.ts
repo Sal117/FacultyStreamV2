@@ -71,7 +71,7 @@ class UserService {
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
-        console.error('User document does not exist:', userId);
+       // console.error('User document does not exist:', userId);
         return null;
       }
       

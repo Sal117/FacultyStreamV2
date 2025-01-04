@@ -2,22 +2,29 @@
 
 import React from "react";
 import "./AnnouncementCard.css";
-import { Announcement } from "../types";
+import { Announcement } from "../types/announcement";
 import { format } from "date-fns";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
-export interface AnnouncementCardProps {
+interface AnnouncementCardProps {
   announcement: Announcement;
-  onDelete: (id: string) => void;
-  onUpdate?: (announcement: Announcement) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (announcement: Announcement) => void;
 }
 
 const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
   announcement,
   onDelete,
-  onUpdate,
+  onEdit,
 }) => {
-  const { currentUser } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  const isAdmin = user?.role === "admin";
+  const isCreator = announcement.createdByUid === user?.uid;
 
   return (
     <div className="announcement-card">
@@ -82,22 +89,25 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
           </div>
         )}
 
-        {currentUser && (
+        {/* Actions (Edit and Delete buttons) */}
+        {(isAdmin || isCreator) && (
           <div className="announcement-actions">
-            {onUpdate && (
+            {onEdit && (
               <button
                 className="edit-button"
-                onClick={() => onUpdate(announcement)}
+                onClick={() => onEdit(announcement)}
               >
                 Edit
               </button>
             )}
-            <button
-              className="delete-button"
-              onClick={() => onDelete(announcement.id)}
-            >
-              Delete
-            </button>
+            {onDelete && (
+              <button
+                className="delete-button"
+                onClick={() => onDelete(announcement.announcementId)}
+              >
+                Delete
+              </button>
+            )}
           </div>
         )}
       </div>

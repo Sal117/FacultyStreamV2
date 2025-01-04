@@ -1,7 +1,7 @@
 // src/components/Sidebar.tsx
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 import { useTheme } from "./theme-provider"; // Importing the theme logic
 import "./Sidebar.css";
 import {
@@ -14,8 +14,9 @@ import {
   FaCog,
   FaUsers,
   FaClipboardList,
-  FaTools, // Added a new icon for AdminFacilitiesAndAppointments
-  FaComments, // Added icon for ChatPage
+  FaTools, // Icon for AdminFacilitiesAndAppointments
+  FaComments, // Icon for ChatPage
+  FaBars, // Icon for the toggle button
 } from "react-icons/fa";
 
 interface SidebarProps {
@@ -24,11 +25,16 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Get current location
   const { theme } = useTheme(); // Fetch the current theme
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSidebarActive, setIsSidebarActive] = useState(true);
 
+  // Toggle functions
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+  const toggleSidebarMobile = () => setIsSidebarActive(!isSidebarActive);
 
+  // Menu items based on user role
   const getMenuItems = () => {
     // Common items for all users
     const commonItems = [
@@ -39,14 +45,13 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
         path: "/facilities-booking",
       },
       { label: "Appointments", icon: <FaCalendar />, path: "/appointment" },
-      { label: "Chat", icon: <FaComments />, path: "/chat" }, // Added Chat page
+      { label: "Chat", icon: <FaComments />, path: "/chat" },
       { label: "Chatbot", icon: <FaRobot />, path: "/chatbot" },
     ];
 
     // Admin-specific items
     if (userRole === "admin") {
       return [
-        ...commonItems,
         { label: "Dashboard", icon: <FaHome />, path: "/admin-dashboard" },
         { label: "Forms", icon: <FaClipboardList />, path: "/admin-forms" },
         { label: "System Settings", icon: <FaCog />, path: "/system-settings" },
@@ -60,13 +65,13 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
           icon: <FaTools />,
           path: "/admin-facilities-appointments",
         },
+        ...commonItems,
       ];
     }
 
     // Faculty-specific items
     if (userRole === "faculty") {
       return [
-        ...commonItems,
         { label: "Dashboard", icon: <FaHome />, path: "/faculty-dashboard" },
         {
           label: "Documents",
@@ -79,16 +84,17 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
           icon: <FaCalendar />,
           path: "/appointment-management",
         },
+        ...commonItems,
       ];
     }
 
     // Student-specific items
     if (userRole === "student") {
       return [
-        ...commonItems,
         { label: "Dashboard", icon: <FaHome />, path: "/student-dashboard" },
         { label: "Documents", icon: <FaFileAlt />, path: "/documents-access" },
         { label: "Forms", icon: <FaClipboardList />, path: "/student-forms" },
+        ...commonItems,
       ];
     }
 
@@ -103,23 +109,38 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole }) => {
       : "src/assets/images/SidebarLogo_dark.png";
 
   return (
-    <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="logo-section" onClick={toggleSidebar}>
-        <img src={logoSrc} alt="Sidebar Logo" className="logo" />
-      </div>
-      <ul className="nav-list">
-        {getMenuItems().map((item) => (
-          <li
-            key={item.path}
-            className="nav-item"
-            onClick={() => navigate(item.path)}
-          >
-            {item.icon}
-            {!isCollapsed && <span>{item.label}</span>}
-          </li>
-        ))}
-      </ul>
-    </aside>
+    <>
+      {/* Sidebar Toggle Button for Mobile */}
+      <button className="sidebar-toggle-btn" onClick={toggleSidebarMobile}>
+        <FaBars />
+      </button>
+
+      <aside
+        className={`sidebar ${isCollapsed ? "collapsed" : ""} ${
+          isSidebarActive ? "active" : ""
+        }`}
+      >
+        <div className="logo-section" onClick={toggleSidebar}>
+          <img src={logoSrc} alt="Sidebar Logo" className="logo" />
+        </div>
+        <ul className="nav-list">
+          {getMenuItems().map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <li
+                key={item.path}
+                className={`nav-item ${isActive ? "active" : ""}`}
+                data-label={item.label}
+                onClick={() => navigate(item.path)}
+              >
+                {item.icon}
+                {!isCollapsed && <span>{item.label}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      </aside>
+    </>
   );
 };
 

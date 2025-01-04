@@ -9,6 +9,8 @@ import {
 } from "../../services/databaseService"; // Import necessary services
 import LoadingSpinner from "../../components/LoadingSpinner";
 import "../../styles/SystemSettings.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface SystemSettingsType {
   maxAppointmentsPerDay: number;
@@ -22,17 +24,24 @@ interface FacilitiesSettingsType {
   // Add other facilities settings fields here as needed
 }
 
+// Define default settings
+const defaultSystemSettings: SystemSettingsType = {
+  maxAppointmentsPerDay: 0,
+  enableRegistration: false,
+};
+
+const defaultFacilitiesSettings: FacilitiesSettingsType = {
+  maxBookingsPerFacility: 0,
+  enableFacilityBooking: false,
+};
+
 const SystemSettings: React.FC = () => {
-  const [systemSettings, setSystemSettings] = useState<SystemSettingsType>({
-    maxAppointmentsPerDay: 0,
-    enableRegistration: false,
-  });
+  const [systemSettings, setSystemSettings] = useState<SystemSettingsType>(
+    defaultSystemSettings
+  );
 
   const [facilitiesSettings, setFacilitiesSettings] =
-    useState<FacilitiesSettingsType>({
-      maxBookingsPerFacility: 0,
-      enableFacilityBooking: false,
-    });
+    useState<FacilitiesSettingsType>(defaultFacilitiesSettings);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
@@ -43,8 +52,22 @@ const SystemSettings: React.FC = () => {
       setLoading(true);
       setError("");
       try {
-        const fetchedSystemSettings = await getSystemSettings();
-        const fetchedFacilitiesSettings = await getFacilitiesSettings();
+        let fetchedSystemSettings, fetchedFacilitiesSettings;
+
+        try {
+          fetchedSystemSettings = await getSystemSettings();
+        } catch (error) {
+          console.warn("No system settings found, using defaults.");
+          fetchedSystemSettings = defaultSystemSettings;
+        }
+
+        try {
+          fetchedFacilitiesSettings = await getFacilitiesSettings();
+        } catch (error) {
+          console.warn("No facilities settings found, using defaults.");
+          fetchedFacilitiesSettings = defaultFacilitiesSettings;
+        }
+
         setSystemSettings(fetchedSystemSettings);
         setFacilitiesSettings(fetchedFacilitiesSettings);
       } catch (err) {
@@ -88,6 +111,7 @@ const SystemSettings: React.FC = () => {
       }));
     }
   };
+
   // Handle form submission
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -99,7 +123,7 @@ const SystemSettings: React.FC = () => {
         updateSystemSettings(systemSettings),
         updateFacilitiesSettings(facilitiesSettings),
       ]);
-      alert("Settings updated successfully!");
+      toast.success("Settings updated successfully!");
     } catch (err) {
       setError("Failed to update settings.");
       console.error("Error updating settings:", err);
@@ -110,8 +134,8 @@ const SystemSettings: React.FC = () => {
 
   return (
     <div className="system-settings-page">
+      <ToastContainer />
       <div className="system-settings-container">
-        <h1>System Settings</h1>
         {loading ? (
           <LoadingSpinner />
         ) : (

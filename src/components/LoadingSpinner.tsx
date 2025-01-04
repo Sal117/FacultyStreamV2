@@ -1,5 +1,5 @@
 import React from "react";
-import "./LoadingSpinner.css"; // Make sure to create a corresponding CSS file
+import "./LoadingSpinner.css";
 
 const LoadingSpinner = ({ overlay = false }) => {
   return (
@@ -10,4 +10,3 @@ const LoadingSpinner = ({ overlay = false }) => {
 };
 
 export default LoadingSpinner;
-// Provides a visual indication of loading or processing state, configurable as an overlay or inline.

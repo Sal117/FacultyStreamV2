@@ -5,6 +5,9 @@ import backgroundImg from "../../assets/images/background.webp";
 import facilityImg from "../../assets/images/facilities_booking.webp";
 import profileImg from "../../assets/images/profile_placeholder.webp";
 import chatbotImg from "../../assets/images/AI_chatbot.webp";
+import appointmentImg from "../../assets/images/Appointment_management.webp";
+import formsDocImg from "../../assets/images/forms_doc.webp";
+import messagingImg from "../../assets/images/messaging.webp";
 
 const faculties = [
   {
@@ -110,6 +113,28 @@ const MainPage: React.FC = () => {
               <h3>24/7 AI Chatbot Assistance</h3>
               <p>
                 Instant support from an AI assistant for campus-related queries.
+              </p>
+            </div>
+            {/* New Feature Cards */}
+            <div className="feature-card">
+              <img src={appointmentImg} alt="Appointment Management" />
+              <h3>Appointment Management</h3>
+              <p>
+                Schedule and manage your appointments with faculty and staff
+                efficiently.
+              </p>
+            </div>
+            <div className="feature-card">
+              <img src={formsDocImg} alt="Forms & Documents" />
+              <h3>Forms & Documents</h3>
+              <p>Access and submit necessary forms and documents seamlessly.</p>
+            </div>
+            <div className="feature-card">
+              <img src={messagingImg} alt="Messaging" />
+              <h3>Messaging</h3>
+              <p>
+                Communicate with peers and faculty through our integrated
+                messaging system.
               </p>
             </div>
           </div>

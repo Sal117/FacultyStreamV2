@@ -1,3 +1,5 @@
+// src/pages/admin/ProfilePage.tsx
+
 import React, { useState, useEffect } from "react";
 import {
   getCurrentUser,
@@ -8,6 +10,7 @@ import { storageService } from "../../services/storageService";
 import profilePic from "../../assets/images/profile_placeholder.webp";
 import "../../styles/ProfilePage.css";
 import { ThemeProvider } from "../../components/theme-provider";
+import { toast } from "react-toastify"; // Import toast
 
 const ProfilePage: React.FC = () => {
   const [userData, setUserData] = useState<any>({});
@@ -35,6 +38,9 @@ const ProfilePage: React.FC = () => {
     string | null
   >(null);
 
+  // New state for generatedId
+  const [generatedId, setGeneratedId] = useState<string>("");
+
   useEffect(() => {
     const fetchUserData = async () => {
       const user = await getCurrentUser();
@@ -51,6 +57,15 @@ const ProfilePage: React.FC = () => {
         setProfilePicture(user.profilePicture || profilePic); // Default profile picture if empty
         setDOB(user.DOB || ""); // Add DOB
         console.log("DOB State after fetch:", user.DOB);
+
+        // Set generatedId based on available fields
+        if (user.Id) {
+          setGeneratedId(user.Id);
+        } else if (user.generatedId) {
+          setGeneratedId(user.generatedId);
+        } else {
+          setGeneratedId(""); // Default to empty string if neither exists
+        }
       }
     };
     fetchUserData();
@@ -61,7 +76,7 @@ const ProfilePage: React.FC = () => {
     try {
       await updateUserProfile({
         name: updatedName,
-        email: updatedEmail,
+        // Email is now uneditable; no need to send it for update
         faculty: updatedFaculty,
         phoneNumber: updatedPhoneNumber,
         address: updatedAddress,
@@ -72,7 +87,6 @@ const ProfilePage: React.FC = () => {
       setUserData({
         ...userData,
         name: updatedName,
-        email: updatedEmail,
         faculty: updatedFaculty,
         phoneNumber: updatedPhoneNumber,
         address: updatedAddress,
@@ -81,8 +95,28 @@ const ProfilePage: React.FC = () => {
       });
 
       setEditing(false);
+
+      // Show success toast
+      toast.success("Profile updated successfully!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       console.error("Profile update failed:", error);
+
+      // Show error toast
+      toast.error("Failed to update profile. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -96,7 +130,7 @@ const ProfilePage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Use userData.uid instead of userData.userId
+        // Use userData.uid as the unique identifier
         const uploadedUrl = await storageService.uploadFile(
           `profilePictures/${userData.uid}`,
           file,
@@ -112,8 +146,28 @@ const ProfilePage: React.FC = () => {
         // Update Firestore with the new profile picture URL
         await updateUserProfile({ profilePicture: uploadedUrl });
         setUserData({ ...userData, profilePicture: uploadedUrl });
+
+        // Show success toast
+        toast.success("Profile picture updated successfully!", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } catch (error) {
         console.error("Profile picture upload failed:", error);
+
+        // Show error toast
+        toast.error("Failed to upload profile picture. Please try again.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       } finally {
         setLoading(false);
       }
@@ -123,6 +177,17 @@ const ProfilePage: React.FC = () => {
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmNewPassword) {
       setPasswordUpdateError("Passwords do not match.");
+
+      // Show error toast
+      toast.error("Passwords do not match.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
       return;
     }
 
@@ -131,9 +196,29 @@ const ProfilePage: React.FC = () => {
       setPasswordUpdateError(null);
       setPasswordUpdateMessage("Password updated successfully!");
       setIsPasswordModalOpen(false);
+
+      // Show success toast
+      toast.success("Password updated successfully!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       setPasswordUpdateMessage(null);
       setPasswordUpdateError("Failed to update password. Please try again.");
+
+      // Show error toast
+      toast.error("Failed to update password. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -166,12 +251,25 @@ const ProfilePage: React.FC = () => {
                 value={updatedName}
                 onChange={(e) => setUpdatedName(e.target.value)}
               />
+
+              {/* Email Field - Made Uneditable */}
               <label>Email:</label>
               <input
                 type="email"
                 value={updatedEmail}
-                onChange={(e) => setUpdatedEmail(e.target.value)}
+                disabled // Make email uneditable
+                className="uneditable-field"
               />
+
+              {/*  Generated ID Field - Uneditable */}
+              <label>ID:</label>
+              <input
+                type="text"
+                value={generatedId}
+                disabled // Make generatedId uneditable
+                className="uneditable-field"
+              />
+
               <label>Faculty:</label>
               <input
                 type="text"
@@ -212,9 +310,17 @@ const ProfilePage: React.FC = () => {
               <p>
                 <strong>Name:</strong> {userData.name || "Not provided"}
               </p>
+
+              {/* Email Field - Displayed as Uneditable */}
               <p>
                 <strong>Email:</strong> {userData.email || "Not provided"}
               </p>
+
+              {/* Generated ID Field */}
+              <p>
+                <strong> ID:</strong> {generatedId || "Not provided"}
+              </p>
+
               <p>
                 <strong>Faculty:</strong> {userData.faculty || "Not provided"}
               </p>

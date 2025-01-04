@@ -1,4 +1,7 @@
+// src/types/notification.ts
 import { Timestamp } from 'firebase/firestore';
+
+export type NotificationType = 'info' | 'alert' | 'update' | 'success' | 'error';
 
 export interface Notification {
   id: string;
@@ -6,7 +9,7 @@ export interface Notification {
   type: NotificationType;
   timestamp: Date;
   recipientId: string;
-  read: boolean;
+  read?: boolean; // Made optional
   relatedFormId?: string;
   relatedAppointmentId?: string;
   relatedConversationId?: string;
@@ -16,8 +19,6 @@ export interface FirestoreNotification extends Omit<Notification, 'timestamp'> {
   timestamp: Timestamp;
 }
 
-export interface NotificationPayload extends Omit<Notification, 'id' | 'read'> {
-  timestamp: Date;
+export interface NotificationPayload extends Omit<Notification, 'id'> {
+  // Removed 'read' from the omit list
 }
-
-export type NotificationType = "info" | "alert" | "update" | "success" | "error";
