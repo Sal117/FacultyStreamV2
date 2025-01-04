@@ -7,6 +7,7 @@ import path from 'path'; // Required for aliasing
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -16,6 +17,7 @@ export default defineConfig({
   build: {
     sourcemap: true,
     rollupOptions: {
+      input: './index.html',
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
@@ -27,6 +29,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   server: {
+    
     port: 5173,
     hmr: {
       overlay: true
@@ -35,6 +38,13 @@ export default defineConfig({
       usePolling: true
     }
   },
+  preview: {
+    port: 4173,
+    strictPort: true,
+    open: true,
+    
+  },
+
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'firebase/app', 'firebase/auth', 'firebase/firestore']
   }
